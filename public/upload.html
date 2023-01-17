@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Upload IPA,APK</title>
+
+<!-- update the version number as needed -->
+<script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
+<!-- include only the Firebase features as you need -->
+<!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
+<script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
+<!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
+<!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
+<!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
+<script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
+<script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
+<!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
+<!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
+<!--
+  initialize the SDK after all desired features are loaded, set useEmulator to false
+  to avoid connecting the SDK to running emulators.
+-->
+<script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+
+
+
+
+  <style>
+    html,body { padding: 0;margin: 0; font-size: 12px; background: #efefef; }
+    p { padding: 0; margin: 0; }
+    .container { width: 450px; margin: 20px auto; }
+    .title { border-left: 4px solid #78C3F3; padding-left: 12px; font-size: 16px; margin: 0 0 20px 0; }
+    .card { padding: 20px; margin-bottom: 20px; background: #fff; border-radius: 4px; font-size: 12px; transition: all .3s; border: 1px solid #d9d9d9; border-color: #e9e9e9; }
+    .card:hover { box-shadow: 0 1px 6px hsla(0,0%,39%,.2); border-color: #eee; }
+    .file { position: relative; border: 1px solid #99D3F5; border-radius: 2px; width: 85px; height: 30px; line-height: 30px; text-align: center; color: #1E88C7; }
+    .file:hover { background: #AADFFD; border-color: #78C3F3; color: #004974; text-decoration: none; }
+    #file-input { position: absolute; top: 0; left: 0; width: 85px; height: 30px; opacity: 0; }
+    #file-input:hover { cursor: pointer; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <p class="title"></p>
+      <div class="file">Select File
+        <input type="file" name="file" id="file-input" onchange="fileSelect()">
+      </div>
+    </div>
+    <div id="result-list">
+    </div>
+  </div>
+  <script src="./app-info-parser/dist/app-info-parser.js"></script>
+  <script>
+
+
+var g_file = null;
+var g_version = null;
+var g_bundleID = null;
+var g_url_id = null;
+var g_ipa_url=null;
+var g_plist_url=null;
+var g_apk_url=null;
+var g_app_name=null;
+    function fileSelect() {
+      
+      const files = document.getElementById('file-input').files
+      try {
+        g_file=files[0];
+        const parser = new AppInfoParser(g_file)
+        parser.parse().then(result => {
+          console.log('app info ----> ', result)
+          g_version=result['versionName'] || result['CFBundleShortVersionString']
+          g_bundleID=result['CFBundleIdentifier']
+          g_app_name=result['CFBundleDisplayName'] ||result['application']['label']  
+          const div = document.createElement('div')
+          div.innerHTML = `
+            <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">File Name: </span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ files[0].name }</span>
+              </p>
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Icon: </span>
+                <img style="width: 80px; height: 80px;" src="${result.icon}" alt="">
+              </p>
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Name: </span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${g_app_name}</span>
+              </p>
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Version: </span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ g_version }</span>
+              </p>
+
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Bundle ID / App ID: </span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ result['package'] || g_bundleID }</span>
+              </p>
+
+            
+
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Uploading: </span>
+                <span id="uploadpercentage" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">0%</span>
+              </p>
+
+              <p style="padding: 10px 0; display: flex; overflow: hidden;">
+                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
+                <span id="url_id_text" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;"></span>
+              </p>
+
+
+
+            </div>
+          `
+            document.getElementById('result-list').appendChild(div)
+
+
+            const queryString = window.location.search;
+console.log(queryString);
+const urlParams = new URLSearchParams(queryString);
+const incoming_g_url_id = urlParams.get('g_url_id')
+console.log(incoming_g_url_id);
+if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
+  g_url_id=incoming_g_url_id
+  uploadFile()
+}else
+{
+  db_entry();
+}
+
+
+          
+
+
+
+
+
+
+
+
+
+         
+
+            
+
+
+          }).catch(e => {
+            window.alert('Parse Error: ' + e)
+          })
+      } catch (e) {
+        window.alert('Parse Error: ' + e)
+      }
+    }
+ 
+ 
+ 
+    function makeid(length) {
+    var result           = '';
+    var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+
+function db_entry() {
+   
+  var url_id=makeid(4);
+            console.log(url_id);
+            const url_id_text = document.querySelector('#url_id_text');
+
+
+            firebase.database().ref("/"+url_id).get().then((snapshot) => {
+  if (snapshot.exists()) {
+   db_entry()
+  } else {
+    firebase.database().ref("/"+url_id).set({
+    "local_fileName": g_file.name.toString(),
+     "iosBundleID" : g_bundleID??"",
+     "versionName": g_version,
+     "name" : g_app_name,
+  });
+  g_url_id=url_id
+  url_id_text.textContent = "";
+  uploadFile()
+  }
+}).catch((error) => {
+  console.error(error);
+});
+
+          
+
+
+
+}
+
+function uploadFile(){
+  var ref= firebase.storage().ref(g_url_id);
+            var uploadTask = ref.child(g_file.name).put(g_file)
+            uploadTask.then((snapshot) => {
+              console.log('Uploaded File1');
+            });
+
+
+            const uploadpercentage = document.querySelector('#uploadpercentage');
+            uploadTask.on('state_changed', 
+  (snapshot) => {
+    // Observe state change events such as progress, pause, and resume
+    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    console.log('Upload is ' + progress + '% done');
+
+    uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
+
+    switch (snapshot.state) {
+      case firebase.storage.TaskState.PAUSED: // or 'paused'
+        console.log('Upload is paused');
+        break;
+      case firebase.storage.TaskState.RUNNING: // or 'running'
+        console.log('Upload is running');
+        break;
+    }
+  }, 
+  (error) => {
+    // Handle unsuccessful uploads
+  }, 
+  () => {
+    // Handle successful uploads on complete
+    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+      console.log('File available at', downloadURL);
+      on_ipa_apk_upload(downloadURL)
+
+
+
+    });
+  }
+);
+
+}
+
+
+
+function on_ipa_apk_upload(downloadURL){
+if(g_bundleID!=null){
+  g_ipa_url=downloadURL;
+  on_ipa_upload()
+}else{
+  g_apk_url=downloadURL;
+  on_apk_upload();
+}
+}
+
+function on_ipa_upload(){
+  var plistContent= 
+  `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>items</key>
+  <array>
+    <dict>
+      <key>assets</key>
+      <array>
+        <dict>
+          <key>kind</key>
+          <string>software-package</string>
+          <key>url</key>
+          <string><![CDATA[YOUR_IPA_URL_HERE]]></string>
+        </dict>
+      </array>
+      <key>metadata</key>
+      <dict>
+        <key>bundle-identifier</key>
+        <string>YOUR_IPA_BUNDLE_ID_HERE</string>
+        <key>bundle-version</key>
+        <string>YOUR_VERSION_HERE</string>
+        <key>kind</key>
+        <string>software</string>
+        <key>title</key>
+        <string>ew</string>
+        <key>subtitle</key>
+        <string></string>
+      </dict>
+    </dict>
+  </array>
+</dict>
+</plist>`
+      plistContent=plistContent.replace("YOUR_IPA_URL_HERE",g_ipa_url)
+      .replace("YOUR_VERSION_HERE",g_version)
+      .replace("YOUR_IPA_BUNDLE_ID_HERE",g_bundleID)
+      
+      if(true){
+        var metadata = {
+contentType: 'application/xml',
+};
+        var ref= firebase.storage().ref(g_url_id);
+            var uploadTask = ref.child("manifest.plist").putString(plistContent,"raw",metadata)
+            uploadTask.then((snapshot) => {
+              console.log('Uploaded File1');
+              uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
+                g_plist_url=downloadURL_PLIST
+      console.log('File available at', g_plist_url);
+      firebase.database().ref("/"+g_url_id).set({
+    "local_fileName": g_file.name.toString(),
+     "iosBundleID" : g_bundleID??"",
+     "versionName": g_version,
+     "plist": g_plist_url,
+     "ipa": g_ipa_url??"",
+     "apk": g_apk_url??"",
+     "name" : g_app_name
+
+  });
+
+  const url_id_text = document.querySelector('#url_id_text');
+  url_id_text.textContent = "https://testap5.web.app/"+g_url_id;
+
+    });
+            });
+      }
+      
+
+}
+
+function on_apk_upload(){
+  firebase.database().ref("/"+g_url_id).set({
+    "local_fileName": g_file.name.toString(),
+    "iosBundleID" : g_bundleID??"",
+     "versionName": g_version,
+     "plist": g_plist_url??"",
+     "apk": g_apk_url,
+     "ipa": g_ipa_url??"",
+     "name" : g_app_name,
+  });
+  const url_id_text = document.querySelector('#url_id_text');
+  url_id_text.textContent = "https://testap5.web.app/"+g_url_id;
+}
+
+
+
+
+
+ </script>
+</body>
+
+</html>
