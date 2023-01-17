@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
   <title id="pafeTile">Welcome</title>
 
   <!-- update the version number as needed -->
@@ -26,27 +29,62 @@
   <style media="screen">
       body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
       #message { background: white; max-width: 275px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
+      #message h1 { color: #ffa100; font-weight: 300; font-size: 22px; margin: 0 0 8px; }
+      #message h2 { font-size: 12px; font-weight: 100; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
       #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5;  text-decoration: none; color: white; padding: 10px; border-radius: 2px; }
+      #message a { display: block; text-align: center; background: #039be5;  text-decoration: none; color: white; padding: 7px; border-radius: 2px; }
       #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.1); text-align: center; font-size: 13px; }
+      #load { color: rgba(0,0,0,0.03); text-align: center; font-size: 13px; }
       @media (max-width: 600px) {
         body, #message { margin-top: 0; background: white; box-shadow: none; }
         body { border-top: 16px solid #ffa100; }
       }
+
+
+      .btn {
+  background-color: DodgerBlue;
+  border: none;
+  color: white;
+
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+
+
+.centerIMG {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 30%;
+}
+
+
+
+
+
     </style>
 </head>
 <body>
 <div id="message">
   <h2 id="urlid"></h2>
   <h1 id="appid"  > </h1>
-  <p id="instruction1">Please select a version below to get started:</p>
+  <div id="result_div_icon">    </div>
+  
+  <div id="result_list_packageName"></div>
+  <div id="result_list_versionName"></div>
 
-  <div id="result_list_ios">    </div>
+  <p id="instruction1"></p>
+  <div id="result_list_ios"></div>
     <p > </p>
     <div id="result_list_android">    </div>
+
+
+
 
 
 
@@ -67,13 +105,15 @@
         }
 
         const appid = document.querySelector('#appid');
+        const packageName = document.querySelector('#packageName');
+      
         const urlid = document.querySelector('#urlid');
         const pafeTile = document.querySelector('#pafeTile');
         const iosdlink2 = document.querySelector('#iosdlink2');
 
 
-        urlid.textContent = pageID.toUpperCase();
-        pafeTile.textContent = pageID.toUpperCase();
+        urlid.textContent = "https://"+window.location.hostname+"/"+pageID;
+        pafeTile.textContent = pageID;
 
         const loadEl = document.querySelector('#load');
         const instruction1 = document.querySelector('#instruction1');
@@ -117,10 +157,48 @@
 
 
 
+
     if(childKey=="name"){
       appid.textContent = childData;
     }
     
+    if(childKey=="packageName"){
+      const div = document.createElement('div')
+          div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${childData}</span>
+          `
+          document.getElementById('result_list_packageName').appendChild(div)
+    }
+    if(childKey=="versionName"){
+      const div = document.createElement('div')
+          div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${childData}</span>
+          `
+          document.getElementById('result_list_versionName').appendChild(div)
+    }
+
+if(childKey=="icon"){
+  const div = document.createElement('div')
+          div.innerHTML = `
+         <img src="${childData}"  class="centerIMG"  > </img>
+          `
+          document.getElementById('result_div_icon').appendChild(div)
+}
+
+
+
+
+
+if(childKey=="versionName"){
+  const div = document.createElement('div')
+          div.innerHTML = `
+         <i src="${childData}"> </i>
+          `
+          document.getElementById('result_list_android').appendChild(div)
+}
+
+
+
    
     if((deviceType==2||deviceType!=1)&&childKey=="plist"&&childData!=null&&childData.trim()!=""){
       var linkkkk="itms-services://?action=download-manifest&url=";
@@ -128,7 +206,10 @@
 
     const div = document.createElement('div')
           div.innerHTML = `
-          <a  href="${linkkkk+encoded}">Ios</a>
+       
+
+          <a  href="${linkkkk+encoded} class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+      
           `
           document.getElementById('result_list_ios').appendChild(div)
 
@@ -136,7 +217,7 @@
     if((deviceType==1||deviceType!=2)&&childKey=="apk"&&childData!=null&&childData.trim()!=""){
       const div = document.createElement('div')
           div.innerHTML = `
-          <a  href="${childData}">Android</a>
+          <a  href="${childData} class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
           `
           document.getElementById('result_list_android').appendChild(div)
     }
@@ -181,7 +262,7 @@
             'remoteConfig',
             'performance',
           ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
+          loadEl.textContent = `by Shakir`;
           
         } catch (e) {
           console.error(e);

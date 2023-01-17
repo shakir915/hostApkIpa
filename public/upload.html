@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+
+
   <title>Upload IPA,APK</title>
 
 <!-- update the version number as needed -->
@@ -40,32 +43,257 @@
     .file:hover { background: #AADFFD; border-color: #78C3F3; color: #004974; text-decoration: none; }
     #file-input { position: absolute; top: 0; left: 0; width: 85px; height: 30px; opacity: 0; }
     #file-input:hover { cursor: pointer; }
+
+
+
+
+    .tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+
+.drop-zone {
+ 
+  height: 300px;
+  width: 300px;
+
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: "Quicksand", sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  cursor: pointer;
+  color: #cccccc;
+  border: 4px dashed #009578;
+  border-radius: 10px;
+}
+
+.drop-zone--over {
+  border-style: solid;
+}
+
+.drop-zone__input {
+  display: none;
+}
+
+.drop-zone__thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #cccccc;
+  background-size: cover;
+  position: relative;
+}
+
+.drop-zone__thumb::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 5px 0;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: 14px;
+  text-align: center;
+}
+
+span.login-text {
+    font-size: 10px;
+    display:table;
+    align-items: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+
+
+
+
+
+
+
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="card">
-      <p class="title"></p>
-      <div class="file">Select File
-        <input type="file" name="file" id="file-input" onchange="fileSelect()">
-      </div>
+
+
+    <div id="topContainer" class="drop-zone">
+      <span class="drop-zone__prompt">Drop ipa/apk here or click to upload</span>
+      <input id="file-input" type="file" name="myFile" class="drop-zone__input">
     </div>
+    
+  
+
+
     <div id="result-list">
     </div>
+  </div>
+  <div >
+    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>Developed by Shakir</span>
   </div>
   <script src="./app-info-parser/dist/app-info-parser.js"></script>
   <script>
 
 
+
+document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
+  const dropZoneElement = inputElement.closest(".drop-zone");
+
+  dropZoneElement.addEventListener("click", (e) => {
+    inputElement.click();
+  });
+
+  inputElement.addEventListener("change", (e) => {
+    if (inputElement.files.length) {
+      updateThumbnail(dropZoneElement, inputElement.files[0]);
+      
+    }
+  });
+
+  dropZoneElement.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZoneElement.classList.add("drop-zone--over");
+  });
+
+  ["dragleave", "dragend"].forEach((type) => {
+    dropZoneElement.addEventListener(type, (e) => {
+      dropZoneElement.classList.remove("drop-zone--over");
+    });
+  });
+
+  dropZoneElement.addEventListener("drop", (e) => {
+    e.preventDefault();
+
+    if (e.dataTransfer.files.length) {
+      inputElement.files = e.dataTransfer.files;
+      updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+    }
+
+    dropZoneElement.classList.remove("drop-zone--over");
+  });
+});
+
+/**
+ * Updates the thumbnail on a drop zone element.
+ *
+ * @param {HTMLElement} dropZoneElement
+ * @param {File} file
+ */
+function updateThumbnail(dropZoneElement, file) {
+
+  fileSelect()
+  return
+
+  let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+  // First time - remove the prompt
+  if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+    dropZoneElement.querySelector(".drop-zone__prompt").remove();
+  }
+
+  // First time - there is no thumbnail element, so lets create it
+  if (!thumbnailElement) {
+    thumbnailElement = document.createElement("div");
+    thumbnailElement.classList.add("drop-zone__thumb");
+    dropZoneElement.appendChild(thumbnailElement);
+  }
+
+  thumbnailElement.dataset.label = file.name;
+
+  // Show thumbnail for image files
+  if (file.type.startsWith("image/")) {
+    const reader = new FileReader();
+
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+    };
+  } else {
+    thumbnailElement.style.backgroundImage = null;
+  }
+
+ 
+}
+
+
+
+
+
+
+
+
+
+function copy_to_clipboard() {
+ 
+  var url="https://"+window.location.hostname+"/"+g_url_id
+  navigator.clipboard.writeText(url);
+  
+  var tooltip = document.getElementById("myTooltip");
+  tooltip.innerHTML = "Copied: " + url;
+}
+
+function copy_to_clipboard_show() {
+  var tooltip = document.getElementById("myTooltip");
+  tooltip.innerHTML = "Copy to clipboard";
+}
+
+
+
+
 var g_file = null;
 var g_version = null;
-var g_bundleID = null;
+var package_bundle_id = null;
 var g_url_id = null;
 var g_ipa_url=null;
 var g_plist_url=null;
 var g_apk_url=null;
 var g_app_name=null;
+var g_app_icon=null;
+var isIos=null
+
     function fileSelect() {
       
       const files = document.getElementById('file-input').files
@@ -75,9 +303,22 @@ var g_app_name=null;
         parser.parse().then(result => {
           console.log('app info ----> ', result)
           g_version=result['versionName'] || result['CFBundleShortVersionString']
-          g_bundleID=result['CFBundleIdentifier']
+          package_bundle_id=result['package'] || result['CFBundleIdentifier']
+          isIos=result['package']==null&& result['CFBundleIdentifier']!=null
           g_app_name=result['CFBundleDisplayName'] ||result['application']['label']  
+          g_app_icon=result.icon
+          console.log(' isIos ----> ', isIos)
           const div = document.createElement('div')
+         
+
+          const incoming_g_url_id= get_incoming_g_url_id();
+  if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
+
+}else
+{
+  document.getElementById("topContainer").style.display = "none";
+}
+
           div.innerHTML = `
             <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
@@ -86,7 +327,7 @@ var g_app_name=null;
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Icon: </span>
-                <img style="width: 80px; height: 80px;" src="${result.icon}" alt="">
+                <img style="width: 80px; height: 80px;" src="${g_app_icon}" alt="">
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Name: </span>
@@ -99,7 +340,7 @@ var g_app_name=null;
 
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Bundle ID / App ID: </span>
-                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ result['package'] || g_bundleID }</span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${  package_bundle_id }</span>
               </p>
 
             
@@ -109,23 +350,34 @@ var g_app_name=null;
                 <span id="uploadpercentage" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">0%</span>
               </p>
 
-              <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
+              <p >
+               
+                <div class="tooltip" style="padding: 10px 0; display: flex; overflow: hidden;">
+                  <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
                 <span id="url_id_text" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;"></span>
+<button id="copy_button" onclick="copy_to_clipboard()" onmouseout="copy_to_clipboard_show()">
+  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+  Copy
+  </button>
+</div>
+                
               </p>
 
+           
+
+
+              
 
 
             </div>
           `
             document.getElementById('result-list').appendChild(div)
+            document.getElementById("copy_button").hidden = true;   
 
 
-            const queryString = window.location.search;
-console.log(queryString);
-const urlParams = new URLSearchParams(queryString);
-const incoming_g_url_id = urlParams.get('g_url_id')
-console.log(incoming_g_url_id);
+
+
+
 if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
   g_url_id=incoming_g_url_id
   uploadFile()
@@ -170,6 +422,16 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
     return result;
 }
 
+function get_incoming_g_url_id(){
+  const queryString = window.location.search;
+console.log(queryString);
+const urlParams = new URLSearchParams(queryString);
+const incoming_g_url_id = urlParams.get('g_url_id')
+console.log(incoming_g_url_id);
+return incoming_g_url_id
+}
+
+
 function db_entry() {
    
   var url_id=makeid(4);
@@ -183,7 +445,7 @@ function db_entry() {
   } else {
     firebase.database().ref("/"+url_id).set({
     "local_fileName": g_file.name.toString(),
-     "iosBundleID" : g_bundleID??"",
+     "packageName" : package_bundle_id??"",
      "versionName": g_version,
      "name" : g_app_name,
   });
@@ -249,12 +511,12 @@ function uploadFile(){
 
 
 function on_ipa_apk_upload(downloadURL){
-if(g_bundleID!=null){
+if(isIos){
   g_ipa_url=downloadURL;
   on_ipa_upload()
 }else{
   g_apk_url=downloadURL;
-  on_apk_upload();
+  on_apk_plist_upload();
 }
 }
 
@@ -295,7 +557,7 @@ function on_ipa_upload(){
 </plist>`
       plistContent=plistContent.replace("YOUR_IPA_URL_HERE",g_ipa_url)
       .replace("YOUR_VERSION_HERE",g_version)
-      .replace("YOUR_IPA_BUNDLE_ID_HERE",g_bundleID)
+      .replace("YOUR_IPA_BUNDLE_ID_HERE",package_bundle_id)
       
       if(true){
         var metadata = {
@@ -308,19 +570,7 @@ contentType: 'application/xml',
               uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
                 g_plist_url=downloadURL_PLIST
       console.log('File available at', g_plist_url);
-      firebase.database().ref("/"+g_url_id).set({
-    "local_fileName": g_file.name.toString(),
-     "iosBundleID" : g_bundleID??"",
-     "versionName": g_version,
-     "plist": g_plist_url,
-     "ipa": g_ipa_url??"",
-     "apk": g_apk_url??"",
-     "name" : g_app_name
-
-  });
-
-  const url_id_text = document.querySelector('#url_id_text');
-  url_id_text.textContent = "https://testap5.web.app/"+g_url_id;
+      on_apk_plist_upload()
 
     });
             });
@@ -329,18 +579,45 @@ contentType: 'application/xml',
 
 }
 
-function on_apk_upload(){
+function on_apk_plist_upload(){
+
+
   firebase.database().ref("/"+g_url_id).set({
     "local_fileName": g_file.name.toString(),
-    "iosBundleID" : g_bundleID??"",
-     "versionName": g_version,
-     "plist": g_plist_url??"",
-     "apk": g_apk_url,
-     "ipa": g_ipa_url??"",
      "name" : g_app_name,
+     "icon" : g_app_icon,
+     "packageName" : package_bundle_id??"",
+     "versionName": g_version,
+     "plist": g_plist_url,
+     "ipa": g_ipa_url??"",
+     "apk": g_apk_url??"",
+
+
   });
+
   const url_id_text = document.querySelector('#url_id_text');
-  url_id_text.textContent = "https://testap5.web.app/"+g_url_id;
+  url_id_text.textContent = "https://"+window.location.hostname+"/"+g_url_id;
+
+
+
+  document.getElementById("copy_button").hidden = false;   
+
+
+  
+  const incoming_g_url_id= get_incoming_g_url_id();
+  if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
+
+}else
+{
+  document.getElementById("topContainer").style.display = "none";
+}
+
+
+
+
+
+
+
 }
 
 
