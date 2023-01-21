@@ -35,8 +35,8 @@
   <style>
     html,body { padding: 0;margin: 0; font-size: 12px; background: #efefef; }
     p { padding: 0; margin: 0; }
-    .container { width: 450px; margin: 20px auto; }
-    .title { border-left: 4px solid #78C3F3; padding-left: 12px; font-size: 16px; margin: 0 0 20px 0; }
+    .container { width: 450px; margin:  auto; padding-top: 20px; padding-bottom: 20px; }
+    .title { border-left: 4px solid #78C3F3; padding-left: 0px; font-size: 16px; margin: 0 0 20px 0; }
     .card { padding: 20px; margin-bottom: 20px; background: #fff; border-radius: 4px; font-size: 12px; transition: all .3s; border: 1px solid #d9d9d9; border-color: #e9e9e9; }
     .card:hover { box-shadow: 0 1px 6px hsla(0,0%,39%,.2); border-color: #eee; }
     .file { position: relative; border: 1px solid #99D3F5; border-radius: 2px; width: 85px; height: 30px; line-height: 30px; text-align: center; color: #1E88C7; }
@@ -90,7 +90,7 @@
  
   height: 300px;
   width: 300px;
-
+margin: auto;
   padding: 25px;
   display: flex;
   align-items: center;
@@ -144,6 +144,16 @@ span.login-text {
     margin-left: auto;
     margin-right: auto;
 }
+a.uploadNewApp {
+    font-size: 12px;
+    display:table;
+    align-items: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    text-decoration: none;
+    visibility: hidden;
+}
 
 
 
@@ -172,11 +182,34 @@ span.login-text {
     </div>
   </div>
   <div >
-    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>Developed by Shakir</span>
+    <span  class="login-text"  style="color: #f00;opacity: 1;  font-weight: 600; "  id="failText"></span>
+    <a  href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"  style="color: #00f;opacity: 1;  font-weight: 600; " >Upload another App</a>
+    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></span>
+    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; "  id="siteAndDevName"></span><br/><br/>
+  
   </div>
   <script src="./app-info-parser/dist/app-info-parser.js"></script>
   <script>
 
+
+function get_incoming_g_url_id(){
+  const queryString = window.location.search;
+console.log(queryString);
+const urlParams = new URLSearchParams(queryString);
+const incoming_g_url_id = urlParams.get('g_url_id')
+console.log(incoming_g_url_id);
+return incoming_g_url_id
+}
+const incoming_g_url_id= get_incoming_g_url_id();
+
+
+
+
+    
+
+
+const siteAndDevName = document.querySelector('#siteAndDevName');
+siteAndDevName.textContent = "https://"+window.location.hostname+" maintained  by Shakir ";
 
 
 document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
@@ -294,7 +327,10 @@ var g_app_name=null;
 var g_app_icon=null;
 var isIos=null
 
+
     function fileSelect() {
+      const failText = document.querySelector('#failText');
+    failText.textContent = ""
       
       const files = document.getElementById('file-input').files
       try {
@@ -315,21 +351,21 @@ var isIos=null
             g_app_name=result['CFBundleExecutable']
           }
          }
-          else
-          g_app_name=result['application']['label']  
+          else{
+            if(Array. isArray(result['application']['label']))
+            g_app_name=  result['application']['label'][0]
+            else
+            g_app_name=  result['application']['label']
+          }
+         
 
           g_app_icon=result.icon
           console.log(' isIos ----> ', isIos)
           const div = document.createElement('div')
          
 
-          const incoming_g_url_id= get_incoming_g_url_id();
-  if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
-
-}else
-{
-  document.getElementById("topContainer").style.display = "none";
-}
+          
+          document.getElementById("topContainer").style.display = "none";
 
           div.innerHTML = `
             <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
@@ -385,6 +421,7 @@ var isIos=null
           `
             document.getElementById('result-list').appendChild(div)
             document.getElementById("copy_button").hidden = true;   
+            document.getElementById("uploadNewApp").style.visibility = 'visible';
 
 
 
@@ -392,7 +429,34 @@ var isIos=null
 
 if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
   g_url_id=incoming_g_url_id
-  uploadFile()
+  firebase.database().ref("/"+g_url_id).get().then((snapshot) => {
+  if (snapshot.exists()) {
+
+    snapshot.forEach(function(childSnapshot) {
+    var childKey = childSnapshot.key;
+    var childData = childSnapshot.val();
+    if(childKey=="apk"&&childData!=null)
+    g_apk_url=childData
+    if(childKey=="ipa"&&childData!=null)
+    g_ipa_url=childData
+    if(childKey=="plist"&&childData!=null)
+    g_plist_url=childData
+
+
+
+  }
+    )
+
+
+   
+    uploadFile()
+  }else{
+    uploadFile()
+  }
+
+
+})
+
 }else
 {
   db_entry();
@@ -416,11 +480,15 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
 
           }).catch(e => {
             console.log("Parse Error c1",e)
-            window.alert('Parse Error c1 : ' + e)
+        
+            const failText = document.querySelector('#failText');
+    failText.textContent = "Parse Error 1 \n"+e
+
           })
       } catch (e) {
         console.log("Parse Error c2",e)
-        window.alert('Parse Error: c2 ' + e)
+        const failText = document.querySelector('#failText');
+    failText.textContent = "Parse Error 2 \n"+e
       }
     }
  
@@ -436,14 +504,7 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
     return result;
 }
 
-function get_incoming_g_url_id(){
-  const queryString = window.location.search;
-console.log(queryString);
-const urlParams = new URLSearchParams(queryString);
-const incoming_g_url_id = urlParams.get('g_url_id')
-console.log(incoming_g_url_id);
-return incoming_g_url_id
-}
+
 
 
 function db_entry() {
@@ -457,12 +518,13 @@ function db_entry() {
   if (snapshot.exists()) {
    db_entry()
   } else {
-    firebase.database().ref("/"+url_id).set({
+    g_set={
     "local_fileName": g_file.name.toString(),
      "packageName" : package_bundle_id??"",
      "versionName": g_version,
      "name" : g_app_name,
-  });
+  }
+    firebase.database().ref("/"+url_id).set(g_set);
   g_url_id=url_id
   url_id_text.textContent = "";
   uploadFile()
@@ -506,13 +568,18 @@ function uploadFile(){
   }, 
   (error) => {
     // Handle unsuccessful uploads
+    const failText = document.querySelector('#failText');
+    failText.textContent = "Upload Failed\n"+error
   }, 
   () => {
+    const url_id_text = document.querySelector('#url_id_text');
+  url_id_text.textContent = "Preparing...";
     // Handle successful uploads on complete
     // For instance, get the download URL: https://firebasestorage.googleapis.com/...
     uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
       console.log('File available at', downloadURL);
       on_ipa_apk_upload(downloadURL)
+
 
 
 
@@ -598,45 +665,81 @@ contentType: 'application/xml',
 function on_apk_plist_upload(){
 
 
+
+
+
+
+
+
+
   firebase.database().ref("/"+g_url_id).set({
     "local_fileName": g_file.name.toString(),
      "name" : g_app_name,
      "icon" : g_app_icon,
-     "packageName" : package_bundle_id??"",
+     "packageName" : package_bundle_id,
      "versionName": g_version,
      "plist": g_plist_url,
-     "ipa": g_ipa_url??"",
-     "apk": g_apk_url??"",
+     "ipa": g_ipa_url,
+     "apk": g_apk_url,
+     "date": Date.now(),
 
 
   });
 
   const url_id_text = document.querySelector('#url_id_text');
   url_id_text.textContent = "https://"+window.location.hostname+"/"+g_url_id;
-
-
-
   document.getElementById("copy_button").hidden = false;   
+  document.getElementById("topContainer").style.display = "none";
 
+
+
+
+
+  try{ 
+    
+        var ref =firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({"page" : "upload",
+      "time" : Date.now(),
+      "action" : "upload",
+      "incoming_g_url_id" :incoming_g_url_id ,
+      "page_id" : g_url_id,
+      "isIos" : isIos,
+
+      });
+        } catch (e) {
+        console.error(e);
+      
+      }
 
   
-  const incoming_g_url_id= get_incoming_g_url_id();
-  if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
-
-}else
-{
-  document.getElementById("topContainer").style.display = "none";
-}
 
 
-
-
-
+ 
 
 
 }
 
 
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  try{ 
+        var ref =firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({"page" : "upload",
+      "time" : Date.now(),
+      "action" : "open",
+      "incoming_g_url_id" :incoming_g_url_id 
+      });
+        } catch (e) {
+        console.error(e);
+      }
+
+  })
 
 
 

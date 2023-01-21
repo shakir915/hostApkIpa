@@ -37,7 +37,7 @@
       #load { color: rgba(0,0,0,0.1); text-align: center; font-size: 13px; }
       @media (max-width: 600px) {
         body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
+        body { border-top: 0px solid #ffa100; }
       }
 
 
@@ -63,6 +63,21 @@
   width: 30%;
 }
 
+a.upload {
+  font-size: 14px;
+    display:table;
+    align-items: center;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    text-decoration: none;
+    visibility: hidden;
+
+
+}
+
+
+
 
 
 
@@ -76,8 +91,9 @@
   <div id="result_div_icon">    </div>
   
   <div id="result_list_packageName"></div>
+  
   <div id="result_list_versionName"></div>
-
+  <div id="result_list_date"></div>
   <p id="instruction1"></p>
   <div id="result_list_ios"></div>
     <p > </p>
@@ -91,18 +107,36 @@
   
 
 </div>
-<p id="load">Firebase SDK Loading&hellip;</p>
 
+<a class="upload" target="_blank" id="upload" href="./upload.html">Upload New App </a>
+  <p id="load">Firebase SDK Loading&hellip;</p>
 
 
 <script>
+var pageID=null
+
+
       document.addEventListener('DOMContentLoaded', function() {
 
-        var pageID = window.location.toString().split("/").slice(-1)[0].replace("#","");
+         pageID = window.location.toString().split("/").slice(-1)[0].replace("#","");
         if(pageID.trim()==""){
           window.location = "./upload.html"; 
           return
         }
+
+
+        try{ 
+          var ref =firebase.database().ref("/events")
+          var newChildRef = ref.push();
+          newChildRef.set({"page" : pageID,
+        "time" : Date.now(),
+        "action" : "open"
+        });
+          } catch (e) {
+          console.error(e);
+     
+        }
+      
 
         const appid = document.querySelector('#appid');
         const packageName = document.querySelector('#packageName');
@@ -112,7 +146,7 @@
         const iosdlink2 = document.querySelector('#iosdlink2');
 
 
-        urlid.textContent = "https://"+window.location.hostname+"/"+pageID;
+        urlid.textContent = pageID;
         pafeTile.textContent = pageID;
 
         const loadEl = document.querySelector('#load');
@@ -137,12 +171,17 @@
       deviceType=2;
     }
     console.log('deviceType ', deviceType)
+
+
+    if(deviceType==0)
+    document.getElementById("upload").style.visibility = 'visible';
        
          
 
 
-         firebase.database().ref("/"+pageID).on('value', snapshot => {
 
+
+    firebase.database().ref("/"+pageID).get().then((snapshot) => {
 
          if (snapshot.exists()) {
 
@@ -177,6 +216,23 @@
           document.getElementById('result_list_versionName').appendChild(div)
     }
 
+    if(childKey=="date"){
+
+
+      var utcSeconds = childData/1000;
+var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+d.setUTCSeconds(utcSeconds);
+
+      const div = document.createElement('div')
+          div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${d.toDateString()}</span>
+          `
+          document.getElementById('result_list_date').appendChild(div)
+    }
+
+
+
+
 if(childKey=="icon"){
   const div = document.createElement('div')
           div.innerHTML = `
@@ -189,13 +245,7 @@ if(childKey=="icon"){
 
 
 
-if(childKey=="versionName"){
-  const div = document.createElement('div')
-          div.innerHTML = `
-         <i src="${childData}"> </i>
-          `
-          document.getElementById('result_list_android').appendChild(div)
-}
+
 
 
 
@@ -208,7 +258,7 @@ if(childKey=="versionName"){
           div.innerHTML = `
        
 
-          <a  href="${linkkkk+encoded}" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+          <a   onClick="download1(\'${linkkkk+encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
       
           `
           document.getElementById('result_list_ios').appendChild(div)
@@ -218,10 +268,13 @@ if(childKey=="versionName"){
     if((deviceType==0)&&childKey=="ipa"&&childData!=null&&childData.trim()!=""){
 
 
+
+      
+
     const div = document.createElement('div')
           div.innerHTML = `
   
-          <a  href="${childData}" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+          <a       onClick="download1(\'${childData}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
 
           `
           document.getElementById('result_list_ios').appendChild(div)
@@ -235,7 +288,7 @@ if(childKey=="versionName"){
     if((deviceType==1||deviceType!=2)&&childKey=="apk"&&childData!=null&&childData.trim()!=""){
       const div = document.createElement('div')
           div.innerHTML = `
-          <a  href="${childData}" class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
+          <a onClick="download1(\'${childData}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
           `
           document.getElementById('result_list_android').appendChild(div)
     }
@@ -280,13 +333,39 @@ if(childKey=="versionName"){
             'remoteConfig',
             'performance',
           ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `developed by Shakir`;
+          loadEl.textContent = "https://"+window.location.hostname+` maintained by Shakir`;
           
         } catch (e) {
           console.error(e);
           loadEl.textContent = 'Error loading the Firebase SDK';
         }
       });
+
+
+
+function download1(url,action){
+
+
+  const a = document.createElement('a')
+  a.href = url
+  a.download = url.split('/').pop()
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+
+  try{ 
+          var ref =firebase.database().ref("/events")
+          var newChildRef = ref.push();
+          newChildRef.set({"page" : pageID,
+        "time" : Date.now(),
+        "action" : action
+        });
+          } catch (e) {
+          console.error(e);
+      
+        }
+}
+
     </script>
 </body>
 </html>
