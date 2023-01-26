@@ -126,11 +126,14 @@ var pageID=null
 
 
         try{ 
+          
           var ref =firebase.database().ref("/events")
           var newChildRef = ref.push();
           newChildRef.set({"page" : pageID,
         "time" : Date.now(),
-        "action" : "open"
+        "action" : "open",
+        "userAgent":navigator.userAgent
+
         });
           } catch (e) {
           console.error(e);
@@ -159,15 +162,46 @@ var pageID=null
 
 
         var deviceType=0;
-     
 
-        var userAgent=navigator.userAgent
+
+
+        try {
+          
+        } catch (error) {
+          if(navigator.maxTouchPoints &&
+    navigator.maxTouchPoints > 2 &&
+    /MacIntel/.test(navigator.platform)){
+      deviceType=2; //ipad workaround
+    }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        try {
+          var userAgent=navigator.userAgent
     if (/android/i.test(userAgent)) {
       deviceType=1;
     }
+        } catch (error) {
+          
+        }
+
+     
+ 
 
     // iOS detection from: http://stackoverflow.com/a/9039885/177710
-    if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+    if (/iPad|iPhone|iPod/.test(userAgent) ) {
       deviceType=2;
     }
     console.log('deviceType ', deviceType)
