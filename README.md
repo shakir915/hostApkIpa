@@ -5,6 +5,6 @@
 ### uses app info parser library (js) for parsing details from manifest/plist
 https://github.com/chenquincy/app-info-parser
 #### change firebase project id in .firebaserc 
-#### upload using command line : refer https://github.com/shakir915/hostAPkIpaAdmin
+#### you can also use command line for uploading : refer admin app https://github.com/shakir915/hostAPkIpaAdmin
 
 
