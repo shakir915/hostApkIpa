@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,153 +28,255 @@
   <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
   <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 275px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h1 { color: #ffa100; font-weight: 300; font-size: 22px; margin: 0 0 8px; }
-      #message h2 { font-size: 12px; font-weight: 100; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5;  text-decoration: none; color: white; padding: 7px; border-radius: 2px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.1); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 0px solid #ffa100; }
+    body {
+      background: #ECEFF1;
+      color: rgba(0, 0, 0, 0.87);
+      font-family: Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #message {
+      background: white;
+      max-width: 275px;
+      margin: 100px auto 16px;
+      padding: 32px 24px;
+      border-radius: 3px;
+    }
+
+    #message h1 {
+      color: #ffa100;
+      font-weight: 300;
+      font-size: 22px;
+      margin: 0 0 8px;
+    }
+
+    #message h2 {
+      font-size: 12px;
+      font-weight: 100;
+      color: rgba(0, 0, 0, 0.6);
+      margin: 0 0 16px;
+    }
+
+    #message p {
+      line-height: 140%;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+
+    #message a {
+      display: block;
+      text-align: center;
+      background: #039be5;
+      text-decoration: none;
+      color: white;
+      padding: 7px;
+      border-radius: 2px;
+    }
+
+    #message,
+    #message a {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    #load {
+      color: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+
+      body,
+      #message {
+        margin-top: 0;
+        background: white;
+        box-shadow: none;
+      }
+
+      body {
+        border-top: 0px solid #ffa100;
+      }
+    }
+
+
+    .btn {
+      background-color: DodgerBlue;
+      border: none;
+      color: white;
+
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* Darker background on mouse-over */
+    .btn:hover {
+      background-color: RoyalBlue;
+    }
+
+
+    .centerIMG {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 30%;
+    }
+
+    a.upload {
+      font-size: 14px;
+      display: table;
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      text-decoration: none;
+      visibility: hidden;
+
+
+    }
+  </style>
+</head>
+
+<body>
+  <div id="message">
+    <h2 id="urlid"></h2>
+    <h1 id="appid"> </h1>
+    <div id="result_div_icon"> </div>
+
+    <div id="result_list_packageName"></div>
+
+    <div id="result_list_versionName"></div>
+    <div id="result_list_date"></div>
+    <p id="instruction1"></p>
+    <div id="result_list_ios"></div>
+    <p> </p>
+    <div id="result_list_android"> </div>
+
+
+
+
+
+
+
+
+  </div>
+
+  <a class="upload" target="_blank" id="upload" href="./upload.html">Upload New App </a>
+  <p id="load">Firebase SDK Loading&hellip;</p>
+
+
+  <script>
+    var pageID = null
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+      pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
+      if (pageID.trim() == "") {
+        window.location = "./upload.html";
+        return
       }
 
 
-      .btn {
-  background-color: DodgerBlue;
-  border: none;
-  color: white;
+      try {
 
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* Darker background on mouse-over */
-.btn:hover {
-  background-color: RoyalBlue;
-}
-
-
-.centerIMG {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 30%;
-}
-
-a.upload {
-  font-size: 14px;
-    display:table;
-    align-items: center;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    text-decoration: none;
-    visibility: hidden;
-
-
-}
-
-
-
-
-
-
-
-    </style>
-</head>
-<body>
-<div id="message">
-  <h2 id="urlid"></h2>
-  <h1 id="appid"  > </h1>
-  <div id="result_div_icon">    </div>
-
-  <div id="result_list_packageName"></div>
-
-  <div id="result_list_versionName"></div>
-  <div id="result_list_date"></div>
-  <p id="instruction1"></p>
-  <div id="result_list_ios"></div>
-  <p > </p>
-  <div id="result_list_android">    </div>
-
-
-
-
-
-
-
-
-</div>
-
-<a class="upload" target="_blank" id="upload" href="./upload.html">Upload New App </a>
-<p id="load">Firebase SDK Loading&hellip;</p>
-
-
-<script>
-var pageID=null
-
-
-      document.addEventListener('DOMContentLoaded', function() {
-
-         pageID = window.location.toString().split("/").slice(-1)[0].replace("#","");
-        if(pageID.trim()==""){
-          window.location = "./upload.html"; 
-          return
-        }
-
-
-        try{ 
-          
-          var ref =firebase.database().ref("/events")
-          var newChildRef = ref.push();
-          newChildRef.set({"page" : pageID,
-        "time" : Date.now(),
-        "action" : "open",
-        "userAgent":navigator.userAgent
+        var ref = firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({
+          "page": pageID,
+          "time": Date.now(),
+          "action": "open",
+          "userAgent": navigator.userAgent
 
         });
-          } catch (e) {
-          console.error(e);
-     
+      } catch (e) {
+        console.error(e);
+
+      }
+
+
+      const appid = document.querySelector('#appid');
+      const packageName = document.querySelector('#packageName');
+
+      const urlid = document.querySelector('#urlid');
+      const pafeTile = document.querySelector('#pafeTile');
+      const iosdlink2 = document.querySelector('#iosdlink2');
+
+
+      urlid.textContent = pageID;
+      pafeTile.textContent = pageID;
+
+      const loadEl = document.querySelector('#load');
+      const instruction1 = document.querySelector('#instruction1');
+
+      // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+      // // The Firebase SDK is initialized and available here!
+      //
+      // firebase.auth().onAuthStateChanged(user => { });
+
+
+      var deviceType = 0;
+
+
+
+      try {
+
+      } catch (error) {
+        if (navigator.maxTouchPoints &&
+          navigator.maxTouchPoints > 2 &&
+          /MacIntel/.test(navigator.platform)) {
+          deviceType = 2; //ipad workaround
         }
-      
-
-        const appid = document.querySelector('#appid');
-        const packageName = document.querySelector('#packageName');
-      
-        const urlid = document.querySelector('#urlid');
-        const pafeTile = document.querySelector('#pafeTile');
-        const iosdlink2 = document.querySelector('#iosdlink2');
-
-
-        urlid.textContent = pageID;
-        pafeTile.textContent = pageID;
-
-        const loadEl = document.querySelector('#load');
-        const instruction1 = document.querySelector('#instruction1');
-       
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-
-
-        var deviceType=0;
+      }
 
 
 
-        try {
-          
-        } catch (error) {
-          if(navigator.maxTouchPoints &&
-    navigator.maxTouchPoints > 2 &&
-    /MacIntel/.test(navigator.platform)){
-      deviceType=2; //ipad workaround
-    }
+
+
+
+
+
+
+
+
+
+
+
+      try {
+        var userAgent = navigator.userAgent
+        if (/android/i.test(userAgent)) {
+          deviceType = 1;
         }
+      } catch (error) {
+
+      }
+
+
+
+
+      // iOS detection from: http://stackoverflow.com/a/9039885/177710
+      if (/iPad|iPhone|iPod/.test(userAgent)) {
+        deviceType = 2;
+      }
+      console.log('deviceType ', deviceType)
+
+
+      if (deviceType == 0)
+        document.getElementById("upload").style.visibility = 'visible';
+
+
+
+
+
+
+      firebase.database().ref("/" + pageID).get().then((snapshot) => {
+
+        if (snapshot.exists()) {
+
+          snapshot.forEach(function (childSnapshot) {
+            var childKey = childSnapshot.key;
+            var childData = childSnapshot.val();
+            // ...
 
 
 
@@ -182,98 +285,49 @@ var pageID=null
 
 
 
+            if (childKey == "name") {
+              appid.textContent = childData;
+            }
 
-
-
-
-
-
-        try {
-          var userAgent=navigator.userAgent
-    if (/android/i.test(userAgent)) {
-      deviceType=1;
-    }
-        } catch (error) {
-          
-        }
-
-     
- 
-
-    // iOS detection from: http://stackoverflow.com/a/9039885/177710
-    if (/iPad|iPhone|iPod/.test(userAgent) ) {
-      deviceType=2;
-    }
-    console.log('deviceType ', deviceType)
-
-
-    if(deviceType==0)
-    document.getElementById("upload").style.visibility = 'visible';
-       
-         
-
-
-
-
-    firebase.database().ref("/"+pageID).get().then((snapshot) => {
-
-         if (snapshot.exists()) {
-
-          snapshot.forEach(function(childSnapshot) {
-    var childKey = childSnapshot.key;
-    var childData = childSnapshot.val();
-    // ...
-
-
-
-    
-
-
-
-
-    if(childKey=="name"){
-      appid.textContent = childData;
-    }
-    
-    if(childKey=="packageName"){
-      const div = document.createElement('div')
-          div.innerHTML = `
+            if (childKey == "packageName") {
+              const div = document.createElement('div')
+              div.innerHTML = `
           <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${childData}</span>
           `
-          document.getElementById('result_list_packageName').appendChild(div)
-    }
-    if(childKey=="versionName"){
-      const div = document.createElement('div')
-          div.innerHTML = `
+              document.getElementById('result_list_packageName').appendChild(div)
+            }
+            if (childKey == "versionName") {
+              const div = document.createElement('div')
+              div.innerHTML = `
           <span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${childData}</span>
           `
-          document.getElementById('result_list_versionName').appendChild(div)
-    }
+              document.getElementById('result_list_versionName').appendChild(div)
+            }
 
-    if(childKey=="date"){
+            if (childKey == "date") {
 
 
-      var utcSeconds = childData/1000;
-var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-d.setUTCSeconds(utcSeconds);
+              var utcSeconds = childData / 1000;
+              var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+              d.setUTCSeconds(utcSeconds);
 
-      const div = document.createElement('div')
-          div.innerHTML = `
+              const div = document.createElement('div')
+              div.innerHTML = `
           <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${d.toDateString()}</span>
           `
-          document.getElementById('result_list_date').appendChild(div)
-    }
+              document.getElementById('result_list_date').appendChild(div)
+            }
 
 
 
 
-if(childKey=="icon"){
-  const div = document.createElement('div')
-          div.innerHTML = `
+            if (childKey == "icon") {
+              const div = document.createElement('div')
+              div.innerHTML = `
          <img src="${childData}"  class="centerIMG"  > </img>
           `
-          document.getElementById('result_div_icon').appendChild(div)
-}
+              document.getElementById('result_div_icon').appendChild(div)
+            }
 
 
 
@@ -283,123 +337,125 @@ if(childKey=="icon"){
 
 
 
-   
-    if((deviceType==2)&&childKey=="plist"&&childData!=null&&childData.trim()!=""){
-      var linkkkk="itms-services://?action=download-manifest&url=";
-     let encoded = encodeURIComponent(childData);
 
-    const div = document.createElement('div')
-          div.innerHTML = `
+            if ((deviceType == 2) && childKey == "plist" && childData != null && childData.trim() != "") {
+              var linkkkk = "itms-services://?action=download-manifest&url=";
+              let encoded = encodeURIComponent(childData);
+
+              const div = document.createElement('div')
+              div.innerHTML = `
        
 
-          <a   onClick="download1(\'${linkkkk+encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+          <a   onClick="download1(\'${linkkkk + encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
       
           `
-          document.getElementById('result_list_ios').appendChild(div)
+              document.getElementById('result_list_ios').appendChild(div)
 
-    }
+            }
 
-    if((deviceType==0)&&childKey=="ipa"&&childData!=null&&childData.trim()!=""){
+            if ((deviceType == 0) && childKey == "ipa" && childData != null && childData.trim() != "") {
 
 
 
-      
 
-    const div = document.createElement('div')
-          div.innerHTML = `
+
+              const div = document.createElement('div')
+              div.innerHTML = `
   
           <a       onClick="download1(\'${childData}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
 
           `
-          document.getElementById('result_list_ios').appendChild(div)
+              document.getElementById('result_list_ios').appendChild(div)
 
-    }
-
-    
+            }
 
 
 
-    if((deviceType==1||deviceType!=2)&&childKey=="apk"&&childData!=null&&childData.trim()!=""){
-      const div = document.createElement('div')
-          div.innerHTML = `
+
+
+            if ((deviceType == 1 || deviceType != 2) && childKey == "apk" && childData != null && childData.trim() != "") {
+              const div = document.createElement('div')
+              div.innerHTML = `
           <a onClick="download1(\'${childData}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
           `
-          document.getElementById('result_list_android').appendChild(div)
+              document.getElementById('result_list_android').appendChild(div)
+            }
+
+
+
+          });
+
+
+
+        } else {
+          loadEl.textContent = "No Data Available";
+          instruction1.textContent = "No Data Available";
+        }
+
+
+      });
+      // firebase.firestore().doc('/foo/bar').get().then(() => { });
+      // firebase.functions().httpsCallable('yourFunction')().then(() => { });
+      // firebase.messaging().requestPermission().then(() => { });
+      //  firebase.storage().ref('everything_women.ipa').getDownloadURL().then((url) => {
+
+      //     const ipa = document.querySelector('#ipa');
+      //       ipa.textContent = url;
+      //  });
+      // firebase.analytics(); // call to activate
+      // firebase.analytics().logEvent('tutorial_completed');
+      // firebase.performance(); // call to activate
+      //
+      // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+
+      try {
+        let app = firebase.app();
+        let features = [
+          'auth',
+          'database',
+          'firestore',
+          'functions',
+          'messaging',
+          'storage',
+          'analytics',
+          'remoteConfig',
+          'performance',
+        ].filter(feature => typeof app[feature] === 'function');
+        loadEl.textContent = "https://" + window.location.hostname + ` maintained by Shakir`;
+
+      } catch (e) {
+        console.error(e);
+        loadEl.textContent = 'Error loading the Firebase SDK';
+      }
+    });
+
+
+
+    function download1(url, action) {
+
+
+      const a = document.createElement('a')
+      a.href = url
+      a.download = url.split('/').pop()
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      try {
+        var ref = firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({
+          "page": pageID,
+          "time": Date.now(),
+          "action": action
+        });
+      } catch (e) {
+        console.error(e);
+
+      }
     }
 
-
-    
-  });
-          
-          
-
-  } else {
-              loadEl.textContent = "No Data Available";
-              instruction1.textContent = "No Data Available";
-  }
-
-
-         });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        //  firebase.storage().ref('everything_women.ipa').getDownloadURL().then((url) => {
-
-        //     const ipa = document.querySelector('#ipa');
-        //       ipa.textContent = url;
-        //  });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth',
-            'database',
-            'firestore',
-            'functions',
-            'messaging',
-            'storage',
-            'analytics',
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = "https://"+window.location.hostname+` maintained by Shakir`;
-          
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK';
-        }
-      });
-
-
-
-function download1(url,action){
-
-
-  const a = document.createElement('a')
-  a.href = url
-  a.download = url.split('/').pop()
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-
-  try{ 
-          var ref =firebase.database().ref("/events")
-          var newChildRef = ref.push();
-          newChildRef.set({"page" : pageID,
-        "time" : Date.now(),
-        "action" : action
-        });
-          } catch (e) {
-          console.error(e);
-      
-        }
-}
-
-    </script>
+  </script>
 </body>
+
 </html>

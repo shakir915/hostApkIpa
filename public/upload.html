@@ -33,267 +33,327 @@
 
 
   <style>
-    html,body { padding: 0;margin: 0; font-size: 12px; background: #efefef; }
-    p { padding: 0; margin: 0; }
-    .container { width: 450px; margin:  auto; padding-top: 20px; padding-bottom: 20px; }
-    .title { border-left: 4px solid #78C3F3; padding-left: 0px; font-size: 16px; margin: 0 0 20px 0; }
-    .card { padding: 20px; margin-bottom: 20px; background: #fff; border-radius: 4px; font-size: 12px; transition: all .3s; border: 1px solid #d9d9d9; border-color: #e9e9e9; }
-    .card:hover { box-shadow: 0 1px 6px hsla(0,0%,39%,.2); border-color: #eee; }
-    .file { position: relative; border: 1px solid #99D3F5; border-radius: 2px; width: 85px; height: 30px; line-height: 30px; text-align: center; color: #1E88C7; }
-    .file:hover { background: #AADFFD; border-color: #78C3F3; color: #004974; text-decoration: none; }
-    #file-input { position: absolute; top: 0; left: 0; width: 85px; height: 30px; opacity: 0; }
-    #file-input:hover { cursor: pointer; }
+    html,
+    body {
+      padding: 0;
+      margin: 0;
+      font-size: 12px;
+      background: #efefef;
+    }
+
+    p {
+      padding: 0;
+      margin: 0;
+    }
+
+    .container {
+      width: 450px;
+      margin: auto;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    .title {
+      border-left: 4px solid #78C3F3;
+      padding-left: 0px;
+      font-size: 16px;
+      margin: 0 0 20px 0;
+    }
+
+    .card {
+      padding: 20px;
+      margin-bottom: 20px;
+      background: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      transition: all .3s;
+      border: 1px solid #d9d9d9;
+      border-color: #e9e9e9;
+    }
+
+    .card:hover {
+      box-shadow: 0 1px 6px hsla(0, 0%, 39%, .2);
+      border-color: #eee;
+    }
+
+    .file {
+      position: relative;
+      border: 1px solid #99D3F5;
+      border-radius: 2px;
+      width: 85px;
+      height: 30px;
+      line-height: 30px;
+      text-align: center;
+      color: #1E88C7;
+    }
+
+    .file:hover {
+      background: #AADFFD;
+      border-color: #78C3F3;
+      color: #004974;
+      text-decoration: none;
+    }
+
+    #file-input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 85px;
+      height: 30px;
+      opacity: 0;
+    }
+
+    #file-input:hover {
+      cursor: pointer;
+    }
 
 
 
 
     .tooltip {
-  position: relative;
-  display: inline-block;
-}
+      position: relative;
+      display: inline-block;
+    }
 
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 140px;
-  background-color: #555;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px;
-  position: absolute;
-  z-index: 1;
-  bottom: 150%;
-  left: 50%;
-  margin-left: -75px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 140px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 150%;
+      left: 50%;
+      margin-left: -75px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
 
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #555 transparent transparent transparent;
-}
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
 
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
-
-
-.drop-zone {
-
-  height: 300px;
-  width: 300px;
-margin: auto;
-  padding: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-family: "Quicksand", sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  cursor: pointer;
-  color: #cccccc;
-  border: 4px dashed #009578;
-  border-radius: 10px;
-}
-
-.drop-zone--over {
-  border-style: solid;
-}
-
-.drop-zone__input {
-  display: none;
-}
-
-.drop-zone__thumb {
-  width: 100%;
-  height: 100%;
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: #cccccc;
-  background-size: cover;
-  position: relative;
-}
-
-.drop-zone__thumb::after {
-  content: attr(data-label);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 5px 0;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.75);
-  font-size: 14px;
-  text-align: center;
-}
-
-span.login-text {
-    font-size: 10px;
-    display:table;
-    align-items: center;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-}
-a.uploadNewApp {
-    font-size: 12px;
-    display:table;
-    align-items: center;
-    text-align: center;
-    margin-left: auto;
-    margin-right: auto;
-    text-decoration: none;
-    visibility: hidden;
-}
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
 
 
+    .drop-zone {
 
+      height: 300px;
+      width: 300px;
+      margin: auto;
+      padding: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-family: "Quicksand", sans-serif;
+      font-weight: 500;
+      font-size: 20px;
+      cursor: pointer;
+      color: #cccccc;
+      border: 4px dashed #009578;
+      border-radius: 10px;
+    }
 
+    .drop-zone--over {
+      border-style: solid;
+    }
 
+    .drop-zone__input {
+      display: none;
+    }
 
+    .drop-zone__thumb {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #cccccc;
+      background-size: cover;
+      position: relative;
+    }
 
+    .drop-zone__thumb::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 5px 0;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.75);
+      font-size: 14px;
+      text-align: center;
+    }
 
+    span.login-text {
+      font-size: 10px;
+      display: table;
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
+    a.uploadNewApp {
+      font-size: 12px;
+      display: table;
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      text-decoration: none;
+      visibility: hidden;
+    }
   </style>
 </head>
 
 <body>
-<div class="container">
+  <div class="container">
 
 
-  <div id="topContainer" class="drop-zone">
-    <span class="drop-zone__prompt">Drop ipa/apk here <br/>or click to select a file</span>
-    <input id="file-input" type="file" name="myFile" class="drop-zone__input">
+    <div id="topContainer" class="drop-zone">
+      <span class="drop-zone__prompt">Drop ipa/apk here <br />or click to select a file</span>
+      <input id="file-input" type="file" name="myFile" class="drop-zone__input">
+    </div>
+
+
+
+
+    <div id="result-list">
+    </div>
   </div>
-
-
-
-
-  <div id="result-list">
-  </div>
-</div>
-<div >
-  <span  class="login-text"  style="color: #f00;opacity: 1;  font-weight: 600; "  id="failText"></span>
-  <a  href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"  style="color: #00f;opacity: 1;  font-weight: 600; " >Upload another App</a>
-  <br/>
-  <span  class="login-text"  style="color: #000;opacity: 1;  font-weight: 200; "  >
-      This website uses Firebase free tier which has a bandwidth limit of 1 GB per day.<br/>download links may not work if the website exceed the limit.
+  <div>
+    <span class="login-text" style="color: #f00;opacity: 1;  font-weight: 600; " id="failText"></span>
+    <a href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"
+      style="color: #00f;opacity: 1;  font-weight: 600; ">Upload another App</a>
+    <br />
+    <span class="login-text" style="color: #000;opacity: 1;  font-weight: 200; ">
+      This website uses Firebase free tier which has a bandwidth limit of 1 GB per day.<br />download links may not work
+      if the website exceed the limit.
     </span>
-  <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></span>
-  <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; "  id="siteAndDevName"></span><br/><br/>
+    <span class="login-text"
+      style="color: #000;opacity: .1;  font-weight: 600; "><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></span>
+    <span class="login-text" style="color: #000;opacity: .1;  font-weight: 600; "
+      id="siteAndDevName"></span><br /><br />
 
-</div>
-<script src="./app-info-parser-1/dist/app-info-parser.js"></script>
-<script>
-
-
-function get_incoming_g_url_id(){
-  const queryString = window.location.search;
-console.log(queryString);
-const urlParams = new URLSearchParams(queryString);
-const incoming_g_url_id = urlParams.get('g_url_id')
-console.log(incoming_g_url_id);
-return incoming_g_url_id
-}
-const incoming_g_url_id= get_incoming_g_url_id();
+  </div>
+  <script src="./app-info-parser-1/dist/app-info-parser.js"></script>
+  <script>
 
 
-
-
-
-
-
-const siteAndDevName = document.querySelector('#siteAndDevName');
-siteAndDevName.textContent = "https://"+window.location.hostname+" maintained  by Shakir ";
-
-
-document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
-  const dropZoneElement = inputElement.closest(".drop-zone");
-
-  dropZoneElement.addEventListener("click", (e) => {
-    inputElement.click();
-  });
-
-  inputElement.addEventListener("change", (e) => {
-    if (inputElement.files.length) {
-      updateThumbnail(dropZoneElement, inputElement.files[0]);
-
+    function get_incoming_g_url_id() {
+      const queryString = window.location.search;
+      console.log(queryString);
+      const urlParams = new URLSearchParams(queryString);
+      const incoming_g_url_id = urlParams.get('g_url_id')
+      console.log(incoming_g_url_id);
+      return incoming_g_url_id
     }
-  });
+    const incoming_g_url_id = get_incoming_g_url_id();
 
-  dropZoneElement.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    dropZoneElement.classList.add("drop-zone--over");
-  });
 
-  ["dragleave", "dragend"].forEach((type) => {
-    dropZoneElement.addEventListener(type, (e) => {
-      dropZoneElement.classList.remove("drop-zone--over");
+
+
+
+
+
+    const siteAndDevName = document.querySelector('#siteAndDevName');
+    siteAndDevName.textContent = "https://" + window.location.hostname + " maintained  by Shakir ";
+
+
+    document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
+      const dropZoneElement = inputElement.closest(".drop-zone");
+
+      dropZoneElement.addEventListener("click", (e) => {
+        inputElement.click();
+      });
+
+      inputElement.addEventListener("change", (e) => {
+        if (inputElement.files.length) {
+          updateThumbnail(dropZoneElement, inputElement.files[0]);
+
+        }
+      });
+
+      dropZoneElement.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZoneElement.classList.add("drop-zone--over");
+      });
+
+      ["dragleave", "dragend"].forEach((type) => {
+        dropZoneElement.addEventListener(type, (e) => {
+          dropZoneElement.classList.remove("drop-zone--over");
+        });
+      });
+
+      dropZoneElement.addEventListener("drop", (e) => {
+        e.preventDefault();
+
+        if (e.dataTransfer.files.length) {
+          inputElement.files = e.dataTransfer.files;
+          updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+        }
+
+        dropZoneElement.classList.remove("drop-zone--over");
+      });
     });
-  });
 
-  dropZoneElement.addEventListener("drop", (e) => {
-    e.preventDefault();
+    /**
+     * Updates the thumbnail on a drop zone element.
+     *
+     * @param {HTMLElement} dropZoneElement
+     * @param {File} file
+     */
+    function updateThumbnail(dropZoneElement, file) {
 
-    if (e.dataTransfer.files.length) {
-      inputElement.files = e.dataTransfer.files;
-      updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+      fileSelect()
+      return
+
+      let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+      // First time - remove the prompt
+      if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+        dropZoneElement.querySelector(".drop-zone__prompt").remove();
+      }
+
+      // First time - there is no thumbnail element, so lets create it
+      if (!thumbnailElement) {
+        thumbnailElement = document.createElement("div");
+        thumbnailElement.classList.add("drop-zone__thumb");
+        dropZoneElement.appendChild(thumbnailElement);
+      }
+
+      thumbnailElement.dataset.label = file.name;
+
+      // Show thumbnail for image files
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+        };
+      } else {
+        thumbnailElement.style.backgroundImage = null;
+      }
+
+
     }
 
-    dropZoneElement.classList.remove("drop-zone--over");
-  });
-});
-
-/**
- * Updates the thumbnail on a drop zone element.
- *
- * @param {HTMLElement} dropZoneElement
- * @param {File} file
- */
-function updateThumbnail(dropZoneElement, file) {
-
-  fileSelect()
-  return
-
-  let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
-
-  // First time - remove the prompt
-  if (dropZoneElement.querySelector(".drop-zone__prompt")) {
-    dropZoneElement.querySelector(".drop-zone__prompt").remove();
-  }
-
-  // First time - there is no thumbnail element, so lets create it
-  if (!thumbnailElement) {
-    thumbnailElement = document.createElement("div");
-    thumbnailElement.classList.add("drop-zone__thumb");
-    dropZoneElement.appendChild(thumbnailElement);
-  }
-
-  thumbnailElement.dataset.label = file.name;
-
-  // Show thumbnail for image files
-  if (file.type.startsWith("image/")) {
-    const reader = new FileReader();
-
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
-    };
-  } else {
-    thumbnailElement.style.backgroundImage = null;
-  }
-
-
-}
 
 
 
@@ -302,68 +362,66 @@ function updateThumbnail(dropZoneElement, file) {
 
 
 
+    function copy_to_clipboard() {
 
-function copy_to_clipboard() {
+      var url = "https://" + window.location.hostname + "/" + g_url_id
+      navigator.clipboard.writeText(url);
 
-  var url="https://"+window.location.hostname+"/"+g_url_id
-  navigator.clipboard.writeText(url);
+      var tooltip = document.getElementById("myTooltip");
+      tooltip.innerHTML = "Copied: " + url;
+    }
 
-  var tooltip = document.getElementById("myTooltip");
-  tooltip.innerHTML = "Copied: " + url;
-}
-
-function copy_to_clipboard_show() {
-  var tooltip = document.getElementById("myTooltip");
-  tooltip.innerHTML = "Copy to clipboard";
-}
-
+    function copy_to_clipboard_show() {
+      var tooltip = document.getElementById("myTooltip");
+      tooltip.innerHTML = "Copy to clipboard";
+    }
 
 
 
-var g_file = null;
-var g_version = null;
-var package_bundle_id = null;
-var g_url_id = null;
-var g_ipa_url=null;
-var g_plist_url=null;
-var g_apk_url=null;
-var g_app_name=null;
-var g_app_icon=null;
-var isIos=null
+
+    var g_file = null;
+    var g_version = null;
+    var package_bundle_id = null;
+    var g_url_id = null;
+    var g_ipa_url = null;
+    var g_plist_url = null;
+    var g_apk_url = null;
+    var g_app_name = null;
+    var g_app_icon = null;
+    var isIos = null
 
 
     function fileSelect() {
       const failText = document.querySelector('#failText');
-    failText.textContent = ""
+      failText.textContent = ""
 
       const files = document.getElementById('file-input').files
       try {
-        g_file=files[0];
+        g_file = files[0];
         const parser = new AppInfoParser(g_file)
         parser.parse().then(result => {
           console.log('app info l1  ----> ', result)
-          g_version=result['versionName'] || result['CFBundleShortVersionString']
-          package_bundle_id=result['package'] || result['CFBundleIdentifier']
-          isIos=result['package']==null&& result['CFBundleIdentifier']!=null
-          if(isIos)
-         {
-          g_app_name=result['CFBundleDisplayName']
-          if(g_app_name==null){
-            g_app_name=result['CFBundleName']
+          g_version = result['versionName'] || result['CFBundleShortVersionString']
+          package_bundle_id = result['package'] || result['CFBundleIdentifier']
+          isIos = result['package'] == null && result['CFBundleIdentifier'] != null
+          if (isIos) {
+            g_app_name = result['CFBundleDisplayName']
+            if (g_app_name == null) {
+              g_app_name = result['CFBundleName']
+            }
+            if (g_app_name == null) {
+              g_app_name = result['CFBundleExecutable']
+            }
           }
-          if(g_app_name==null){
-            g_app_name=result['CFBundleExecutable']
-          }
-         }
-          else{
-            if(Array. isArray(result['application']['label']))
-            g_app_name=  result['application']['label'][0]
+          else {
+            if (Array.isArray(result['application']['label']))
+              g_app_name = result['application']['label'][0]
             else
-            g_app_name=  result['application']['label']
+              g_app_name = result['application']['label']
           }
 
 
-          g_app_icon=result.icon
+          g_app_icon = result.icon
           console.log(' isIos ----> ', isIos)
           const div = document.createElement('div')
 
@@ -375,7 +433,7 @@ var isIos=null
             <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">File Name: </span>
-                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ files[0].name }</span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${files[0].name}</span>
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Icon: </span>
@@ -387,12 +445,12 @@ var isIos=null
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Version: </span>
-                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${ g_version }</span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${g_version}</span>
               </p>
 
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Bundle ID / App ID: </span>
-                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${  package_bundle_id }</span>
+                <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${package_bundle_id}</span>
               </p>
 
 
@@ -423,53 +481,47 @@ var isIos=null
 
             </div>
           `
-            document.getElementById('result-list').appendChild(div)
-            document.getElementById("copy_button").hidden = true;
-            document.getElementById("uploadNewApp").style.visibility = 'visible';
+          document.getElementById('result-list').appendChild(div)
+          document.getElementById("copy_button").hidden = true;
+          document.getElementById("uploadNewApp").style.visibility = 'visible';
 
 
 
 
 
-if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
-  g_url_id=incoming_g_url_id
-  firebase.database().ref("/"+g_url_id).get().then((snapshot) => {
-  if (snapshot.exists()) {
+          if (incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
+            g_url_id = incoming_g_url_id
+            firebase.database().ref("/" + g_url_id).get().then((snapshot) => {
+              if (snapshot.exists()) {
 
-    snapshot.forEach(function(childSnapshot) {
-    var childKey = childSnapshot.key;
-    var childData = childSnapshot.val();
-    if(childKey=="apk"&&childData!=null)
-    g_apk_url=childData
-    if(childKey=="ipa"&&childData!=null)
-    g_ipa_url=childData
-    if(childKey=="plist"&&childData!=null)
-    g_plist_url=childData
-
-
-
-  }
-    )
+                snapshot.forEach(function (childSnapshot) {
+                  var childKey = childSnapshot.key;
+                  var childData = childSnapshot.val();
+                  if (childKey == "apk" && childData != null)
+                    g_apk_url = childData
+                  if (childKey == "ipa" && childData != null)
+                    g_ipa_url = childData
+                  if (childKey == "plist" && childData != null)
+                    g_plist_url = childData
 
 
 
-    uploadFile()
-  }else{
-    uploadFile()
-  }
-
-
-})
-
-}else
-{
-  db_entry();
-}
+                }
+                )
 
 
 
+                uploadFile()
+              } else {
+                uploadFile()
+              }
 
 
+            })
+
+          } else {
+            db_entry();
+          }
 
 
 
@@ -482,132 +534,137 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
 
 
 
-          }).catch(e => {
-            console.log("Parse Error c1",e)
 
-            const failText = document.querySelector('#failText');
-    failText.textContent = "Parse Error 1 \n"+e
 
-          })
+
+
+
+        }).catch(e => {
+          console.log("Parse Error c1", e)
+
+          const failText = document.querySelector('#failText');
+          failText.textContent = "Parse Error 1 \n" + e
+
+        })
       } catch (e) {
-        console.log("Parse Error c2",e)
+        console.log("Parse Error c2", e)
         const failText = document.querySelector('#failText');
-    failText.textContent = "Parse Error 2 \n"+e
+        failText.textContent = "Parse Error 2 \n" + e
       }
     }
 
 
 
     function makeid(length) {
-    var result           = '';
-    var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
+      var result = '';
+      var characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      var charactersLength = characters.length;
+      for (var i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      }
+      return result;
     }
-    return result;
-}
 
 
 
 
-function db_entry() {
+    function db_entry() {
 
-  var url_id=makeid(4);
-            console.log(url_id);
-            const url_id_text = document.querySelector('#url_id_text');
+      var url_id = makeid(4);
+      console.log(url_id);
+      const url_id_text = document.querySelector('#url_id_text');
 
 
-            firebase.database().ref("/"+url_id).get().then((snapshot) => {
-  if (snapshot.exists()) {
-   db_entry()
-  } else {
-    g_set={
-    "local_fileName": g_file.name.toString(),
-     "packageName" : package_bundle_id??"",
-     "versionName": g_version,
-     "name" : g_app_name,
-  }
-    firebase.database().ref("/"+url_id).set(g_set);
-  g_url_id=url_id
-  url_id_text.textContent = "";
-  uploadFile()
-  }
-}).catch((error) => {
-  console.error(error);
-});
+      firebase.database().ref("/" + url_id).get().then((snapshot) => {
+        if (snapshot.exists()) {
+          db_entry()
+        } else {
+          g_set = {
+            "local_fileName": g_file.name.toString(),
+            "packageName": package_bundle_id ?? "",
+            "versionName": g_version,
+            "name": g_app_name,
+          }
+          firebase.database().ref("/" + url_id).set(g_set);
+          g_url_id = url_id
+          url_id_text.textContent = "";
+          uploadFile()
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
 
 
 
 
 
-}
-
-function uploadFile(){
-  var ref= firebase.storage().ref(g_url_id);
-            var uploadTask = ref.child(g_file.name).put(g_file)
-            uploadTask.then((snapshot) => {
-              console.log('Uploaded File1');
-            });
-
-
-            const uploadpercentage = document.querySelector('#uploadpercentage');
-            uploadTask.on('state_changed',
-  (snapshot) => {
-    // Observe state change events such as progress, pause, and resume
-    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-    console.log('Upload is ' + progress + '% done');
-
-    uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
-
-    switch (snapshot.state) {
-      case firebase.storage.TaskState.PAUSED: // or 'paused'
-        console.log('Upload is paused');
-        break;
-      case firebase.storage.TaskState.RUNNING: // or 'running'
-        console.log('Upload is running');
-        break;
     }
-  },
-  (error) => {
-    // Handle unsuccessful uploads
-    const failText = document.querySelector('#failText');
-    failText.textContent = "Upload Failed\n"+error
-  },
-  () => {
-    const url_id_text = document.querySelector('#url_id_text');
-  url_id_text.textContent = "Preparing...";
-    // Handle successful uploads on complete
-    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-      console.log('File available at', downloadURL);
-      on_ipa_apk_upload(downloadURL)
+
+    function uploadFile() {
+      var ref = firebase.storage().ref(g_url_id);
+      var uploadTask = ref.child(g_file.name).put(g_file)
+      uploadTask.then((snapshot) => {
+        console.log('Uploaded File1');
+      });
+
+
+      const uploadpercentage = document.querySelector('#uploadpercentage');
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          // Observe state change events such as progress, pause, and resume
+          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log('Upload is ' + progress + '% done');
+
+          uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
+
+          switch (snapshot.state) {
+            case firebase.storage.TaskState.PAUSED: // or 'paused'
+              console.log('Upload is paused');
+              break;
+            case firebase.storage.TaskState.RUNNING: // or 'running'
+              console.log('Upload is running');
+              break;
+          }
+        },
+        (error) => {
+          // Handle unsuccessful uploads
+          const failText = document.querySelector('#failText');
+          failText.textContent = "Upload Failed\n" + error
+        },
+        () => {
+          const url_id_text = document.querySelector('#url_id_text');
+          url_id_text.textContent = "Preparing...";
+          // Handle successful uploads on complete
+          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+            console.log('File available at', downloadURL);
+            on_ipa_apk_upload(downloadURL)
 
 
 
 
-    });
-  }
-);
+          });
+        }
+      );
 
-}
+    }
 
 
 
-function on_ipa_apk_upload(downloadURL){
-if(isIos){
-  g_ipa_url=downloadURL;
-  on_ipa_upload()
-}else{
-  g_apk_url=downloadURL;
-  on_apk_plist_upload();
-}
-}
+    function on_ipa_apk_upload(downloadURL) {
+      if (isIos) {
+        g_ipa_url = downloadURL;
+        on_ipa_upload()
+      } else {
+        g_apk_url = downloadURL;
+        on_apk_plist_upload();
+      }
+    }
 
-function on_ipa_upload(){
-  var plistContent=
-  `<?xml version="1.0" encoding="UTF-8"?>
+    function on_ipa_upload() {
+      var plistContent =
+        `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -640,35 +697,33 @@ function on_ipa_upload(){
   </array>
 </dict>
 </plist>`
-      plistContent=plistContent.replace("YOUR_IPA_URL_HERE",g_ipa_url)
-      .replace("YOUR_VERSION_HERE",g_version)
-      .replace("YOUR_IPA_BUNDLE_ID_HERE",package_bundle_id)
-      .replace("YOUR_IPA_APP_NAME_HERE",g_app_name)
+      plistContent = plistContent.replace("YOUR_IPA_URL_HERE", g_ipa_url)
+        .replace("YOUR_VERSION_HERE", g_version)
+        .replace("YOUR_IPA_BUNDLE_ID_HERE", package_bundle_id)
+        .replace("YOUR_IPA_APP_NAME_HERE", g_app_name)
 
 
-      if(true){
+      if (true) {
         var metadata = {
-contentType: 'application/xml',
-};
-        var ref= firebase.storage().ref(g_url_id);
-            var uploadTask = ref.child("manifest.plist").putString(plistContent,"raw",metadata)
-            uploadTask.then((snapshot) => {
-              console.log('Uploaded File1');
-              uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
-                g_plist_url=downloadURL_PLIST
-      console.log('File available at', g_plist_url);
-      on_apk_plist_upload()
+          contentType: 'application/xml',
+        };
+        var ref = firebase.storage().ref(g_url_id);
+        var uploadTask = ref.child("manifest.plist").putString(plistContent, "raw", metadata)
+        uploadTask.then((snapshot) => {
+          console.log('Uploaded File1');
+          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
+            g_plist_url = downloadURL_PLIST
+            console.log('File available at', g_plist_url);
+            on_apk_plist_upload()
 
-    });
-            });
+          });
+        });
       }
 
 
-}
+    }
 
-function on_apk_plist_upload(){
-
-
+    function on_apk_plist_upload() {
 
 
 
@@ -676,42 +731,45 @@ function on_apk_plist_upload(){
 
 
 
-  firebase.database().ref("/"+g_url_id).set({
-    "local_fileName": g_file.name.toString(),
-     "name" : g_app_name,
-     "icon" : g_app_icon,
-     "packageName" : package_bundle_id,
-     "versionName": g_version,
-     "plist": g_plist_url,
-     "ipa": g_ipa_url,
-     "apk": g_apk_url,
-     "date": Date.now(),
 
 
-  });
+      firebase.database().ref("/" + g_url_id).set({
+        "local_fileName": g_file.name.toString(),
+        "name": g_app_name,
+        "icon": g_app_icon,
+        "packageName": package_bundle_id,
+        "versionName": g_version,
+        "plist": g_plist_url,
+        "ipa": g_ipa_url,
+        "apk": g_apk_url,
+        "date": Date.now(),
 
-  const url_id_text = document.querySelector('#url_id_text');
-  url_id_text.textContent = "https://"+window.location.hostname+"/"+g_url_id;
-  document.getElementById("copy_button").hidden = false;
-  document.getElementById("topContainer").style.display = "none";
-
-
-
-
-
-  try{
-
-        var ref =firebase.database().ref("/events")
-        var newChildRef = ref.push();
-        newChildRef.set({"page" : "upload",
-      "time" : Date.now(),
-      "action" : "upload",
-      "incoming_g_url_id" :incoming_g_url_id ,
-      "page_id" : g_url_id,
-      "isIos" : isIos,
 
       });
-        } catch (e) {
+
+      const url_id_text = document.querySelector('#url_id_text');
+      url_id_text.textContent = "https://" + window.location.hostname + "/" + g_url_id;
+      document.getElementById("copy_button").hidden = false;
+      document.getElementById("topContainer").style.display = "none";
+
+
+
+
+
+      try {
+
+        var ref = firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({
+          "page": "upload",
+          "time": Date.now(),
+          "action": "upload",
+          "incoming_g_url_id": incoming_g_url_id,
+          "page_id": g_url_id,
+          "isIos": isIos,
+
+        });
+      } catch (e) {
         console.error(e);
 
       }
@@ -722,32 +780,33 @@ function on_apk_plist_upload(){
 
 
 
-}
+    }
 
 
 
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
-  try{
-        var ref =firebase.database().ref("/events")
+      try {
+        var ref = firebase.database().ref("/events")
         var newChildRef = ref.push();
-        newChildRef.set({"page" : "upload",
-      "time" : Date.now(),
-      "action" : "open",
-      "incoming_g_url_id" :incoming_g_url_id
-      });
-        } catch (e) {
+        newChildRef.set({
+          "page": "upload",
+          "time": Date.now(),
+          "action": "open",
+          "incoming_g_url_id": incoming_g_url_id
+        });
+      } catch (e) {
         console.error(e);
       }
 
-  })
+    })
 
 
 
- </script>
+  </script>
 </body>
 
 </html>
