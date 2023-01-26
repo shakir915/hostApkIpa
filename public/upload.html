@@ -10,23 +10,23 @@
 
   <title>Upload IPA,APK</title>
 
-<!-- update the version number as needed -->
-<script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
-<!-- include only the Firebase features as you need -->
-<!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
-<script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
-<!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
-<!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
-<!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
-<script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
-<script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
-<!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
-<!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
-<!--
-  initialize the SDK after all desired features are loaded, set useEmulator to false
-  to avoid connecting the SDK to running emulators.
--->
-<script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <!-- update the version number as needed -->
+  <script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
+  <script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
+  <script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
+  <!--
+    initialize the SDK after all desired features are loaded, set useEmulator to false
+    to avoid connecting the SDK to running emulators.
+  -->
+  <script defer src="/__/firebase/init.js?useEmulator=true"></script>
 
 
 
@@ -87,7 +87,7 @@
 
 
 .drop-zone {
- 
+
   height: 300px;
   width: 300px;
 margin: auto;
@@ -167,33 +167,33 @@ a.uploadNewApp {
 </head>
 
 <body>
-  <div class="container">
+<div class="container">
 
 
-    <div id="topContainer" class="drop-zone">
-      <span class="drop-zone__prompt">Drop ipa/apk here <br/>or click to select a file</span>
-      <input id="file-input" type="file" name="myFile" class="drop-zone__input">
-    </div>
-    
-  
-
-
-    <div id="result-list">
-    </div>
+  <div id="topContainer" class="drop-zone">
+    <span class="drop-zone__prompt">Drop ipa/apk here <br/>or click to select a file</span>
+    <input id="file-input" type="file" name="myFile" class="drop-zone__input">
   </div>
-  <div >
-    <span  class="login-text"  style="color: #f00;opacity: 1;  font-weight: 600; "  id="failText"></span>
-    <a  href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"  style="color: #00f;opacity: 1;  font-weight: 600; " >Upload another App</a>
-    <br/>
-    <span  class="login-text"  style="color: #000;opacity: 1;  font-weight: 200; "  >
+
+
+
+
+  <div id="result-list">
+  </div>
+</div>
+<div >
+  <span  class="login-text"  style="color: #f00;opacity: 1;  font-weight: 600; "  id="failText"></span>
+  <a  href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"  style="color: #00f;opacity: 1;  font-weight: 600; " >Upload another App</a>
+  <br/>
+  <span  class="login-text"  style="color: #000;opacity: 1;  font-weight: 200; "  >
       This website uses Firebase free tier which has a bandwidth limit of 1 GB per day.<br/>download links may not work if the website exceed the limit.
     </span>
-    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></span>
-    <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; "  id="siteAndDevName"></span><br/><br/>
-  
-  </div>
-  <script src="./app-info-parser-1/dist/app-info-parser.js"></script>
-  <script>
+  <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; " ><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/></span>
+  <span  class="login-text"  style="color: #000;opacity: .1;  font-weight: 600; "  id="siteAndDevName"></span><br/><br/>
+
+</div>
+<script src="./app-info-parser-1/dist/app-info-parser.js"></script>
+<script>
 
 
 function get_incoming_g_url_id(){
@@ -209,7 +209,7 @@ const incoming_g_url_id= get_incoming_g_url_id();
 
 
 
-    
+
 
 
 const siteAndDevName = document.querySelector('#siteAndDevName');
@@ -226,7 +226,7 @@ document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
   inputElement.addEventListener("change", (e) => {
     if (inputElement.files.length) {
       updateThumbnail(dropZoneElement, inputElement.files[0]);
-      
+
     }
   });
 
@@ -292,7 +292,7 @@ function updateThumbnail(dropZoneElement, file) {
     thumbnailElement.style.backgroundImage = null;
   }
 
- 
+
 }
 
 
@@ -304,10 +304,10 @@ function updateThumbnail(dropZoneElement, file) {
 
 
 function copy_to_clipboard() {
- 
+
   var url="https://"+window.location.hostname+"/"+g_url_id
   navigator.clipboard.writeText(url);
-  
+
   var tooltip = document.getElementById("myTooltip");
   tooltip.innerHTML = "Copied: " + url;
 }
@@ -335,7 +335,7 @@ var isIos=null
     function fileSelect() {
       const failText = document.querySelector('#failText');
     failText.textContent = ""
-      
+
       const files = document.getElementById('file-input').files
       try {
         g_file=files[0];
@@ -361,14 +361,14 @@ var isIos=null
             else
             g_app_name=  result['application']['label']
           }
-         
+
 
           g_app_icon=result.icon
           console.log(' isIos ----> ', isIos)
           const div = document.createElement('div')
-         
 
-          
+
+
           document.getElementById("topContainer").style.display = "none";
 
           div.innerHTML = `
@@ -395,7 +395,7 @@ var isIos=null
                 <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${  package_bundle_id }</span>
               </p>
 
-            
+
 
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Uploading: </span>
@@ -403,7 +403,7 @@ var isIos=null
               </p>
 
               <p >
-               
+
                 <div class="tooltip" style="padding: 10px 0; display: flex; overflow: hidden;">
                   <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
                 <span id="url_id_text" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;"></span>
@@ -412,19 +412,19 @@ var isIos=null
   Copy
   </button>
 </div>
-                
+
               </p>
 
-           
 
 
-              
+
+
 
 
             </div>
           `
             document.getElementById('result-list').appendChild(div)
-            document.getElementById("copy_button").hidden = true;   
+            document.getElementById("copy_button").hidden = true;
             document.getElementById("uploadNewApp").style.visibility = 'visible';
 
 
@@ -452,7 +452,7 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
     )
 
 
-   
+
     uploadFile()
   }else{
     uploadFile()
@@ -467,7 +467,6 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
 }
 
 
-          
 
 
 
@@ -477,14 +476,15 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
 
 
 
-         
 
-            
+
+
+
 
 
           }).catch(e => {
             console.log("Parse Error c1",e)
-        
+
             const failText = document.querySelector('#failText');
     failText.textContent = "Parse Error 1 \n"+e
 
@@ -495,9 +495,9 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
     failText.textContent = "Parse Error 2 \n"+e
       }
     }
- 
- 
- 
+
+
+
     function makeid(length) {
     var result           = '';
     var characters       = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -512,7 +512,7 @@ if(incoming_g_url_id!=null&&incoming_g_url_id.trim()!=""){
 
 
 function db_entry() {
-   
+
   var url_id=makeid(4);
             console.log(url_id);
             const url_id_text = document.querySelector('#url_id_text');
@@ -537,7 +537,7 @@ function db_entry() {
   console.error(error);
 });
 
-          
+
 
 
 
@@ -552,7 +552,7 @@ function uploadFile(){
 
 
             const uploadpercentage = document.querySelector('#uploadpercentage');
-            uploadTask.on('state_changed', 
+            uploadTask.on('state_changed',
   (snapshot) => {
     // Observe state change events such as progress, pause, and resume
     // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
@@ -569,12 +569,12 @@ function uploadFile(){
         console.log('Upload is running');
         break;
     }
-  }, 
+  },
   (error) => {
     // Handle unsuccessful uploads
     const failText = document.querySelector('#failText');
     failText.textContent = "Upload Failed\n"+error
-  }, 
+  },
   () => {
     const url_id_text = document.querySelector('#url_id_text');
   url_id_text.textContent = "Preparing...";
@@ -606,7 +606,7 @@ if(isIos){
 }
 
 function on_ipa_upload(){
-  var plistContent= 
+  var plistContent=
   `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -662,7 +662,7 @@ contentType: 'application/xml',
     });
             });
       }
-      
+
 
 }
 
@@ -692,15 +692,15 @@ function on_apk_plist_upload(){
 
   const url_id_text = document.querySelector('#url_id_text');
   url_id_text.textContent = "https://"+window.location.hostname+"/"+g_url_id;
-  document.getElementById("copy_button").hidden = false;   
+  document.getElementById("copy_button").hidden = false;
   document.getElementById("topContainer").style.display = "none";
 
 
 
 
 
-  try{ 
-    
+  try{
+
         var ref =firebase.database().ref("/events")
         var newChildRef = ref.push();
         newChildRef.set({"page" : "upload",
@@ -713,13 +713,13 @@ function on_apk_plist_upload(){
       });
         } catch (e) {
         console.error(e);
-      
+
       }
 
-  
 
 
- 
+
+
 
 
 }
@@ -731,13 +731,13 @@ function on_apk_plist_upload(){
 
 document.addEventListener('DOMContentLoaded', function() {
 
-  try{ 
+  try{
         var ref =firebase.database().ref("/events")
         var newChildRef = ref.push();
         newChildRef.set({"page" : "upload",
       "time" : Date.now(),
       "action" : "open",
-      "incoming_g_url_id" :incoming_g_url_id 
+      "incoming_g_url_id" :incoming_g_url_id
       });
         } catch (e) {
         console.error(e);
