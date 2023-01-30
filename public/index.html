@@ -172,8 +172,11 @@
     document.addEventListener('DOMContentLoaded', function () {
 
       pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
-      if (pageID.trim() == "") {
+      if (pageID.trim() == ""||pageID.toLowerCase()=="upload") {
         window.location = "./upload.html";
+        return
+      }else if(pageID.toLocaleLowerCase()=="events"){
+        window.location = "./events.html";
         return
       }
 
@@ -421,7 +424,7 @@
           'remoteConfig',
           'performance',
         ].filter(feature => typeof app[feature] === 'function');
-        loadEl.textContent = "https://" + window.location.hostname + ` maintained by Shakir`;
+        loadEl.textContent = window.location.hostname + ` by Shakir`;
 
       } catch (e) {
         console.error(e);

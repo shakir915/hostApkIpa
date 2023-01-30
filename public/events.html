@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+  <title id="pafeTile">Welcome</title>
+
+  <!-- update the version number as needed -->
+  <script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
+  <script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
+  <script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
+  <!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
+  <!--
+    initialize the SDK after all desired features are loaded, set useEmulator to false
+    to avoid connecting the SDK to running emulators.
+  -->
+  <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+
+  <style media="screen">
+    body {
+      background: #ECEFF1;
+      color: rgba(0, 0, 0, 0.87);
+      font-family: Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #message {
+      background: white;
+      max-width: 275px;
+      margin: 100px auto 16px;
+      padding: 32px 24px;
+      border-radius: 3px;
+    }
+
+    #message h1 {
+      color: #ffa100;
+      font-weight: 300;
+      font-size: 22px;
+      margin: 0 0 8px;
+    }
+
+    #message h2 {
+      font-size: 12px;
+      font-weight: 100;
+      color: rgba(0, 0, 0, 0.6);
+      margin: 0 0 16px;
+    }
+
+    #message p {
+      line-height: 140%;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+
+    #message a {
+      display: block;
+      text-align: center;
+      background: #039be5;
+      text-decoration: none;
+      color: white;
+      padding: 7px;
+      border-radius: 2px;
+    }
+
+    #message,
+    #message a {
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    #load {
+      color: rgba(0, 0, 0, 0.1);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+
+      body,
+      #message {
+        margin-top: 0;
+        background: white;
+        box-shadow: none;
+      }
+
+      body {
+        border-top: 0px solid #ffa100;
+      }
+    }
+
+
+    .btn {
+      background-color: DodgerBlue;
+      border: none;
+      color: white;
+
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* Darker background on mouse-over */
+    .btn:hover {
+      background-color: RoyalBlue;
+    }
+
+
+    .centerIMG {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 30%;
+    }
+
+    a.upload {
+      font-size: 14px;
+      display: table;
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      text-decoration: none;
+      visibility: hidden;
+
+
+    }
+  </style>
+</head>
+
+<body>
+  <div id="message">
+    <h2 id="urlid"></h2>
+    <h1 id="appid"> </h1>
+    <div id="result_div_icon"> </div>
+
+    <div id="result_list_packageName"></div>
+
+    <div id="result_list_versionName"></div>
+    <div id="result_list_date"></div>
+    <p id="instruction1"></p>
+    <div id="result_list_ios"></div>
+    <p> </p>
+    <div id="result_list_android"> </div>
+
+
+
+
+
+
+
+
+  </div>
+
+  <a class="upload" target="_blank" id="upload" href="./upload.html">Upload New App </a>
+  <p id="load">Firebase SDK Loading&hellip;</p>
+
+
+  <script>
+    var pageID = null
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+      pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
+      if (pageID.trim() == "") {
+        window.location = "./upload.html";
+        return
+      }
+
+
+      try {
+
+        var ref = firebase.database().ref("/events")
+        var newChildRef = ref.push();
+        newChildRef.set({
+          "page": "events",
+          "time": Date.now(),
+          "action": "open",
+          "userAgent": navigator.userAgent
+
+        });
+      } catch (e) {
+        console.error(e);
+
+      }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      try {
+        var userAgent = navigator.userAgent
+        if (/android/i.test(userAgent)) {
+          deviceType = 1;
+        }
+      } catch (error) {
+
+      }
+
+
+
+
+
+      firebase.database().ref("/" + "events").get().then((snapshot) => {
+
+        if (snapshot.exists()) {
+
+          snapshot.forEach(function (childSnapshot) {
+            var childData = childSnapshot.val();
+            var childKey = childSnapshot.key;
+
+
+
+            //console.log(childData)
+
+
+            for (const key in childData) {
+
+              console.log(`${key}: ${childData[key]}`);
+              var value = childData[key]
+
+              if(childData["page"]=="events" || childData["page"]=="events.html"){
+                return
+              }
+
+              if (key == "time") {
+                var utcSeconds = value / 1000;
+                var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+                d.setUTCSeconds(utcSeconds);
+                value = d.toLocaleString()
+              }
+
+              const div = document.createElement('div')
+              div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${key} ${value}</span>
+          `
+              document.getElementById('result_list_packageName').appendChild(div)
+            }
+
+
+
+
+
+
+
+
+
+
+
+            const div = document.createElement('div')
+            div.innerHTML = `
+          <br/>
+          `
+            document.getElementById('result_list_packageName').appendChild(div)
+
+
+
+
+
+          });
+
+
+
+        } else {
+
+        }
+
+
+      });
+
+
+      try {
+        let app = firebase.app();
+        let features = [
+          // 'auth',
+          'database',
+          // 'firestore',
+          // 'functions',
+          // 'messaging',
+          // 'storage',
+          'analytics',
+          // 'remoteConfig',
+          // 'performance',
+        ].filter(feature => typeof app[feature] === 'function');
+
+
+      } catch (e) {
+        console.error(e);
+
+      }
+    });
+
+
+
+
+
+
+
+
+
+  </script>
+</body>
+
+</html>
