@@ -26,14 +26,17 @@
     to avoid connecting the SDK to running emulators.
   -->
   <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
 
   <style media="screen">
     body {
       background: #ECEFF1;
       color: rgba(0, 0, 0, 0.87);
-      font-family: Roboto, Helvetica, Arial, sans-serif;
+      font-family: "Quicksand", sans-serif;
       margin: 0;
       padding: 0;
+
     }
 
     #message {
@@ -82,7 +85,7 @@
     #load {
       color: rgba(0, 0, 0, 0.1);
       text-align: center;
-      font-size: 13px;
+      font-size: 11px;
     }
 
     @media (max-width: 600px) {
@@ -134,14 +137,42 @@
 
 
     }
+
+    #qrcode {
+
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+
+      padding-left: 30px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    #qrText {
+
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 10px;
+    }
+
+
+
+
   </style>
 </head>
 
 <body>
   <div id="message">
-    <h2 id="urlid"></h2>
+    <!-- <h2 id="urlid"></h2> -->
     <h1 id="appid"> </h1>
-    <div id="result_div_icon"> </div>
+    <div id="qrcode"></div>
+    <div id="qrText"></div>
+
+    <div id="result_div_icon" style="padding-top: 10px; padding-bottom: 10px;"> </div>
 
     <div id="result_list_packageName"></div>
 
@@ -151,6 +182,7 @@
     <div id="result_list_ios"></div>
     <p> </p>
     <div id="result_list_android"> </div>
+
 
 
 
@@ -172,10 +204,10 @@
     document.addEventListener('DOMContentLoaded', function () {
 
       pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
-      if (pageID.trim() == ""||pageID.toLowerCase()=="upload") {
+      if (pageID.trim() == "" || pageID.toLowerCase() == "upload") {
         window.location = "./upload.html";
         return
-      }else if(pageID.toLocaleLowerCase()=="events"){
+      } else if (pageID.toLocaleLowerCase() == "events") {
         window.location = "./events.html";
         return
       }
@@ -198,15 +230,18 @@
       }
 
 
+
+
+
       const appid = document.querySelector('#appid');
       const packageName = document.querySelector('#packageName');
 
-      const urlid = document.querySelector('#urlid');
+      //const urlid = document.querySelector('#urlid');
       const pafeTile = document.querySelector('#pafeTile');
       const iosdlink2 = document.querySelector('#iosdlink2');
 
 
-      urlid.textContent = pageID;
+      //urlid.textContent = pageID;
       pafeTile.textContent = pageID;
 
       const loadEl = document.querySelector('#load');
@@ -266,6 +301,8 @@
 
       if (deviceType == 0)
         document.getElementById("upload").style.visibility = 'visible';
+
+
 
 
 
@@ -341,6 +378,8 @@
 
 
 
+
+
             if ((deviceType == 2) && childKey == "plist" && childData != null && childData.trim() != "") {
               var linkkkk = "itms-services://?action=download-manifest&url=";
               let encoded = encodeURIComponent(childData);
@@ -396,6 +435,24 @@
         }
 
 
+        if (deviceType == 0) {
+        const qrcode = new QRCode(document.getElementById('qrcode'), {
+          text: "https://" + window.location.toString(),
+          width: 200,
+          height: 200,
+          colorDark: '#000',
+          colorLight: '#fff',
+          correctLevel: QRCode.CorrectLevel.H
+        });
+
+        const qrText = document.querySelector('#qrText');
+        qrText.textContent = "scan QR code to install in your phone";
+
+
+
+      }
+
+
       });
       // firebase.firestore().doc('/foo/bar').get().then(() => { });
       // firebase.functions().httpsCallable('yourFunction')().then(() => { });
@@ -414,23 +471,28 @@
       try {
         let app = firebase.app();
         let features = [
-          'auth',
+          // 'auth',
           'database',
-          'firestore',
-          'functions',
-          'messaging',
+          // 'firestore',
+          // 'functions',
+          // 'messaging',
           'storage',
           'analytics',
-          'remoteConfig',
-          'performance',
+          // 'remoteConfig',
+          // 'performance',
         ].filter(feature => typeof app[feature] === 'function');
         loadEl.textContent = window.location.hostname + ` by Shakir`;
+
+        
 
       } catch (e) {
         console.error(e);
         loadEl.textContent = 'Error loading the Firebase SDK';
       }
     });
+
+
+    
 
 
 
