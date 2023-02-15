@@ -1,5 +1,5 @@
 # host Apk & Ipa
-### create yourown Diawi / apphost alternative
+### create your own Diawi / apphost alternative
 ### webiste for uploading Apk and  Ipa
 ### using firebase db and firebase storage
 ### host in firebase host using command  `firebase deploy`
