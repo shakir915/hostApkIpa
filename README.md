@@ -1,6 +1,6 @@
 # host Apk & Ipa
 ### create yourown Diawi / apphost alternative
-### webiste for uploading Apk and adhoc Ipa
+### webiste for uploading Apk and  Ipa
 ### using firebase db and firebase storage
 ### host in firebase host using command  `firebase deploy`
 ### uses app info parser library (js) for parsing details from manifest/plist
