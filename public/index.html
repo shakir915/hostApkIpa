@@ -439,7 +439,7 @@
 
         if (deviceType == 0) {
         const qrcode = new QRCode(document.getElementById('qrcode'), {
-          text: "https://" + window.location.toString(),
+          text: window.location.toString(),
           width: 200,
           height: 200,
           colorDark: '#000',
