@@ -410,7 +410,8 @@
     var g_apk_url = null;
     var g_app_name = null;
     var g_app_icon = null;
-    var isIos = null
+    var isIos = null;
+    var g_result = null;
 
 
     function fileSelect() {
@@ -422,6 +423,7 @@
         g_file = files[0];
         const parser = new AppInfoParser(g_file)
         parser.parse().then(result => {
+          g_result=result
           console.log('app info l1  ----> ', result)
           g_version = result['versionName'] || result['CFBundleShortVersionString']
           package_bundle_id = result['package'] || result['CFBundleIdentifier']
@@ -623,6 +625,9 @@
     }
 
     function uploadFile() {
+
+      firebase.database().ref("/more_details/" + g_url_id).set(JSON.stringify(g_result));
+
       var ref = firebase.storage().ref(g_url_id);
       var uploadTask = ref.child(g_file.name).put(g_file)
       uploadTask.then((snapshot) => {
