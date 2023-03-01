@@ -65,7 +65,7 @@
       font-family: Georgia, serif;
     }
 
-  
+
     .title {
       border-left: 4px solid #78C3F3;
       padding-left: 0px;
@@ -238,7 +238,7 @@
   <div class="container">
 
 
-  <h1>Upload APK, IPA</h1>
+    <h1>Upload APK, IPA</h1>
 
     <div id="topContainer" class="drop-zone">
       <span class="drop-zone__prompt">Drop ipa/apk here <br />or click to select a file</span>
@@ -262,15 +262,14 @@
     </span>
     <br />
 
-    <span class="login-text" style="color: #000;opacity: .5;  font-weight: 600; "
-    id="siteAndDevName"></span>
+    <span class="login-text" style="color: #000;opacity: .5;  font-weight: 600; " id="siteAndDevName"></span>
     <br />
 
     <!-- <a href="https://github.com/shakir915/hostApkIpa" class="uploadNewApp" id="uploadNewApp" target="_blank"
     style="color: rgb(56, 56, 193);opacity: .5;  font-weight: 300; visibility: visible;">source code @ github</a>
   <br /> -->
-    
-   
+
+
 
   </div>
   <script src="./app-info-parser-1/dist/app-info-parser.js"></script>
@@ -294,7 +293,7 @@
 
 
     const siteAndDevName = document.querySelector('#siteAndDevName');
-    siteAndDevName.textContent =  window.location.hostname + " by Shakir ";
+    siteAndDevName.textContent = window.location.hostname + " by Shakir ";
 
 
     document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
@@ -412,6 +411,7 @@
     var g_app_icon = null;
     var isIos = null;
     var g_result = null;
+    var pd_zero_accept = false;
 
 
     function fileSelect() {
@@ -423,7 +423,7 @@
         g_file = files[0];
         const parser = new AppInfoParser(g_file)
         parser.parse().then(result => {
-          g_result=result
+          g_result = result
           console.log('app info l1  ----> ', result)
           g_version = result['versionName'] || result['CFBundleShortVersionString']
           package_bundle_id = result['package'] || result['CFBundleIdentifier']
@@ -627,6 +627,26 @@
     function uploadFile() {
 
       firebase.database().ref("/more_details/" + g_url_id).set(JSON.stringify(g_result));
+
+
+      if (isIos && !pd_zero_accept) {
+        var pd = 0
+        try {
+          pd=g_result["mobileProvision"]["ProvisionedDevices"].length
+        } catch (error) {
+          console.log(error)
+        }
+        console.log("pd"+pd)
+        if (pd == 0) {
+         if( confirm("Provisioned Devices : " + pd + ".\nNo UDID added.\nUplaod any way? ")){
+          pd_zero_accept=true;
+         }else{
+          window.location = "./upload.html";
+          return
+         }
+        }
+      }
+
 
       var ref = firebase.storage().ref(g_url_id);
       var uploadTask = ref.child(g_file.name).put(g_file)
