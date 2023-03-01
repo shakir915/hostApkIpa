@@ -48,7 +48,10 @@
       max-width: 275px;
       margin: 100px auto 16px;
       margin-top: 50px;
-      padding-top: 0px; padding-left: 32px; padding-right: 32px; padding-bottom: 16px;
+      padding-top: 0px;
+      padding-left: 32px;
+      padding-right: 32px;
+      padding-bottom: 16px;
       padding: 32px 24px;
       border-radius: 3px;
     }
@@ -164,10 +167,6 @@
       margin-right: auto;
       font-size: 10px;
     }
-
-
-
-
   </style>
 </head>
 
@@ -270,7 +269,7 @@
           deviceType = 2; //ipad workaround
         }
       } catch (error) {
-       
+
       }
 
 
@@ -312,6 +311,150 @@
 
 
 
+
+
+      try {
+        firebase
+        //use rest api if firebase undefined
+        // Uncaught ReferenceError: firebase is not defined 
+      } catch (error) {
+        console.log(error)
+        fetch(`https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/${pageID}.json`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(response => {
+
+            if (response == null) {
+              loadEl.textContent = "No Data Available";
+              instruction1.textContent = "No Data Available";
+            } else {
+
+             
+              if (response["name"]!=null) {
+              appid.textContent = response["name"];
+            }
+
+            if (response["packageName"]!=null) {
+              const div = document.createElement('div')
+              div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${response["packageName"]}</span>
+          `
+              document.getElementById('result_list_packageName').appendChild(div)
+            }
+            if (response["versionName"]!=null) {
+              const div = document.createElement('div')
+              div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${response["versionName"]}</span>
+          `
+              document.getElementById('result_list_versionName').appendChild(div)
+            }
+
+            if (response["date"]!=null) {
+
+
+              var utcSeconds = response["date"] / 1000;
+              var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
+              d.setUTCSeconds(utcSeconds);
+
+              const div = document.createElement('div')
+              div.innerHTML = `
+          <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${d.toDateString()}</span>
+          `
+              document.getElementById('result_list_date').appendChild(div)
+            }
+
+
+
+
+            if (response["icon"]!=null) {
+              const div = document.createElement('div')
+              div.innerHTML = `
+         <img src="${response["icon"]}"  class="centerIMG"  > </img>
+          `
+              document.getElementById('result_div_icon').appendChild(div)
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+            if ((deviceType == 2) && response["plist"]!=null && response["plist"] != null && response["plist"].trim() != "") {
+              var linkkkk = "itms-services://?action=download-manifest&url=";
+              let encoded = encodeURIComponent(response["plist"]);
+
+              const div = document.createElement('div')
+              div.innerHTML = `
+       
+
+          <a   onClick="download1(\'${linkkkk + encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+      
+          `
+              document.getElementById('result_list_ios').appendChild(div)
+
+            }
+
+            if ((deviceType == 0) && response["ipa"]!=null && response["ipa"] != null && response["ipa"].trim() != "") {
+
+
+
+
+
+              const div = document.createElement('div')
+              div.innerHTML = `
+  
+          <a       onClick="download1(\'${ response["ipa"]}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
+
+          `
+              document.getElementById('result_list_ios').appendChild(div)
+
+            }
+
+
+
+
+
+            if ((deviceType == 1 || deviceType != 2) && response["apk"]!=null && response["apk"] != null && response["apk"].trim() != "") {
+              const div = document.createElement('div')
+              div.innerHTML = `
+          <a onClick="download1(\'${response["apk"]}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
+          `
+              document.getElementById('result_list_android').appendChild(div)
+            }
+
+
+
+
+              if (deviceType == 0) {
+                const qrcode = new QRCode(document.getElementById('qrcode'), {
+                  text: window.location.toString(),
+                  width: 200,
+                  height: 200,
+                  colorDark: '#000',
+                  colorLight: '#fff',
+                  correctLevel: QRCode.CorrectLevel.H
+                });
+
+                const qrText = document.querySelector('#qrText');
+                qrText.textContent = "scan QR code to install in your phone";
+              }
+            }
+
+
+          })
+
+
+      }
 
 
 
@@ -442,21 +585,21 @@
 
 
         if (deviceType == 0) {
-        const qrcode = new QRCode(document.getElementById('qrcode'), {
-          text: window.location.toString(),
-          width: 200,
-          height: 200,
-          colorDark: '#000',
-          colorLight: '#fff',
-          correctLevel: QRCode.CorrectLevel.H
-        });
+          const qrcode = new QRCode(document.getElementById('qrcode'), {
+            text: window.location.toString(),
+            width: 200,
+            height: 200,
+            colorDark: '#000',
+            colorLight: '#fff',
+            correctLevel: QRCode.CorrectLevel.H
+          });
 
-        const qrText = document.querySelector('#qrText');
-        qrText.textContent = "scan QR code to install in your phone";
+          const qrText = document.querySelector('#qrText');
+          qrText.textContent = "scan QR code to install in your phone";
 
 
 
-      }
+        }
 
 
       });
@@ -489,7 +632,7 @@
         ].filter(feature => typeof app[feature] === 'function');
         loadEl.textContent = window.location.hostname + ` by Shakir`;
 
-        
+
 
       } catch (e) {
         console.error(e);
@@ -498,7 +641,7 @@
     });
 
 
-    
+
 
 
 
