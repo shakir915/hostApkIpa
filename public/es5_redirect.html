@@ -3,168 +3,37 @@
 
 <head>
     <meta charset="utf-8">
-
-
-    <title id="pafeTile">Mini Version</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
     <style media="screen">
-        body {
-            background: #ECEFF1;
-            color: rgba(0, 0, 0, 0.87);
-            font-family: "Quicksand", sans-serif;
-            margin: 0;
-            padding: 0;
-
-        }
-
-        #message {
-            background: white;
-            max-width: 275px;
-            margin: 100px auto 16px;
-            margin-top: 50px;
-            padding-top: 0px;
-            padding-left: 32px;
-            padding-right: 32px;
-            padding-bottom: 16px;
-            padding: 32px 24px;
-            border-radius: 3px;
-        }
-
-        #message h1 {
-            color: #ffa100;
-            font-weight: 300;
-            font-size: 22px;
-            margin: 0 0 8px;
-        }
-
-        #message h2 {
-            font-size: 12px;
-            font-weight: 100;
-            color: rgba(0, 0, 0, 0.6);
-            margin: 0 0 16px;
-        }
-
-        #message p {
-            line-height: 140%;
-            margin: 16px 0 24px;
-            font-size: 14px;
-        }
-
-        #message a {
-            display: block;
-            text-align: center;
-            background: #039be5;
-            text-decoration: none;
-            color: white;
-            padding: 7px;
-            border-radius: 2px;
-        }
-
-        #message,
-        #message a {
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-        }
-
-        #load {
-            color: rgba(0, 0, 0, 0.1);
-            text-align: center;
-            font-size: 11px;
-        }
-
-        @media (max-width: 600px) {
-
-            body,
-            #message {
-                margin-top: 0;
-                background: white;
-                box-shadow: none;
-            }
-
-            body {
-                border-top: 0px solid #ffa100;
-            }
-        }
-
-
         .btn {
-            background-color: DodgerBlue;
+            background-color: rgb(9, 130, 251);
             border: none;
             color: white;
+            padding: 20;
+            margin: 20;
 
             font-size: 16px;
             cursor: pointer;
         }
 
-        /* Darker background on mouse-over */
-        .btn:hover {
-            background-color: RoyalBlue;
-        }
-
-
-        .centerIMG {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-            width: 30%;
-        }
-
-        a.upload {
-            font-size: 14px;
-            display: table;
-            align-items: center;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;
-            text-decoration: none;
-            visibility: hidden;
-
-
-        }
-
-        #qrcode {
-
-            align-items: center;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;
-
-            padding-left: 30px;
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-
-        #qrText {
-
-            align-items: center;
-            text-align: center;
-            margin-left: auto;
-            margin-right: auto;
-            font-size: 10px;
+        #load {
+            color: rgb(209, 183, 183);
+            font-size: 8px;
+        
         }
     </style>
 </head>
 
 <body>
     <div id="message">
-        <!-- <h2 id="urlid"></h2> -->
-        <h1 id="appid"> </h1>
-        <div id="qrcode"></div>
-        <div id="qrText"></div>
-
-        <div id="result_div_icon" style="padding-top: 10px; padding-bottom: 10px;"> </div>
-
-        <div id="result_list_packageName"></div>
-
-        <div id="result_list_versionName"></div>
-        <div id="result_list_date"></div>
-        <p id="instruction1"></p>
+        <p> </p>
         <div id="result_list_ios"></div>
         <p> </p>
         <div id="result_list_android"> </div>
-
-
+        <p> </p>
+        <p id="load">ES5 Compatibility mode&hellip;</p>
 
 
 
@@ -174,8 +43,8 @@
 
     </div>
 
-    <a class="upload" target="_blank" id="upload" href="./upload.html">Upload New App </a>
-    <p id="load">ES5 support&hellip;</p>
+
+   
 
 
 
@@ -262,10 +131,10 @@
                 xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
                 xhr.onload = function () {
                     console.log(xhr.responseText)
-                    
+
                 }
                 xhr.send(JSON.stringify({ "page": pageID, "time": Date.now(), "action": "open", "userAgent": navigator.userAgent, "url": window.location.search }));
-                
+
 
             } catch (error) {
                 console.log(error)
