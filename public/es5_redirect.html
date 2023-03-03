@@ -3,11 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-   
+
 
     <title id="pafeTile">Mini Version</title>
-   
-  
+
+
 
     <style media="screen">
         body {
@@ -236,6 +236,8 @@
 
                     }
 
+                    addOpenEvent()
+
                 }
 
                 xhr.send();
@@ -243,7 +245,34 @@
 
             }
 
+
+
+
+
+
+
+
         });
+
+
+        function addOpenEvent() {
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', "https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/" + "events" + ".json", true);
+                xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8")
+                xhr.onload = function () {
+                    console.log(xhr.responseText)
+                    
+                }
+                xhr.send(JSON.stringify({ "page": pageID, "time": Date.now(), "action": "open", "userAgent": navigator.userAgent, "url": window.location.search }));
+                
+
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+
     </script>
 </body>
 
