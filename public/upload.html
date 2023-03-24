@@ -663,7 +663,12 @@
           var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           console.log('Upload is ' + progress + '% done');
 
-          uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
+          if(progress>=100){
+ uploadpercentage.textContent = 'Done';
+          }else{
+             uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
+          }
+         
 
           switch (snapshot.state) {
             case firebase.storage.TaskState.PAUSED: // or 'paused'
@@ -795,7 +800,13 @@
       });
 
       const url_id_text = document.querySelector('#url_id_text');
-      url_id_text.textContent = "https://" + window.location.hostname + "/" + g_url_id;
+      var link="https://" + window.location.hostname + "/" + g_url_id
+      url_id_text.textContent = link;
+      url_id_text.style.color = "blue";
+      url_id_text.onclick=function() {
+        window.open(link, '_blank');
+        
+      };
       document.getElementById("copy_button").hidden = false;
       document.getElementById("topContainer").style.display = "none";
 

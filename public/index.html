@@ -173,7 +173,7 @@
 <body>
   <div id="message">
     <!-- <h2 id="urlid"></h2> -->
-    <h1 id="appid"> </h1>
+    <h1 id="appid">Loading...</h1>
     <div id="qrcode"></div>
     <div id="qrText"></div>
 
@@ -461,14 +461,7 @@
           });
 
 
-
-        } else {
-          loadEl.textContent = "No Data Available";
-          instruction1.textContent = "No Data Available";
-        }
-
-
-        if (deviceType == 0) {
+          if (deviceType == 0) {
           const qrcode = new QRCode(document.getElementById('qrcode'), {
             text: window.location.toString(),
             width: 200,
@@ -484,6 +477,16 @@
 
 
         }
+
+
+        } else {
+          appid.textContent = "Link Expired";
+       
+      
+        }
+
+
+
 
 
       });
