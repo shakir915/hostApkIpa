@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 
+
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!--                developed by                        -->
+<!--                SHAKIR KADAKKADAN                   -->
+<!--                shakir.kadakkadan@gmail.com         -->
+<!--                +91 8129625121                      -->
+<!--        https://github.com/shakir915/hostApkIpa     -->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+<!-------------------------------------------------------->
+
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -253,7 +271,7 @@
   </div>
   <div>
     <span class="login-text" style="color: #f00;opacity: 1;  font-weight: 600; " id="failText"></span>
-    <a href="./upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"
+    <a href="https://install5.web.app/upload.html" class="uploadNewApp" id="uploadNewApp" target="_blank"
       style="color: #00f;opacity: 1;  font-weight: 600; ">Upload another App</a>
     <br />
     <span class="login-text" style="color: #000;opacity: 1;  font-weight: 200; ">
@@ -274,6 +292,14 @@
   </div>
   <script src="./app-info-parser-1/dist/app-info-parser.js"></script>
   <script>
+
+
+
+
+if( window.location.href == "https://install4.web.app/upload.html"){
+  window.location = "https://install5.web.app/upload.html";
+  
+}
 
 
     function get_incoming_g_url_id() {
@@ -513,7 +539,7 @@
 
 
 
-          if (incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
+          if (incoming_g_url_id!="new"&&incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
             g_url_id = incoming_g_url_id
             firebase.database().ref("/" + g_url_id).get().then((snapshot) => {
               if (snapshot.exists()) {
@@ -641,7 +667,7 @@
          if( confirm("Provisioned Devices : " + pd + ".\nNo UDID added.\nUplaod any way? ")){
           pd_zero_accept=true;
          }else{
-          window.location = "./upload.html";
+          window.location = "https://install5.web.app/upload.html";
           return
          }
         }
