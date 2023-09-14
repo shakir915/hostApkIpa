@@ -688,7 +688,7 @@ if( redirection!=null&&redirection.trim!="" &&!window.location.href.includes("g_
       }
 
 
-      var ref = firebase.storage().ref(g_url_id);
+      var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
       var uploadTask = ref.child(g_file.name).put(g_file)
       uploadTask.then((snapshot) => {
         console.log('Uploaded File1');
@@ -799,7 +799,7 @@ if( redirection!=null&&redirection.trim!="" &&!window.location.href.includes("g_
         var metadata = {
           contentType: 'application/xml',
         };
-        var ref = firebase.storage().ref(g_url_id);
+        var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
         var uploadTask = ref.child("manifest.plist").putString(plistContent, "raw", metadata)
         uploadTask.then((snapshot) => {
           console.log('Uploaded File1');
