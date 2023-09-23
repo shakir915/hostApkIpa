@@ -277,6 +277,9 @@ refreshRedirection();
         return
       }
 
+     
+
+
 
 
 
@@ -295,6 +298,11 @@ refreshRedirection();
       } catch (e) {
         console.error(e);
 
+      }
+
+       if (pageID.startsWith("video_")) {
+        window.location = "https://www.youtube.com/watch?v="+pageID.replace("video_","");
+        return
       }
 
 
