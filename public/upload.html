@@ -703,6 +703,9 @@ refreshRedirection();
       }
 
 
+  
+
+
       var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
       var uploadTask = ref.child(g_file.name).put(g_file)
       uploadTask.then((snapshot) => {
@@ -720,6 +723,10 @@ refreshRedirection();
 
           if(progress>=100){
  uploadpercentage.textContent = 'Done';
+              saveFileSizeToDB(g_file.size)
+
+
+
           }else{
              uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
           }
@@ -822,6 +829,7 @@ refreshRedirection();
             g_plist_url = downloadURL_PLIST
             console.log('File available at', g_plist_url);
             on_apk_plist_upload()
+          
 
           });
         });
@@ -896,6 +904,24 @@ refreshRedirection();
     }
 
 
+    function saveFileSizeToDB(fileSize){
+      try {
+        console.log("fileSize "+fileSize);
+      firebase.database().ref("/" + "fileSize").push(fileSize);
+    } catch (e) {
+        console.error(e);
+
+      }
+    }
+
+
+
+    function storage_space_check() {
+      var ref = firebase.storage().ref("");
+      ref.listAll()
+
+    }
+
 
 
 
@@ -916,6 +942,10 @@ refreshRedirection();
       }
 
     })
+
+
+
+
 
 
     
