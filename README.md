@@ -5,7 +5,7 @@
 ### host in firebase host using command  `firebase deploy`
 ### uses app info parser library (js) for parsing details from manifest/plist
 https://github.com/chenquincy/app-info-parser
-#### change firebase project id in .firebaserc 
+#### change firebase project  using CLI : firebase use YOUR_PROJECT_ID
 #### you can also use command line for uploading : refer admin app https://github.com/shakir915/hostAPkIpaAdmin
 
 

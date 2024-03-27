@@ -249,6 +249,22 @@
       visibility: hidden;
       cursor: pointer;
     }
+
+
+    form.formClass {
+      font-size: 12px;
+     
+      align-items: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      text-decoration: none;
+     
+      cursor: pointer;
+    }
+
+
+
   </style>
 </head>
 
@@ -271,6 +287,21 @@
   </div>
   <div>
     <span class="login-text" style="color: #f00;opacity: 1;  font-weight: 600; " id="failText"></span>
+
+
+  <form class="formClass">
+    <label>
+        <input type="radio" checked="true" name="getUrlPrevOrNew" value="prevURL"> Use previous url (overwrite)
+    </label>
+    <label>
+        <input type="radio" name="getUrlPrevOrNew" value="newURL"> Generate a new url
+    </label>
+  </form>
+  
+</br>
+
+
+
     <a  class="uploadNewApp" id="uploadNewApp" target="_blank"
       style="color: #00f;opacity: 1;  font-weight: 600; ">Upload another App</a>
     <br />
