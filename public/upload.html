@@ -7,9 +7,6 @@
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
-<!--                developed by                        -->
-<!--                SHAKIR                              -->
-<!--                shakir.kadakkadan@gmail.com         -->
 <!--  git clone https://github.com/shakir915/hostApkIpa -->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
@@ -289,16 +286,6 @@
     <span class="login-text" style="color: #f00;opacity: 1;  font-weight: 600; " id="failText"></span>
 
 
-  <form class="formClass">
-    <label>
-        <input type="radio" checked="true" name="getUrlPrevOrNew" value="prevURL"> Use previous url (overwrite)
-    </label>
-    <label>
-        <input type="radio" name="getUrlPrevOrNew" value="newURL"> Generate a new url
-    </label>
-  </form>
-  
-</br>
 
 
 
@@ -377,8 +364,8 @@ refreshRedirection();
 
 
 
-    const siteAndDevName = document.querySelector('#siteAndDevName');
-    siteAndDevName.textContent = window.location.hostname + " by Shakir ";
+    // const siteAndDevName = document.querySelector('#siteAndDevName');
+    // siteAndDevName.textContent = window.location.hostname + " by Shakir ";
 
 
     document.querySelectorAll(".drop-zone__input").forEach((inputElement) => {
