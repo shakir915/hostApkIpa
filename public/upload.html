@@ -250,13 +250,13 @@
 
     form.formClass {
       font-size: 12px;
-     
+
       align-items: center;
       text-align: center;
       margin-left: auto;
       margin-right: auto;
       text-decoration: none;
-     
+
       cursor: pointer;
     }
 
@@ -310,7 +310,7 @@ async function refreshRedirection() {
   if(new_redirection!=null&&new_redirection.trim!=""&& !window.location.href.includes("g_url_id") &&  !window.location.href.includes("localhost") && window.location.href!=new_redirection ){
 window.location = new_redirection;
 }
-  
+
 }
 
 
@@ -324,7 +324,7 @@ refreshRedirection();
   </script>
 
 
-    
+
     <span class="login-text" style="color: #000;opacity: 1;  font-weight: 200; ">
       This website uses Firebase free tier, which has a bandwidth limit of 1 GB per day.<br />Download links may not work if the website exceeds the limit.
     </span>
@@ -561,11 +561,11 @@ refreshRedirection();
                 <div class="tooltip" style="padding: 10px 0; display: flex; overflow: hidden;">
                   <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
                 <span id="url_id_text" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;"></span>
-<button id="copy_button" onclick="copy_to_clipboard()" onmouseout="copy_to_clipboard_show()">
-  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
-  Copy
-  </button>
-</div>
+              <button id="copy_button" onclick="copy_to_clipboard()" onmouseout="copy_to_clipboard_show()">
+                  <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
+                   Copy
+                   </button>
+                        </div>
 
               </p>
 
@@ -583,6 +583,9 @@ refreshRedirection();
 
 
 
+
+          uploadToFirebaseStorage();
+          return;
 
 
           if (incoming_g_url_id!="new"&&incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
@@ -721,7 +724,7 @@ refreshRedirection();
       }
 
 
-  
+
 
 
       var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
@@ -748,7 +751,7 @@ refreshRedirection();
           }else{
              uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
           }
-         
+
 
           switch (snapshot.state) {
             case firebase.storage.TaskState.PAUSED: // or 'paused'
@@ -847,7 +850,7 @@ refreshRedirection();
             g_plist_url = downloadURL_PLIST
             console.log('File available at', g_plist_url);
             on_apk_plist_upload()
-          
+
 
           });
         });
@@ -886,7 +889,7 @@ refreshRedirection();
       url_id_text.style.color = "blue";
       url_id_text.onclick=function() {
         window.open(link, '_blank');
-        
+
       };
       document.getElementById("copy_button").hidden = false;
       document.getElementById("topContainer").style.display = "none";
@@ -943,6 +946,72 @@ refreshRedirection();
 
 
 
+function uploadToFirebaseStorage( progressCallback) {
+  return new Promise((resolve, reject) => {
+    const uploadUrl = `https://firebasestorage.googleapis.com/v0/b/install4.appspot.com/o/${encodeURIComponent(g_file.name)}?uploadType=media`;
+
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress
+    xhr.upload.addEventListener('progress', (event) => {
+     console.log('addEventListener', "progress");
+      if (event.lengthComputable && progressCallback) {
+        const percentComplete = (event.loaded / event.total) * 100;
+        progressCallback(percentComplete);
+         console.log('percentComplete', percentComplete);
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      console.log('addEventListener', "load");
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const result = JSON.parse(xhr.responseText);
+        console.log('Upload successful:', result);
+
+        // Construct the download URL
+        const downloadUrl = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(fileName)}?alt=media&token=${result.downloadTokens}`;
+        console.log('Download URL:', downloadUrl);
+
+        resolve(result);
+      } else {
+        reject(new Error(`Upload failed with status: ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Network error occurred during upload'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      reject(new Error('Upload aborted'));
+    });
+
+    xhr.open('POST', uploadUrl, true);
+    xhr.setRequestHeader('Content-Type', 'application/vnd.android.package-archive');
+    xhr.send(g_file);
+  });
+}
+
+// Example usage with progress tracking
+document.getElementById('fileInput').addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    uploadToFirebaseStorage(file, (progress) => {
+      console.log(`Upload progress: ${progress.toFixed(2)}%`);
+      // Update progress bar if needed
+      document.getElementById('progressBar').value = progress;
+    }).then(result => {
+      console.log('Upload complete:', result);
+    }).catch(error => {
+      console.error('Upload failed:', error);
+    });
+  }
+});
+
+
+
+
+
 
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -966,7 +1035,10 @@ refreshRedirection();
 
 
 
-    
+
+
+
+
 
 
 
