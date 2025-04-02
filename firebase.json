@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "appget",
     "public": "public",
     "ignore": [
       "firebase.json",
