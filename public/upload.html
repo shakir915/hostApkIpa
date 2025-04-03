@@ -2,7 +2,7 @@
 <html lang="en">
 
 
-<!-------------------------------------------------------->
+<!-------------------3 apr 2025------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
@@ -247,18 +247,36 @@
       cursor: pointer;
     }
 
+form.formClass {
+  font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  text-decoration: none;
+  cursor: pointer;
+  gap: 10px;
+}
 
-    form.formClass {
-      font-size: 12px;
-     
-      align-items: center;
-      text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-      text-decoration: none;
-     
-      cursor: pointer;
-    }
+/* Style for the radio button groups to display horizontally */
+form.formClass > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+/* Style for each radio option */
+form.formClass input[type="radio"] {
+  margin-right: 5px;
+}
+
+form.formClass label {
+  margin-right: 15px;
+}
 
 
 
@@ -308,9 +326,9 @@ async function refreshRedirection() {
 
 
   if(new_redirection!=null&&new_redirection.trim!=""&& !window.location.href.includes("g_url_id") &&  !window.location.href.includes("localhost") && window.location.href!=new_redirection ){
-window.location = new_redirection;
+    window.location = new_redirection;
 }
-  
+
 }
 
 
@@ -454,6 +472,49 @@ refreshRedirection();
 
 
 
+function setGURLID() {
+    const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+
+    if (selectedRadio) {
+        if (selectedRadio.id === "appName") {
+            g_url_id = g_app_name;
+        } else if (selectedRadio.id === "appNameQa") {
+           g_url_id = g_app_name+"_qa";
+        } else if (selectedRadio.id === "appNameProd") {
+             g_url_id = g_app_name+"_prod";
+        } else if (selectedRadio.id === "Random") {
+
+        } else {
+            console.log("Unknown selection");
+        }
+
+
+    } else {
+        console.log("No option selected");
+    }
+
+
+
+}
+
+
+function setGURLIDSubmit() {
+    const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+
+    if (selectedRadio) {
+        if(is_apk_plist_done){
+          on_apk_plist_upload();
+        }
+
+    } else {
+        console.log("No option selected");
+    }
+
+
+
+}
+
+
 
     function copy_to_clipboard() {
 
@@ -484,6 +545,7 @@ refreshRedirection();
     var isIos = null;
     var g_result = null;
     var pd_zero_accept = false;
+    var is_apk_plist_done = false;
 
 
     function fileSelect() {
@@ -556,6 +618,13 @@ refreshRedirection();
                 <span id="uploadpercentage" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">0%</span>
               </p>
 
+
+
+
+
+
+
+
               <p >
 
                 <div class="tooltip" style="padding: 10px 0; display: flex; overflow: hidden;">
@@ -570,6 +639,19 @@ refreshRedirection();
               </p>
 
 
+        <form class="formClass" id="radioForms"  style="display: flex; align-items: center; gap: 10px;">
+  <div style="margin-top: 10px; text-align: left;">
+    <input type="radio" id="appName" name="appEnvironment" value="appName" onclick="setGURLID()">
+    <label for="appName">${g_app_name}</label><br>
+    <input type="radio" id="appNameQa" name="appEnvironment" value="appNameQa" onclick="setGURLID()">
+    <label for="appNameQa">${g_app_name}_qa</label><br>
+    <input type="radio" id="appNameProd" name="appEnvironment" value="appNameProd" onclick="setGURLID()">
+    <label for="appNameProd">${g_app_name}_prod</label><br>
+    <input type="radio" id="Random" name="appEnvironment" value="Random" onclick="setGURLID()">
+    <label for="ABCD">Random</label><br>
+    <button type="button" id="radioSubmitBtn" style="margin-top: 5px;" onclick="setGURLIDSubmit()"  >Submit</button>
+  </div>
+</form>
 
 
 
@@ -790,7 +872,11 @@ refreshRedirection();
         on_ipa_upload()
       } else {
         g_apk_url = downloadURL;
+         const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+            is_apk_plist_done=true
+         if (selectedRadio) {
         on_apk_plist_upload();
+        }
       }
     }
 
@@ -846,7 +932,12 @@ refreshRedirection();
           uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
             g_plist_url = downloadURL_PLIST
             console.log('File available at', g_plist_url);
-            on_apk_plist_upload()
+              const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+              is_apk_plist_done=true
+              if (selectedRadio) {
+              on_apk_plist_upload();
+              }
+
           
 
           });
@@ -859,8 +950,11 @@ refreshRedirection();
     function on_apk_plist_upload() {
 
 
+        const radioForms = document.getElementById('radioForms');
+        console.log("hsgdhsgdhsagdhsdg");
+        console.log(radioForms);
 
-
+       radioForms.style.display = 'none';
 
 
 
