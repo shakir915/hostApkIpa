@@ -247,36 +247,40 @@
       cursor: pointer;
     }
 
-form.formClass {
+
+
+
+
+
+    form.formClass {
   font-size: 12px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   margin-left: auto;
   margin-right: auto;
-  text-decoration: none;
-  cursor: pointer;
   gap: 10px;
 }
 
-/* Style for the radio button groups to display horizontally */
-form.formClass > div {
+/* Ensure multiple radio buttons fit in one line if there’s space */
+.radioContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* Keep each radio + label together */
+.radioOption {
+  display: flex;
   align-items: center;
+  gap: 5px;
+  white-space: nowrap;
 }
 
-/* Style for each radio option */
-form.formClass input[type="radio"] {
-  margin-right: 5px;
-}
 
-form.formClass label {
-  margin-right: 15px;
-}
 
 
 
@@ -477,11 +481,19 @@ function setGURLID() {
 
     if (selectedRadio) {
         if (selectedRadio.id === "appName") {
-            g_url_id = g_app_name;
+            g_url_id = g_app_name_for_url;
         } else if (selectedRadio.id === "appNameQa") {
-           g_url_id = g_app_name+"_qa";
+           g_url_id = g_app_name_for_url+"_qa";
         } else if (selectedRadio.id === "appNameProd") {
-             g_url_id = g_app_name+"_prod";
+             g_url_id = g_app_name_for_url+"_prod";
+        }  else if (selectedRadio.id === "appNameBeta") {
+             g_url_id = g_app_name_for_url+"_beta";
+        }  else if (selectedRadio.id === "appNameAlpha") {
+             g_url_id = g_app_name_for_url+"_alpha";
+        }   else if (selectedRadio.id === "appNameLounge") {
+             g_url_id = g_app_name_for_url+"_lounge";
+        }  else if (selectedRadio.id === "appNameStaging") {
+             g_url_id = g_app_name_for_url+"_staging";
         } else if (selectedRadio.id === "Random") {
 
         } else {
@@ -541,6 +553,7 @@ function setGURLIDSubmit() {
     var g_plist_url = null;
     var g_apk_url = null;
     var g_app_name = null;
+    var g_app_name_for_url = null;
     var g_app_icon = null;
     var isIos = null;
     var g_result = null;
@@ -578,6 +591,7 @@ function setGURLIDSubmit() {
               g_app_name = result['application']['label']
           }
 
+          g_app_name_for_url=appNameForUrl(g_app_name)
 
           g_app_icon = result.icon
           console.log(' isIos ----> ', isIos)
@@ -639,19 +653,57 @@ function setGURLIDSubmit() {
               </p>
 
 
-        <form class="formClass" id="radioForms"  style="display: flex; align-items: center; gap: 10px;">
-  <div style="margin-top: 10px; text-align: left;">
-    <input type="radio" id="appName" name="appEnvironment" value="appName" onclick="setGURLID()">
-    <label for="appName">${g_app_name}</label><br>
-    <input type="radio" id="appNameQa" name="appEnvironment" value="appNameQa" onclick="setGURLID()">
-    <label for="appNameQa">${g_app_name}_qa</label><br>
-    <input type="radio" id="appNameProd" name="appEnvironment" value="appNameProd" onclick="setGURLID()">
-    <label for="appNameProd">${g_app_name}_prod</label><br>
-    <input type="radio" id="Random" name="appEnvironment" value="Random" onclick="setGURLID()">
-    <label for="ABCD">Random</label><br>
-    <button type="button" id="radioSubmitBtn" style="margin-top: 5px;" onclick="setGURLIDSubmit()"  >Submit</button>
+
+<form class="formClass" id="radioForms">
+  <div class="radioContainer">
+
+    <div class="radioOption">
+      <input type="radio" id="appName" name="appEnvironment" value="appName" onclick="setGURLID()">
+      <label for="appName">${g_app_name_for_url}</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameQa" name="appEnvironment" value="appNameQa" onclick="setGURLID()">
+      <label for="appNameQa">${g_app_name_for_url}_qa</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameProd" name="appEnvironment" value="appNameProd" onclick="setGURLID()">
+      <label for="appNameProd">${g_app_name_for_url}_prod</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameBeta" name="appEnvironment" value="appNameBeta" onclick="setGURLID()">
+      <label for="appNameBeta">${g_app_name_for_url}_beta</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameAlpha" name="appEnvironment" value="appNameAlpha" onclick="setGURLID()">
+      <label for="appNameAlpha">${g_app_name_for_url}_alpha</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameLounge" name="appEnvironment" value="appNameLounge" onclick="setGURLID()">
+      <label for="appNameLounge">${g_app_name_for_url}_lounge</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="appNameStaging" name="appEnvironment" value="appNameStaging" onclick="setGURLID()">
+      <label for="appNameStaging">${g_app_name_for_url}_staging</label>
+    </div>
+
+    <div class="radioOption">
+      <input type="radio" id="Random" name="appEnvironment" value="Random" onclick="setGURLID()">
+      <label for="Random">Random</label>
+    </div>
+
   </div>
+
+  <button type="button" id="radioSubmitBtn" onclick="setGURLIDSubmit()">Submit</button>
+
 </form>
+
+
 
 
 
@@ -947,7 +999,7 @@ function setGURLIDSubmit() {
 
     }
 
-    function on_apk_plist_upload() {
+   async function on_apk_plist_upload() {
 
 
         const radioForms = document.getElementById('radioForms');
@@ -955,6 +1007,8 @@ function setGURLIDSubmit() {
         console.log(radioForms);
 
        radioForms.style.display = 'none';
+
+      await assignPrevOtherPlatformValues()
 
 
 
@@ -1035,6 +1089,34 @@ function setGURLIDSubmit() {
     }
 
 
+  async function assignPrevOtherPlatformValues() {
+    if (g_url_id != null) {
+        try {
+            const snapshot = await firebase.database().ref("/" + g_url_id).get();
+
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    const childKey = childSnapshot.key;
+                    const childData = childSnapshot.val();
+
+                    if (g_apk_url==null&& childKey === "apk" && childData != null) g_apk_url = childData;
+                    if (g_ipa_url ==null&& childKey === "ipa" && childData != null) g_ipa_url = childData;
+                    if (g_plist_url==null&& childKey === "plist" && childData != null) g_plist_url = childData;
+                });
+
+
+            } else {
+
+            }
+        } catch (error) {
+            console.error("Error fetching data from Firebase:", error);
+        }
+    } else {
+
+    }
+}
+
+
 
 
 
@@ -1058,7 +1140,12 @@ function setGURLIDSubmit() {
 
 
 
-
+function appNameForUrl(str) {
+    return str
+        .toLowerCase()             // Convert to lowercase
+        .replace(/\s+/g, '_')       // Replace spaces with underscores
+        .replace(/[^a-z0-9_]/g, ''); // Remove all non a-z, non-digits, except underscore
+}
 
     
 
