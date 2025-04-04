@@ -34,17 +34,24 @@
     const jsonString = localStorage.getItem(jsonStore);
 
     if (jsonString) {
-        try {
+
             const jsonObj = JSON.parse(decodeURIComponent(jsonString));
+
+            if (jsonObj?.ios?.mobileProvision?.DeveloperCertificates) {delete jsonObj.ios.mobileProvision.DeveloperCertificates;}
+            if (jsonObj?.ios?.mobileProvision?.["DER-Encoded-Profile"]) {delete jsonObj.ios.mobileProvision["DER-Encoded-Profile"];}
+
+            if (jsonObj?.mobileProvision?.DeveloperCertificates) {delete jsonObj.mobileProvision.DeveloperCertificates;}
+            if (jsonObj?.mobileProvision?.["DER-Encoded-Profile"]) {delete jsonObj.mobileProvision["DER-Encoded-Profile"];}
+
+
             document.getElementById('jsonDisplay').innerHTML = syntaxHighlight(JSON.stringify(jsonObj, null, 2));
-        } catch (e) {
-            document.getElementById('jsonDisplay').textContent = "Invalid JSON: " + e.message;
-        }
+
     } else {
         document.getElementById('jsonDisplay').textContent = "No JSON data provided.";
     }
 
     function syntaxHighlight(json) {
+      console.log(json);
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
             let cls = 'number';
