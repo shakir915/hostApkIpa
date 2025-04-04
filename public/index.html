@@ -190,13 +190,23 @@
 <body>
   <div id="message">
     <!-- <h2 id="urlid"></h2> -->
-    <h1 id="appid">Loading...</h1>
+
+      <h1 id="appid">Loading...</h1>
+
+
+
     <div id="qrcode"></div>
     <div id="qrText"></div>
 
     <div id="result_div_icon" style="padding-top: 10px; padding-bottom: 10px;"> </div>
-
+  <div style="display: flex; align-items: center;">
     <div id="result_list_packageName"></div>
+    <i class="fa fa-info-circle" aria-hidden="true" id="infoButton"
+       style="display: none; font-size:18px; color:#000; background: none; margin-left:10px; cursor:pointer; padding: 0 8px;"
+       onclick="viewJsonInNewTab()">
+    </i>
+
+  </div>
 
     <div id="result_list_versionName"></div>
     <div id="result_list_date"></div>
@@ -394,7 +404,7 @@ refreshRedirection();
 
 
 
-      firebase.database().ref("/" + pageID).get().then((snapshot) => {
+      firebase.database().ref("/app_links/" + pageID).get().then((snapshot) => {
 
         if (snapshot.exists()) {
 
@@ -421,6 +431,8 @@ refreshRedirection();
           `
               document.getElementById('result_list_packageName').appendChild(div)
             }
+            document.getElementById("infoButton").style.display = "inline";
+
             if (childKey == "versionName") {
               const div = document.createElement('div')
               div.innerHTML = `
@@ -630,6 +642,64 @@ refreshRedirection();
     userIdentificationCookie()
 
 
+
+
+       async function viewJsonInNewTab() {
+
+        let ios = null;
+let android = null;
+
+try {
+  const snapshot = await firebase.database().ref("/more_details/ios/" + pageID).once("value");
+  const jsonString = snapshot.val();
+  if (jsonString) {
+    ios = JSON.parse(jsonString);
+  }
+} catch (e) {
+  console.error("Error fetching iOS data:", e);
+}
+
+try {
+  const snapshot = await firebase.database().ref("/more_details/android/" + pageID).once("value");
+  const jsonString = snapshot.val();
+  if (jsonString) {
+    android = JSON.parse(jsonString);
+  }
+} catch (e) {
+  console.error("Error fetching Android data:", e);
+}
+
+let json = null;
+if (android && ios) {
+  json = {
+    android: android,
+    "s1": "===========================================================================================================================",
+     "s2": "===========================================================================================================================",
+ "s3":"===========================================================================================================================",
+  "s4": "===========================================================================================================================",
+   "s5": "===========================================================================================================================",
+   "s6": "===========================================================================================================================",
+    ios: ios
+  };
+} else if (android) {
+  json = android;
+} else if (ios) {
+  json = ios;
+}
+
+
+    const jsonString = encodeURIComponent(JSON.stringify(json,null, 2));
+    var jsonStore=`jsonToView_${pageID}`;
+     localStorage.setItem(jsonStore, jsonString);
+
+    const newTab = window.open(`more_info.html?jsonStore=${jsonStore}`, '_blank');
+    if (newTab) {
+        newTab.focus();
+    } else {
+        alert('Please allow popups for this site.');
+    }
+
+}
 
 
   </script>

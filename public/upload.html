@@ -2,7 +2,7 @@
 <html lang="en">
 
 
-<!-------------------3 apr 2025------------------------------------->
+<!-------------------------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
@@ -610,6 +610,7 @@ function setGURLIDSubmit() {
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Icon: </span>
                 <img style="width: 80px; height: 80px;" src="${g_app_icon}" alt="">
+                <span style="color: blue; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;" onclick="viewJsonInNewTab()"  >More Info</span>
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
                 <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Name: </span>
@@ -721,25 +722,6 @@ function setGURLIDSubmit() {
 
           if (incoming_g_url_id!="new"&&incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
             g_url_id = incoming_g_url_id
-            firebase.database().ref("/" + g_url_id).get().then((snapshot) => {
-              if (snapshot.exists()) {
-
-                snapshot.forEach(function (childSnapshot) {
-                  var childKey = childSnapshot.key;
-                  var childData = childSnapshot.val();
-                  if (childKey == "apk" && childData != null)
-                    g_apk_url = childData
-                  if (childKey == "ipa" && childData != null)
-                    g_ipa_url = childData
-                  if (childKey == "plist" && childData != null)
-                    g_plist_url = childData
-
-
-
-                }
-                )
-
-
 
                 uploadFile()
               } else {
@@ -805,17 +787,10 @@ function setGURLIDSubmit() {
       const url_id_text = document.querySelector('#url_id_text');
 
 
-      firebase.database().ref("/" + url_id).get().then((snapshot) => {
+      firebase.database().ref("/app_links/" + url_id).get().then((snapshot) => {
         if (snapshot.exists()) {
           db_entry()
         } else {
-          g_set = {
-            "local_fileName": g_file.name.toString(),
-            "packageName": package_bundle_id ?? "",
-            "versionName": g_version,
-            "name": g_app_name,
-          }
-          firebase.database().ref("/" + url_id).set(g_set);
           g_url_id = url_id
           url_id_text.textContent = "";
           uploadFile()
@@ -832,7 +807,6 @@ function setGURLIDSubmit() {
 
     function uploadFile() {
 
-      firebase.database().ref("/more_details/" + g_url_id).set(JSON.stringify(g_result));
 
 
       if (isIos && !pd_zero_accept) {
@@ -900,7 +874,12 @@ function setGURLIDSubmit() {
         },
         () => {
           const url_id_text = document.querySelector('#url_id_text');
+
+          const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+        if(selectedRadio)
           url_id_text.textContent = "Preparing...";
+        else
+          url_id_text.textContent = "Please Select a URL Suffix and Submit...";
           // Handle successful uploads on complete
           // For instance, get the download URL: https://firebasestorage.googleapis.com/...
           uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
@@ -1005,28 +984,33 @@ function setGURLIDSubmit() {
         const radioForms = document.getElementById('radioForms');
         console.log("hsgdhsgdhsagdhsdg");
         console.log(radioForms);
-
-       radioForms.style.display = 'none';
-
-      await assignPrevOtherPlatformValues()
+        radioForms.style.display = 'none';
+        await assignPrevOtherPlatformValues()
 
 
 
 
 
-      firebase.database().ref("/" + g_url_id).set({
-        "local_fileName": g_file.name.toString(),
-        "name": g_app_name,
-        "icon": g_app_icon,
-        "packageName": package_bundle_id,
-        "versionName": g_version,
-        "plist": g_plist_url,
-        "ipa": g_ipa_url,
-        "apk": g_apk_url,
-        "date": Date.now(),
+      try {
+    const dbRef = firebase.database().ref("/app_links/" + g_url_id);
+    await dbRef.set({
+      "local_fileName": g_file.name.toString(),
+      "name": g_app_name,
+      "icon": g_app_icon,
+      "packageName": package_bundle_id,
+      "versionName": g_version,
+      "plist": g_plist_url,
+      "ipa": g_ipa_url,
+      "apk": g_apk_url,
+      "date": Date.now(),
+    });
+    console.log("Data written successfully");
+  } catch (error) {
+  radioForms.style.display = 'block';
+  return
+  }
 
 
-      });
 
       const url_id_text = document.querySelector('#url_id_text');
       var link="https://" + window.location.hostname + "/" + g_url_id
@@ -1056,6 +1040,15 @@ function setGURLIDSubmit() {
           "isIos": isIos,
 
         });
+      } catch (e) {
+        console.error(e);
+
+      }
+
+ try {
+
+    var platfromName=isIos?"ios":"android";
+    firebase.database().ref("/more_details/"+platfromName+"/" + g_url_id).set(JSON.stringify(g_result));
       } catch (e) {
         console.error(e);
 
@@ -1092,7 +1085,7 @@ function setGURLIDSubmit() {
   async function assignPrevOtherPlatformValues() {
     if (g_url_id != null) {
         try {
-            const snapshot = await firebase.database().ref("/" + g_url_id).get();
+            const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
 
             if (snapshot.exists()) {
                 snapshot.forEach((childSnapshot) => {
@@ -1147,7 +1140,24 @@ function appNameForUrl(str) {
         .replace(/[^a-z0-9_]/g, ''); // Remove all non a-z, non-digits, except underscore
 }
 
-    
+
+
+
+
+    function viewJsonInNewTab() {
+    const jsonString = encodeURIComponent(JSON.stringify(g_result));
+    var jsonStore=`jsonToView_${g_url_id}`;
+     localStorage.setItem(jsonStore, jsonString);
+
+    const newTab = window.open(`more_info.html?jsonStore=${jsonStore}`, '_blank');
+    if (newTab) {
+        newTab.focus();
+    } else {
+        alert('Please allow popups for this site.');
+    }
+
+}
+
 
 
 
