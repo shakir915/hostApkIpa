@@ -2,7 +2,7 @@
 <html lang="en">
 
 
-<!-------------------------------------------------------->
+<!---------------------------uv7----------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
 <!-------------------------------------------------------->
@@ -324,7 +324,7 @@ async function refreshRedirection() {
   console.log(new_redirection);
   var old_redirection=localStorage.getItem('redirection');
   localStorage.setItem('redirection',new_redirection);
-  console.log("old_redirection $old_redirection new_redirection $new_redirection");
+
 
 
 
@@ -582,7 +582,7 @@ function setGURLIDSubmit() {
         const parser = new AppInfoParser(g_file)
         parser.parse().then(result => {
           g_result = result
-          console.log('app info l1  ----> ', result)
+
           g_version = result['versionName'] || result['CFBundleShortVersionString']
           package_bundle_id = result['package'] || result['CFBundleIdentifier']
           isIos = result['package'] == null && result['CFBundleIdentifier'] != null
@@ -605,7 +605,7 @@ function setGURLIDSubmit() {
           g_app_name_for_url=appNameForUrl(g_app_name)
 
           g_app_icon = result.icon
-          console.log(' isIos ----> ', isIos)
+
           const div = document.createElement('div')
 
 
@@ -883,7 +883,7 @@ console.error("Error setting data:", error)
       "readableTime": readableTime,
       "date": Date.now(),
     });
-    console.log("Data written successfully");
+
   } catch (error) {
   radioForms.style.display = 'block';
   return
@@ -948,15 +948,14 @@ console.error("Error setting data:", error)
 
 
 
-
-
+      console.log( "BUILD LINK : "+link)
 
     }
 
 
     function saveFileSizeToDB(fileSize){
       try {
-        console.log("fileSize "+fileSize);
+
       firebase.database().ref("/" + "fileSize").push(fileSize);
     } catch (e) {
         console.error(e);
@@ -1087,11 +1086,11 @@ function appNameForUrl(str) {
     var url= `https://firebasestorage.googleapis.com/v0/b/install5.appspot.com/o/${encodeURIComponent("appStorageV2"+"/"+g_app_name_for_url+"/"+g_app_name_for_url+"_"+readableTime+"."+extension1)}`
     const xhr = new XMLHttpRequest();
     xhr.upload.addEventListener('progress', (event) => {
-     console.log('addEventListener', "progress");
+
       if (event.lengthComputable ) {
         const progress = (event.loaded / event.total) * 100;
     
-          console.log('Upload is ' + progress.toFixed(0)  + '% done');
+          console.log('' + progress.toFixed(0)  + '% ');
           if(progress>=100){
               uploadpercentage.textContent = 'Done';
               saveFileSizeToDB(g_file.size)
@@ -1103,7 +1102,7 @@ function appNameForUrl(str) {
     });
 
     xhr.addEventListener('load', () => {
-      console.log('addEventListener', "load");
+
       if (xhr.status >= 200 && xhr.status < 300) {
         const result = JSON.parse(xhr.responseText);
         const downloadUrl = `${url}?alt=media&token=${result.downloadTokens}`;
