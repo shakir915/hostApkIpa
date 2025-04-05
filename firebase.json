@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "appget",
+    "site": "install4",
     "public": "public",
     "ignore": [
       "firebase.json",
@@ -10,7 +10,7 @@
     "rewrites": [
       {
         "source": "**",
-        "destination": "/home.html"
+        "destination": "/home_v2.html"
       }
     ],
 
