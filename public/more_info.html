@@ -29,9 +29,8 @@
 <div id="jsonDisplay"></div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const jsonStore = urlParams.get('jsonStore');
-    const jsonString = localStorage.getItem(jsonStore);
+
+    const jsonString = localStorage.getItem("jsonStore");
 
     if (jsonString) {
 

@@ -376,7 +376,9 @@ refreshRedirection();
       const urlParams = new URLSearchParams(queryString);
       const incoming_g_url_id = urlParams.get('g_url_id')
       console.log(incoming_g_url_id);
-      return incoming_g_url_id
+      if(incoming_g_url_id!="new"&&incoming_g_url_id != null && incoming_g_url_id.trim() != "")
+        return incoming_g_url_id;
+      else   return null;
     }
     const incoming_g_url_id = get_incoming_g_url_id();
 
@@ -560,9 +562,17 @@ function setGURLIDSubmit() {
     var g_result = null;
     var pd_zero_accept = false;
     var is_apk_plist_done = false;
+    var readableTime = Date(Date.now()).toLocaleString();
+
+    var delete1 = null;
+    var delete2 = null;
+
 
 
     function fileSelect() {
+      var date = new Date(Date.now());
+      readableTime = `${date.getFullYear()}_${(date.getMonth()+1).toString().padStart(2, '0')}_${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
+
       const failText = document.querySelector('#failText');
       failText.textContent = ""
 
@@ -674,7 +684,7 @@ function setGURLIDSubmit() {
       <label for="appNameProd">${g_app_name_for_url}_prod</label>
     </div>
 
-    <div class="radioOption">
+<!--    <div class="radioOption">
       <input type="radio" id="appNameBeta" name="appEnvironment" value="appNameBeta" onclick="setGURLID()">
       <label for="appNameBeta">${g_app_name_for_url}_beta</label>
     </div>
@@ -692,7 +702,7 @@ function setGURLIDSubmit() {
     <div class="radioOption">
       <input type="radio" id="appNameStaging" name="appEnvironment" value="appNameStaging" onclick="setGURLID()">
       <label for="appNameStaging">${g_app_name_for_url}_staging</label>
-    </div>
+    </div>-->
 
     <div class="radioOption">
       <input type="radio" id="Random" name="appEnvironment" value="Random" onclick="setGURLID()">
@@ -721,9 +731,12 @@ function setGURLIDSubmit() {
 
 
 
-          if (incoming_g_url_id!="new"&&incoming_g_url_id != null && incoming_g_url_id.trim() != "") {
+          if ( incoming_g_url_id !== null) {
+            const radioForms = document.getElementById('radioForms');
+            radioForms.style.display = 'none';
+            pd_zero_accept = true
             g_url_id = incoming_g_url_id
-            uploadFile()
+            uploadToFirebaseStorage()
           } else {
             db_entry();
           }
@@ -787,7 +800,7 @@ function setGURLIDSubmit() {
           g_url_id = url_id
           g_url_id_random = url_id
           url_id_text.textContent = "";
-          uploadFile()
+          uploadToFirebaseStorage()
         }
       }).catch((error) => {
         console.error(error);
@@ -799,97 +812,7 @@ function setGURLIDSubmit() {
 
     }
 
-    function uploadFile() {
-
-
-
-      if (isIos && !pd_zero_accept) {
-        var pd = 0
-        try {
-          pd=g_result["mobileProvision"]["ProvisionedDevices"].length
-        } catch (error) {
-          console.log(error)
-        }
-        console.log("pd"+pd)
-        if (pd == 0) {
-         if( confirm("Provisioned Devices : " + pd + ".\nNo UDID added.\nUplaod any way? ")){
-          pd_zero_accept=true;
-         }else{
-          var redirection=localStorage.getItem('redirection');
-          window.location = redirection;
-          return
-         }
-        }
-      }
-
-
   
-
-
-      var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
-      var uploadTask = ref.child(g_file.name).put(g_file)
-      uploadTask.then((snapshot) => {
-        console.log('Uploaded File1');
-      });
-
-
-      const uploadpercentage = document.querySelector('#uploadpercentage');
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          // Observe state change events such as progress, pause, and resume
-          // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-          var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log('Upload is ' + progress + '% done');
-
-          if(progress>=100){
- uploadpercentage.textContent = 'Done';
-              saveFileSizeToDB(g_file.size)
-
-
-
-          }else{
-             uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
-          }
-         
-
-          switch (snapshot.state) {
-            case firebase.storage.TaskState.PAUSED: // or 'paused'
-              console.log('Upload is paused');
-              break;
-            case firebase.storage.TaskState.RUNNING: // or 'running'
-              console.log('Upload is running');
-              break;
-          }
-        },
-        (error) => {
-          // Handle unsuccessful uploads
-          const failText = document.querySelector('#failText');
-          failText.textContent = "Upload Failed\n" + error
-        },
-        () => {
-          const url_id_text = document.querySelector('#url_id_text');
-
-          const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
-        if(selectedRadio)
-          url_id_text.textContent = "Preparing...";
-        else
-          url_id_text.textContent = "Please Select a URL Suffix and Submit...";
-          // Handle successful uploads on complete
-          // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-            console.log('File available at', downloadURL);
-            on_ipa_apk_upload(downloadURL)
-
-
-
-
-          });
-        }
-      );
-
-    }
-
-
 
     function on_ipa_apk_upload(downloadURL) {
       if (isIos) {
@@ -899,86 +822,47 @@ function setGURLIDSubmit() {
         g_apk_url = downloadURL;
          const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
             is_apk_plist_done=true
-         if (selectedRadio) {
+         if (selectedRadio|| incoming_g_url_id !== null) {
         on_apk_plist_upload();
         }
       }
     }
 
-    function on_ipa_upload() {
-      var plistContent =
-        `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>items</key>
-  <array>
-    <dict>
-      <key>assets</key>
-      <array>
-        <dict>
-          <key>kind</key>
-          <string>software-package</string>
-          <key>url</key>
-          <string><![CDATA[YOUR_IPA_URL_HERE]]></string>
-        </dict>
-      </array>
-      <key>metadata</key>
-      <dict>
-        <key>bundle-identifier</key>
-        <string>YOUR_IPA_BUNDLE_ID_HERE</string>
-        <key>bundle-version</key>
-        <string>YOUR_VERSION_HERE</string>
-        <key>kind</key>
-        <string>software</string>
-        <key>title</key>
-        <string>YOUR_IPA_APP_NAME_HERE</string>
-        <key>subtitle</key>
-        <string></string>
-      </dict>
-    </dict>
-  </array>
-</dict>
-</plist>`
-      plistContent = plistContent.replace("YOUR_IPA_URL_HERE", g_ipa_url)
-        .replace("YOUR_VERSION_HERE", g_version)
-        .replace("YOUR_IPA_BUNDLE_ID_HERE", package_bundle_id)
-        .replace("YOUR_IPA_APP_NAME_HERE", g_app_name)
 
-
-      if (true) {
-        var metadata = {
-          contentType: 'application/xml',
-        };
-        var ref = firebase.storage().ref(package_bundle_id+"_"+g_url_id);
-        var uploadTask = ref.child("manifest.plist").putString(plistContent, "raw", metadata)
-        uploadTask.then((snapshot) => {
-          console.log('Uploaded File1');
-          uploadTask.snapshot.ref.getDownloadURL().then((downloadURL_PLIST) => {
-            g_plist_url = downloadURL_PLIST
-            console.log('File available at', g_plist_url);
-              const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
-              is_apk_plist_done=true
-              if (selectedRadio) {
-              on_apk_plist_upload();
-              }
-
-          
-
-          });
-        });
-      }
-
-
-    }
 
    async function on_apk_plist_upload() {
 
 
         const radioForms = document.getElementById('radioForms');
-        console.log("hsgdhsgdhsagdhsdg");
-        console.log(radioForms);
         radioForms.style.display = 'none';
+
+
+
+              try {
+    const dbRef = firebase.database().ref("/app_links_all/"+g_app_name_for_url+"/" + "__"+g_url_id+"__"+readableTime);
+    await dbRef.set({
+      "local_fileName": g_file.name.toString(),
+      "name": g_app_name,
+      "icon": g_app_icon,
+      "packageName": package_bundle_id,
+      "versionName": g_version,
+      "plist": g_plist_url,
+      "ipa": g_ipa_url,
+      "apk": g_apk_url,
+      "readableTime": readableTime,
+      "date": Date.now(),
+    });
+
+
+  } catch (error) {
+console.error("Error setting data:", error)
+  }
+
+
+
+
+
+
         await assignPrevOtherPlatformValues()
 
 
@@ -996,6 +880,7 @@ function setGURLIDSubmit() {
       "plist": g_plist_url,
       "ipa": g_ipa_url,
       "apk": g_apk_url,
+      "readableTime": readableTime,
       "date": Date.now(),
     });
     console.log("Data written successfully");
@@ -1019,6 +904,17 @@ function setGURLIDSubmit() {
 
 
 
+      try {
+        var ref = firebase.database().ref("/url_list/"+g_app_name_for_url)
+        var newChildRef = ref.push();
+        newChildRef.set(g_url_id);
+      } catch (e) {
+       console.error("Error setting data:", error)
+
+      }
+      
+        try {await fetch(delete1, {   method: 'DELETE', headers: {    }});} catch (e) {}
+        try {await fetch(delete2, {   method: 'DELETE', headers: {    }});} catch (e) {}
 
 
       try {
@@ -1032,6 +928,7 @@ function setGURLIDSubmit() {
           "incoming_g_url_id": incoming_g_url_id,
           "page_id": g_url_id,
           "isIos": isIos,
+          "readableTime": readableTime,
 
         });
       } catch (e) {
@@ -1089,6 +986,13 @@ function setGURLIDSubmit() {
                     if (g_apk_url==null&& childKey === "apk" && childData != null) g_apk_url = childData;
                     if (g_ipa_url ==null&& childKey === "ipa" && childData != null) g_ipa_url = childData;
                     if (g_plist_url==null&& childKey === "plist" && childData != null) g_plist_url = childData;
+
+                    if (childKey === "apk" && childData != null && !isIos) delete2 = childData;
+                    if (childKey === "ipa" && childData != null && isIos) delete1 = childData;
+                    if (childKey === "plist" && childData != null && isIos) delete2 = childData;
+
+
+
                 });
 
 
@@ -1116,7 +1020,8 @@ function setGURLIDSubmit() {
           "page": "upload",
           "time": Date.now(),
           "action": "open",
-          "incoming_g_url_id": incoming_g_url_id
+          "incoming_g_url_id": incoming_g_url_id,
+          "readableTime": readableTime
         });
       } catch (e) {
         console.error(e);
@@ -1140,10 +1045,9 @@ function appNameForUrl(str) {
 
     function viewJsonInNewTab() {
     const jsonString = encodeURIComponent(JSON.stringify(g_result));
-    var jsonStore=`jsonToView_${g_url_id}`;
-     localStorage.setItem(jsonStore, jsonString);
+    localStorage.setItem("jsonStore", jsonString);
 
-    const newTab = window.open(`more_info.html?jsonStore=${jsonStore}`, '_blank');
+    const newTab = window.open(`more_info.html`, '_blank');
     if (newTab) {
         newTab.focus();
     } else {
@@ -1153,6 +1057,173 @@ function appNameForUrl(str) {
 }
 
 
+
+    function uploadToFirebaseStorage() {
+
+
+      if (isIos && !pd_zero_accept) {
+        var pd = 0
+        try {
+          pd=g_result["mobileProvision"]["ProvisionedDevices"].length
+        } catch (error) {
+          console.log(error)
+        }
+        console.log("pd"+pd)
+        if (pd == 0) {
+         if( confirm("Provisioned Devices : " + pd + ".\nNo UDID added.\nUplaod any way? ")){
+          pd_zero_accept=true;
+         }else{
+          var redirection=localStorage.getItem('redirection');
+          window.location = redirection;
+          return
+         }
+        }
+      }
+
+
+  return new Promise((resolve, reject) => {
+    const uploadpercentage = document.querySelector('#uploadpercentage');
+    const extension1 = g_file.name.split('.').pop();
+    var url= `https://firebasestorage.googleapis.com/v0/b/install5.appspot.com/o/${encodeURIComponent("appStorageV2"+"/"+g_app_name_for_url+"/"+g_app_name_for_url+"_"+readableTime+"."+extension1)}`
+    const xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener('progress', (event) => {
+     console.log('addEventListener', "progress");
+      if (event.lengthComputable ) {
+        const progress = (event.loaded / event.total) * 100;
+    
+          console.log('Upload is ' + progress.toFixed(0)  + '% done');
+          if(progress>=100){
+              uploadpercentage.textContent = 'Done';
+              saveFileSizeToDB(g_file.size)
+          }else{
+             uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
+          }
+
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      console.log('addEventListener', "load");
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const result = JSON.parse(xhr.responseText);
+        const downloadUrl = `${url}?alt=media&token=${result.downloadTokens}`;
+        const url_id_text = document.querySelector('#url_id_text');
+        const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+        if (selectedRadio || incoming_g_url_id !== null)
+          url_id_text.textContent = "Preparing...";
+        else
+          url_id_text.textContent = "Please Select a URL Suffix and Submit...";
+        on_ipa_apk_upload(downloadUrl)
+        resolve(result);
+      } else {
+        const failText = document.querySelector('#failText');
+        failText.textContent = "Upload Failed\n" + xhr.status
+        reject(new Error(`Upload failed with status: ${xhr.status}`));
+      }
+    });
+
+    xhr.addEventListener('error', () => {
+      const failText = document.querySelector('#failText');
+      failText.textContent = 'Network error occurred during upload'
+      reject(new Error('Network error occurred during upload'));
+    });
+
+    xhr.addEventListener('abort', () => {
+      const failText = document.querySelector('#failText');
+      failText.textContent = 'Upload aborted'
+      reject(new Error('Upload aborted'));
+    });
+
+    xhr.open('POST', `${url}?uploadType=media`, true);
+    xhr.setRequestHeader('Content-Type', 'application/vnd.android.package-archive');
+    xhr.send(g_file);
+  });
+}
+
+
+
+
+async function on_ipa_upload() {
+      var plistContent =
+        `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>items</key>
+  <array>
+    <dict>
+      <key>assets</key>
+      <array>
+        <dict>
+          <key>kind</key>
+          <string>software-package</string>
+          <key>url</key>
+          <string><![CDATA[YOUR_IPA_URL_HERE]]></string>
+        </dict>
+      </array>
+      <key>metadata</key>
+      <dict>
+        <key>bundle-identifier</key>
+        <string>YOUR_IPA_BUNDLE_ID_HERE</string>
+        <key>bundle-version</key>
+        <string>YOUR_VERSION_HERE</string>
+        <key>kind</key>
+        <string>software</string>
+        <key>title</key>
+        <string>YOUR_IPA_APP_NAME_HERE</string>
+        <key>subtitle</key>
+        <string></string>
+      </dict>
+    </dict>
+  </array>
+</dict>
+</plist>`
+      plistContent = plistContent.replace("YOUR_IPA_URL_HERE", g_ipa_url)
+        .replace("YOUR_VERSION_HERE", g_version)
+        .replace("YOUR_IPA_BUNDLE_ID_HERE", package_bundle_id)
+        .replace("YOUR_IPA_APP_NAME_HERE", g_app_name)
+
+
+        if(true){
+
+         
+          var url= `https://firebasestorage.googleapis.com/v0/b/install5.appspot.com/o/${encodeURIComponent("appStorageV2"+"/"+g_app_name_for_url+"/"+g_app_name_for_url+"_"+readableTime+"_manifest."+".plist")}`
+    
+  const headers = {
+    'Content-Type': 'application/xml',
+  };
+
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: plistContent,
+  });
+
+  const result = await response.json();
+
+  if (result.error) {
+    const failText = document.querySelector('#failText');
+    failText.textContent = "Upload Failed\n" + result.error
+    console.error("Upload failed:", result.error);
+    return;
+  }
+
+  const downloadUrl = `${url}?alt=media`;
+
+  console.log('File available at', downloadUrl);
+  g_plist_url = downloadUrl;
+  is_apk_plist_done = true;
+
+  const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+  if (selectedRadio || incoming_g_url_id !== null) {
+    on_apk_plist_upload();
+  }
+
+        }
+
+
+    }
 
 
   </script>

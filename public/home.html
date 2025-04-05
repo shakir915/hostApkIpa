@@ -406,6 +406,7 @@ refreshRedirection();
 
       firebase.database().ref("/app_links/" + pageID).get().then((snapshot) => {
 
+
         if (snapshot.exists()) {
 
           snapshot.forEach(function (childSnapshot) {
@@ -689,15 +690,19 @@ if (android && ios) {
 
 
     const jsonString = encodeURIComponent(JSON.stringify(json,null, 2));
-    var jsonStore=`jsonToView_${pageID}`;
-     localStorage.setItem(jsonStore, jsonString);
-
-    const newTab = window.open(`more_info.html?jsonStore=${jsonStore}`, '_blank');
+     localStorage.setItem("jsonStore", jsonString);
+try {
+    const newTab = window.open(`more_info.html`, '_blank');
     if (newTab) {
         newTab.focus();
     } else {
-        alert('Please allow popups for this site.');
+        // If popup blocked, open in same tab instead of showing alert
+        window.location.href = `more_info.html`;
     }
+} catch (e) {
+    // Fallback for any errors
+    window.location.href = `more_info.html`;
+}
 
 }
 
