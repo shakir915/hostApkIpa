@@ -9,7 +9,7 @@ const path = require('path');
   var browserClosed = false;
   var pageID = process.argv[2];
   var filePath = process.argv[3];
-  await page.goto('https://install4.web.app/upload_app_v3.html?g_url_id=' + pageID); // replace with your site
+  await page.goto('https://install4.web.app/upload.html?g_url_id=' + pageID); // replace with your site
 
   const input = await page.$('input[type=file]');
   await input.uploadFile(filePath);

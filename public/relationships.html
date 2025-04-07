@@ -38,7 +38,7 @@
 <body>
 
 
-  <a class="upload" target="_blank" id="upload" href="https://install4.web.app/upload_app_v3.html">Upload New App </a>
+  <a class="upload" target="_blank" id="upload" href="https://install4.web.app/upload.html">Upload New App </a>
   <p id="load">Firebase SDK Loading&hellip;</p>
 
   <script>
@@ -63,7 +63,7 @@
 
       pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
       if (pageID.trim() == "" || pageID.toLowerCase() == "upload") {
-        window.location = "https://install1.web.app/upload_app_v3.html";
+        window.location = "https://install4.web.app/upload.html";
         return
       } else if (pageID.toLocaleLowerCase() == "events") {
         window.location = "./events.html";
