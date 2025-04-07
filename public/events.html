@@ -165,7 +165,7 @@
 
   </div>
 
-  <a class="upload" target="_blank" id="upload" href="upload_app.html">Upload New App </a>
+  <a class="upload" target="_blank" id="upload" href="upload_app_v3.html">Upload New App </a>
   <p id="load">Firebase SDK Loading&hellip;</p>
 
 
@@ -178,7 +178,7 @@
 
       pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
       if (pageID.trim() == "") {
-        window.location = "./upload_app.html";
+        window.location = "./upload_app_v3.html";
         return
       }
 
@@ -243,7 +243,7 @@
               console.log(`${key}: ${childData[key]}`);
               var value = childData[key]
 
-              if(childData["page"]=="events" || childData["page"]=="events.html"){
+              if (childData["page"] == "events" || childData["page"] == "events.html") {
                 return
               }
 

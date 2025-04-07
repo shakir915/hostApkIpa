@@ -10,7 +10,7 @@
 
 
   <title id="pafeTile">Relationships | Explain in malayalam</title>
-  
+
 
   <!-- update the version number as needed -->
   <script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
@@ -32,25 +32,25 @@
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 
 
- 
+
 </head>
 
 <body>
 
 
-  <a class="upload" target="_blank" id="upload" href="https://install1.web.appupload_app.html">Upload New App </a>
+  <a class="upload" target="_blank" id="upload" href="https://install4.web.app/upload_app_v3.html">Upload New App </a>
   <p id="load">Firebase SDK Loading&hellip;</p>
 
-<script>
-      try {
-  var k = new Map();
-  console.log("ES6 supported!!");
-} catch(err) {
-  window.location = "./es5_redirect.html?id="+window.location.toString().split("/").slice(-1)[0].replace("#", "");
-  //return;
-}
+  <script>
+    try {
+      var k = new Map();
+      console.log("ES6 supported!!");
+    } catch (err) {
+      window.location = "./es5_redirect.html?id=" + window.location.toString().split("/").slice(-1)[0].replace("#", "");
+      //return;
+    }
 
-</script>
+  </script>
 
 
   <script>
@@ -63,7 +63,7 @@
 
       pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
       if (pageID.trim() == "" || pageID.toLowerCase() == "upload") {
-        window.location = "https://install1.web.app/upload_app.html";
+        window.location = "https://install1.web.app/upload_app_v3.html";
         return
       } else if (pageID.toLocaleLowerCase() == "events") {
         window.location = "./events.html";
@@ -175,7 +175,7 @@
         // Uncaught ReferenceError: firebase is not defined 
       } catch (error) {
         console.log(error)
-        window.location = "./es5_redirect.html?id="+window.location.toString().split("/").slice(-1)[0].replace("#", "");
+        window.location = "./es5_redirect.html?id=" + window.location.toString().split("/").slice(-1)[0].replace("#", "");
 
 
       }
@@ -302,27 +302,27 @@
 
 
           if (deviceType == 0) {
-          const qrcode = new QRCode(document.getElementById('qrcode'), {
-            text: window.location.toString(),
-            width: 200,
-            height: 200,
-            colorDark: '#000',
-            colorLight: '#fff',
-            correctLevel: QRCode.CorrectLevel.H
-          });
+            const qrcode = new QRCode(document.getElementById('qrcode'), {
+              text: window.location.toString(),
+              width: 200,
+              height: 200,
+              colorDark: '#000',
+              colorLight: '#fff',
+              correctLevel: QRCode.CorrectLevel.H
+            });
 
-          const qrText = document.querySelector('#qrText');
-          qrText.textContent = "scan QR code to install in your phone";
+            const qrText = document.querySelector('#qrText');
+            qrText.textContent = "scan QR code to install in your phone";
 
 
 
-        }
+          }
 
 
         } else {
           appid.textContent = "404 Not Found";
-       
-      
+
+
         }
 
 

@@ -199,16 +199,18 @@
     <div id="qrText"></div>
 
     <div id="result_div_icon" style="padding-top: 10px; padding-bottom: 10px;"> </div>
+    <div id="result_list_packageName"></div>
+
     <div style="display: flex; align-items: center;">
-      <div id="result_list_packageName"></div>
+      <div id="result_list_versionName"></div>
       <i class="fa fa-info-circle" aria-hidden="true" id="infoButton"
-        style="display: none; font-size:18px; color:#000; background: none; margin-left:10px; cursor:pointer; padding: 0 8px;"
+        style="display: none; font-size:18px; color:#000; background: none; margin-left:7px; cursor:pointer; padding: 0 8px;"
         onclick="viewJsonInNewTab()">
       </i>
 
     </div>
 
-    <div id="result_list_versionName"></div>
+
     <div id="result_list_date"></div>
     <p id="instruction1"></p>
     <div id="result_list_ios"></div>
@@ -229,7 +231,7 @@
   <script type="text/javascript">
 
     let lastFetchTime = 0;
-    const COOLDOWN_PERIOD = 5*1000;
+    const COOLDOWN_PERIOD = 5 * 1000;
 
 
     async function refreshRedirection() {
@@ -410,18 +412,18 @@
       fetchData()
 
 
-document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'visible') {
-        fetchData()
-  }
-});
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          fetchData()
+        }
+      });
 
-window.addEventListener('focus', function() {
-      fetchData()
-});
-window.addEventListener('blur', function() {
-      fetchData()
-});
+      window.addEventListener('focus', function () {
+        fetchData()
+      });
+      window.addEventListener('blur', function () {
+        fetchData()
+      });
 
       // firebase.firestore().doc('/foo/bar').get().then(() => { });
       // firebase.functions().httpsCallable('yourFunction')().then(() => { });
@@ -493,18 +495,22 @@ window.addEventListener('blur', function() {
 
     function userIdentificationCookie() {
 
-      var brow = browser
-      if (typeof brow === "undefined") {
-        brow = chrome;
+      try {
+        var brow = browser
+        if (typeof brow === "undefined") {
+          brow = chrome;
+        }
+        let date = new Date();
+        date.setTime(date.getTime() + (199 * 24 * 60 * 60 * 1000));
+        brow.cookies.set({
+          url: 'example.com',
+          name: 'HelloWorld',
+          value: 'HelloWorld',
+          expirationDate: date
+        })
+      } catch (error) {
+
       }
-      let date = new Date();
-      date.setTime(date.getTime() + (199 * 24 * 60 * 60 * 1000));
-      brow.cookies.set({
-        url: 'example.com',
-        name: 'HelloWorld',
-        value: 'HelloWorld',
-        expirationDate: date
-      })
     }
 
 
@@ -575,200 +581,173 @@ window.addEventListener('blur', function() {
     }
 
 
-function clearElementContent(elementId) {
-    try{
-      const element = document.getElementById(elementId);
-  if (element) {
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
-  }
-    }
-   catch (e) {
+    function clearElementContent(elementId) {
+      try {
+        const element = document.getElementById(elementId);
+        if (element) {
+          while (element.firstChild) {
+            element.removeChild(element.firstChild);
+          }
+        }
+      }
+      catch (e) {
 
       }
 
-}
+    }
+
+
+    function getSafeDataDupRemoved(data, name) {
+      var iosData = null;
+      var androidData = null;
+      try { iosData = data["ios"][name] } catch (e) { console.error(e); }
+      try { androidData = data["android"][name] } catch (e) { console.error(e); }
+      if (iosData !== null && androidData !== null && iosData !== androidData) {
+        return `${iosData} | ${androidData}`;
+      } else if (iosData !== null) {
+        return iosData;
+      } else if (androidData !== null && iosData == null) {
+        return androidData;
+      }
+      return null;
+    }
+
+    function getSafeDateTime(data, name) {
+
+      var iosData = null;
+      var androidData = null;
+      try { iosData = new Date(data["ios"][name]).toDateString(); } catch (e) { console.error(e); }
+      try { iosData = new Date(data["android"][name]).toDateString(); } catch (e) { console.error(e); }
+      if (iosData !== null) {
+        return iosData;
+      } else androidData
+      return null;
+    }
+
+
+    function getSafeDataIosFirst(data, name) {
+      var iosData = null;
+      var androidData = null;
+      try { iosData = data["ios"][name] } catch (e) { console.error(e); }
+      try { androidData = data["android"][name] } catch (e) { console.error(e); }
+      if (deviceType == 1) {
+        if (androidData !== null) {
+          return androidData;
+        } else return iosData;
+      }
+      if (iosData !== null) {
+        return iosData;
+      } else return androidData;
+    }
+
+    function hasDataOn(data, name, platform) {
+      try {
+        const cData = data[platform]?.[name];
+        return typeof cData === "string" && cData.trim() !== "";
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+    }
+
+
 
     async function setData(snapshot) {
       if (snapshot.exists()) {
-
+        let data = {};
         snapshot.forEach(function (childSnapshot) {
           var childKey = childSnapshot.key;
           var childData = childSnapshot.val();
-          // ...
-
-
-
-
-
-
-
-
-          if (childKey == "name") {
-            appid.textContent = childData;
-          }
-
-          if (childKey == "packageName") {
-            const div = document.createElement('div')
-            div.innerHTML = `
-<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${childData}</span>
-`
-             clearElementContent('result_list_packageName')
-            document.getElementById('result_list_packageName').appendChild(div)
-          }
-          document.getElementById("infoButton").style.display = "inline";
-
-          if (childKey == "versionName") {
-            const div = document.createElement('div')
-            div.innerHTML = `
-<span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${childData}</span>
-`
-
-           clearElementContent('result_list_versionName')
-            document.getElementById('result_list_versionName').appendChild(div)
-          }
-
-          if (childKey == "date") {
-
-
-            var utcSeconds = childData / 1000;
-            var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-            d.setUTCSeconds(utcSeconds);
-
-            const div = document.createElement('div')
-            div.innerHTML = `
-<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${d.toDateString()}</span>
-`
-clearElementContent('result_list_date')
-            document.getElementById('result_list_date').appendChild(div)
-          }
-
-
-
-
-          if (childKey == "icon") {
-            const div = document.createElement('div')
-            div.innerHTML = `
-<img src="${childData}"  class="centerIMG"  > </img>
-`
-clearElementContent('result_div_icon')
-            document.getElementById('result_div_icon').appendChild(div)
-          }
-
-
-
-
-
-
-
-
-
-
-
-
-          if ((deviceType == 2) && childKey == "plist" && childData != null && childData.trim() != "") {
-            var linkkkk = "itms-services://?action=download-manifest&url=";
-            let encoded = encodeURIComponent(childData);
-
-            const div = document.createElement('div')
-            div.innerHTML = `
-
-
-<a   onClick="download1(\'${linkkkk + encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
-
-`
-clearElementContent('result_list_ios')
-            document.getElementById('result_list_ios').appendChild(div)
-
-          }
-
-          if ((deviceType == 0) && childKey == "ipa" && childData != null && childData.trim() != "") {
-
-
-
-
-
-            const div = document.createElement('div')
-            div.innerHTML = `
-
-<a       onClick="download1(\'${childData}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
-
-`
-clearElementContent('result_list_ios')
-            document.getElementById('result_list_ios').appendChild(div)
-
-          }
-
-
-
-
-
-          if ((deviceType == 1 || deviceType != 2) && childKey == "apk" && childData != null && childData.trim() != "") {
-            const div = document.createElement('div')
-            div.innerHTML = `
-<a onClick="download1(\'${childData}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
-`
-
-clearElementContent('result_list_android')
-            document.getElementById('result_list_android').appendChild(div)
-          }
-
-
-
+          data[childKey] = childData;
         });
 
+        console.log(`hasDataOn  ${hasDataOn(data, "ipa", "ios")} ${hasDataOn(data, "apk", "android")} ${data}`);
 
-        if (deviceType == 0) {
-         clearElementContent('qrcode');
-          const qrcode = new QRCode(document.getElementById('qrcode'), {
-            text: window.location.toString(),
-            width: 200,
-            height: 200,
-            colorDark: '#000',
-            colorLight: '#fff',
-            correctLevel: QRCode.CorrectLevel.H
-          });
-
-          const qrText = document.querySelector('#qrText');
-          qrText.textContent = "scan QR code to install in your phone";
-
-
-
+        if (hasDataOn(data, "ipa", "ios") || hasDataOn(data, "apk", "android")) {
+          appid.textContent = getSafeDataIosFirst(data, "name");
+          var div = document.createElement('div')
+          div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
+          clearElementContent('result_list_packageName')
+          document.getElementById('result_list_packageName').appendChild(div)
+          document.getElementById("infoButton").style.display = "inline";
+          div = document.createElement('div')
+          div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${getSafeDataIosFirst(data, "versionName")}</span>`
+          clearElementContent('result_list_versionName')
+          document.getElementById('result_list_versionName').appendChild(div)
+          div = document.createElement('div')
+          div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${getSafeDateTime(data, "date")}</span>`
+          clearElementContent('result_list_date')
+          document.getElementById('result_list_date').appendChild(div)
+          div = document.createElement('div')
+          div.innerHTML = `<img src="${getSafeDataIosFirst(data, "icon")}"  class="centerIMG"  > </img>`
+          clearElementContent('result_div_icon')
+          document.getElementById('result_div_icon').appendChild(div)
+          if ((deviceType == 2) && hasDataOn(data, "plist", "ios")) {
+            var linkkkk = "itms-services://?action=download-manifest&url=";
+            let encoded = encodeURIComponent(data["ios"]["plist"]);
+            const div = document.createElement('div')
+            div.innerHTML = `<a   onClick="download1(\'${linkkkk + encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>`
+            clearElementContent('result_list_ios')
+            document.getElementById('result_list_ios').appendChild(div)
+          }
+          if ((deviceType == 0) && hasDataOn(data, "ipa", "ios")) {
+            const div = document.createElement('div')
+            div.innerHTML = `<a       onClick="download1(\'${data["ios"]["ipa"]}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>`
+            clearElementContent('result_list_ios')
+            document.getElementById('result_list_ios').appendChild(div)
+          }
+          if ((deviceType == 1 || deviceType != 2) && hasDataOn(data, "apk", "android")) {
+            const div = document.createElement('div')
+            div.innerHTML = `<a onClick="download1(\'${data["android"]["apk"]}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>`
+            clearElementContent('result_list_android')
+            document.getElementById('result_list_android').appendChild(div)
+          }
+          if (deviceType == 0) {
+            clearElementContent('qrcode');
+            const qrcode = new QRCode(document.getElementById('qrcode'), {
+              text: window.location.toString(),
+              width: 200,
+              height: 200,
+              colorDark: '#000',
+              colorLight: '#fff',
+              correctLevel: QRCode.CorrectLevel.H
+            });
+            const qrText = document.querySelector('#qrText');
+            qrText.textContent = "scan QR code to install in your phone";
+          }
+        } else {
+          appid.textContent = "404 Not Found";
         }
-
-
       } else {
         appid.textContent = "404 Not Found";
-
       }
     }
 
 
 
-async function fetchData() {
-const currentTime = Date.now();
-  if (currentTime - lastFetchTime < COOLDOWN_PERIOD) {
-    return;
-  }
-  lastFetchTime = currentTime;
- appid.textContent = "Loading...";
-  const paths = ["/app_links/", "/", "/app_links_all/"];
-
-  for (const path of paths) {
-    try {
-      const snapshot = await firebase.database().ref(path + pageID).get();
-      if (snapshot.exists()) {
-        setData(snapshot);
+    async function fetchData() {
+      const currentTime = Date.now();
+      if (currentTime - lastFetchTime < COOLDOWN_PERIOD) {
         return;
       }
-    } catch (error) {
-      console.error(`Error fetching data from ${path + pageID}:`, error);
-    }
-  }
+      lastFetchTime = currentTime;
+      appid.textContent = "Loading...";
+      const paths = ["/app_links/", "/", "/app_links_all/"];
 
-    appid.textContent = "404 Not Found";
-}
+      for (const path of paths) {
+        try {
+          const snapshot = await firebase.database().ref(path + pageID).get();
+          if (snapshot.exists()) {
+            setData(snapshot);
+            return;
+          }
+        } catch (error) {
+          console.error(`Error fetching data from ${path + pageID}:`, error);
+        }
+      }
+
+      appid.textContent = "404 Not Found";
+    }
 
 
   </script>
