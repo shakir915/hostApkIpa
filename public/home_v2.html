@@ -228,6 +228,9 @@
   <a class="upload" id="upload">Upload New App </a>
   <script type="text/javascript">
 
+    let lastFetchTime = 0;
+    const COOLDOWN_PERIOD = 5*1000;
+
 
     async function refreshRedirection() {
       const response = await fetch("https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/redirection.json");
@@ -406,6 +409,20 @@
 
       fetchData()
 
+
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+        fetchData()
+  }
+});
+
+window.addEventListener('focus', function() {
+      fetchData()
+});
+window.addEventListener('blur', function() {
+      fetchData()
+});
+
       // firebase.firestore().doc('/foo/bar').get().then(() => { });
       // firebase.functions().httpsCallable('yourFunction')().then(() => { });
       // firebase.messaging().requestPermission().then(() => { });
@@ -558,7 +575,20 @@
     }
 
 
+function clearElementContent(elementId) {
+    try{
+      const element = document.getElementById(elementId);
+  if (element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
+  }
+    }
+   catch (e) {
 
+      }
+
+}
 
     async function setData(snapshot) {
       if (snapshot.exists()) {
@@ -584,6 +614,7 @@
             div.innerHTML = `
 <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${childData}</span>
 `
+             clearElementContent('result_list_packageName')
             document.getElementById('result_list_packageName').appendChild(div)
           }
           document.getElementById("infoButton").style.display = "inline";
@@ -593,6 +624,8 @@
             div.innerHTML = `
 <span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${childData}</span>
 `
+
+           clearElementContent('result_list_versionName')
             document.getElementById('result_list_versionName').appendChild(div)
           }
 
@@ -607,6 +640,7 @@
             div.innerHTML = `
 <span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${d.toDateString()}</span>
 `
+clearElementContent('result_list_date')
             document.getElementById('result_list_date').appendChild(div)
           }
 
@@ -618,6 +652,7 @@
             div.innerHTML = `
 <img src="${childData}"  class="centerIMG"  > </img>
 `
+clearElementContent('result_div_icon')
             document.getElementById('result_div_icon').appendChild(div)
           }
 
@@ -643,6 +678,7 @@
 <a   onClick="download1(\'${linkkkk + encoded}\',\'download_plist\')" class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
 
 `
+clearElementContent('result_list_ios')
             document.getElementById('result_list_ios').appendChild(div)
 
           }
@@ -659,6 +695,7 @@
 <a       onClick="download1(\'${childData}\',\'download_ipa\')"   class="btn"><i class="fa fa-apple" style="font-size:18px;color:white" ></i>  Download</a>
 
 `
+clearElementContent('result_list_ios')
             document.getElementById('result_list_ios').appendChild(div)
 
           }
@@ -672,6 +709,8 @@
             div.innerHTML = `
 <a onClick="download1(\'${childData}\',\'download_apk\')"  class="btn"><i class="fa fa-android" style="font-size:18px;color:white" ></i>  Download</a>
 `
+
+clearElementContent('result_list_android')
             document.getElementById('result_list_android').appendChild(div)
           }
 
@@ -681,6 +720,7 @@
 
 
         if (deviceType == 0) {
+         clearElementContent('qrcode');
           const qrcode = new QRCode(document.getElementById('qrcode'), {
             text: window.location.toString(),
             width: 200,
@@ -705,7 +745,14 @@
     }
 
 
+
 async function fetchData() {
+const currentTime = Date.now();
+  if (currentTime - lastFetchTime < COOLDOWN_PERIOD) {
+    return;
+  }
+  lastFetchTime = currentTime;
+ appid.textContent = "Loading...";
   const paths = ["/app_links/", "/", "/app_links_all/"];
 
   for (const path of paths) {
@@ -720,7 +767,7 @@ async function fetchData() {
     }
   }
 
-  console.log(`Data not found at any of the specified paths for pageID: ${pageID}`);
+    appid.textContent = "404 Not Found";
 }
 
 
