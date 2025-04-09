@@ -1,32 +1,74 @@
 #!/usr/bin/env node
 
+const fs = require('fs');
+const os = require('os');
 const puppeteer = require('puppeteer');
 const path = require('path');
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: "new" }); // Set true for headless
+
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    userDataDir: './my-user-data',
+  });
+
+  let exitCalled = false;
+  async function close_browser(status) {
+    if (exitCalled) return;
+    exitCalled = true;
+    try {
+      await browser.close();
+    } catch (e) {
+      console.error("Browser already closed:", e.message);
+    }
+    process.exit(status);
+  }
+
   const page = await browser.newPage();
-  var browserClosed = false;
-  var pageID = process.argv[2];
-  var filePath = process.argv[3];
-  await page.goto('https://install4.web.app/upload.html?g_url_id=' + pageID); // replace with your site
+  const pageID = process.argv[2];
+  const filePath = process.argv[3];
+
+  await page.goto(`https://install4.web.app/upload.html?g_url_id=${pageID}`);
 
   const input = await page.$('input[type=file]');
+
+  try {
+    const homeDir = os.homedir(); // e.g., /Users/shakir
+    const destDir = path.join(homeDir, 'BuildCopy');
+    fs.mkdirSync(destDir, { recursive: true });
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:T]/g, '_').split('.')[0]; // YYYY_MM_dd_HH_mm_ss
+    const fileName = `${pageID}_${timestamp}${path.extname(filePath)}`;
+    const destPath = path.join(destDir, fileName);
+
+    fs.copyFile(filePath, destPath, (err) => {
+      if (err) {
+        console.error('Error copying file:', err);
+      } else {
+        console.log('File copied to:', destPath);
+      }
+    });
+  }catch (e) {
+    console.error(e);
+  }
+
   await input.uploadFile(filePath);
 
   page.on('console', msg => {
     const text = msg.text();
-    if (text.includes("%")) {
-      printProgress("Uploading... "+ text);
+    if (text.includes("File format is not recognized")) {
+      console.log('\n');
+      close_browser(-1);
+    } else if (text.includes("%")) {
+      printProgress("Uploading... " + text);
     } else if (text.includes("Upload is")) {
-      // Ignore other "Upload is" messages
+      // Skip
     } else if (text.includes("BUILD LINK")) {
-        console.log('', "\n");
-        console.log( text);
-        console.log('', "\n");
-        browser.close()
+      console.log('\n');
+      console.log(text);
+      console.log('\n');
+      close_browser(0);
     } else {
-      // Use console.error so it doesn't interfere with our progress display
       console.log('', msg.text());
     }
   });
@@ -35,19 +77,17 @@ const path = require('path');
     await page.waitForFunction(() => {
       const el = document.querySelector('#url_id_text');
       return el && el.textContent.trim().startsWith('https://');
-    }, { timeout: 5*60*1000 });
-    const urlIdText = await page.$eval('#url_id_text', el => el.textContent.trim());
+    }, { timeout: 5 * 60 * 1000 });
 
+    // Do not call browser.close here — let it happen in the console handler
   } catch (error) {
-    console.error("Error waiting for URL:", error);
+    console.error("Error waiting for URL:", error.message);
+    await close_browser(1); // fail gracefully
   }
-
-
 })();
 
 function printProgress(progress) {
-  // Use process.stderr.write instead of process.stdout for more reliable line clearing
-  process.stderr.clearLine();
-  process.stderr.cursorTo(0);
+  process.stderr.clearLine?.();
+  process.stderr.cursorTo?.(0);
   process.stderr.write(progress);
 }

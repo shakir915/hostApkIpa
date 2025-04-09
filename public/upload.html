@@ -28,15 +28,15 @@
   <title>Upload IPA,APK</title>
 
   <!-- update the version number as needed -->
-  <script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-app-compat.js"></script>
   <!-- include only the Firebase features as you need -->
-  <!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
-  <script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-auth-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-database-compat.js"></script>
   <!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
-  <script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
-  <script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-storage-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-analytics-compat.js"></script>
   <!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
   <!--
@@ -375,6 +375,7 @@
       else return null;
     }
     const incoming_g_url_id = get_incoming_g_url_id();
+      var user=null;
 
 
 
@@ -795,6 +796,14 @@
     }
 
 
+    function  getUserId(){
+      try {
+          return user.uid
+      }catch (e) {
+
+      }
+        return  "random"
+    }
 
     async function on_apk_plist_upload() {
 
@@ -817,6 +826,7 @@
         "date": Date.now(),
         "g_app_name_for_url": g_app_name_for_url,
         "g_url_id": g_url_id,
+        "user_id": getUserId(),
       }
 
       try {
@@ -825,17 +835,6 @@
       } catch (error) {
         console.error("Error setting data:", error)
       }
-
-      // var oldSet = await assignPrevOtherPlatformValues()
-      // if (oldSet == null) {
-      //   oldSet = {}
-      // }
-
-      // for (const key in nexwSet) {
-      //   if (nexwSet[key] != null) {
-      //     oldSet[key] = nexwSet[key];
-      //   }
-      // }
 
       try {
         const dbRef = firebase.database().ref("/app_links/" + g_url_id+"/"+platfromName);
@@ -890,6 +889,7 @@
         console.error(e);
       }
 
+
       console.log("BUILD LINK : " + link)
 
     }
@@ -906,43 +906,43 @@
 
 
 
-    function storage_space_check() {
-      var ref = firebase.storage().ref("");
-      ref.listAll()
-
-    }
-
-
-    async function assignPrevOtherPlatformValues() {
-      if (g_url_id != null) {
-        try {
-          const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
-          if (snapshot.exists()) {
-            const dataObj = snapshot.val();
-            const dataSet = new Set();
-            if (typeof dataObj === 'object' && dataObj !== null) {
-              Object.values(dataObj).forEach(value => {
-                dataSet.add(value);
-              });
-            } else {
-              dataSet.add(dataObj);
-            }
-            return dataSet;
-          } else {
-          }
-        } catch (error) {
-          console.error("Error fetching data from Firebase:", error);
-        }
-      } else {
-
-      }
-    }
+//    function storage_space_check() {
+//      var ref = firebase.storage().ref("");
+//      ref.listAll()
+//
+//    }
 
 
+//    async function assignPrevOtherPlatformValues() {
+//      if (g_url_id != null) {
+//        try {
+//          const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
+//          if (snapshot.exists()) {
+//            const dataObj = snapshot.val();
+//            const dataSet = new Set();
+//            if (typeof dataObj === 'object' && dataObj !== null) {
+//              Object.values(dataObj).forEach(value => {
+//                dataSet.add(value);
+//              });
+//            } else {
+//              dataSet.add(dataObj);
+//            }
+//            return dataSet;
+//          } else {
+//          }
+//        } catch (error) {
+//          console.error("Error fetching data from Firebase:", error);
+//        }
+//      } else {
+//
+//      }
+//    }
 
 
 
-    document.addEventListener('DOMContentLoaded', function () {
+
+
+    document.addEventListener('DOMContentLoaded', async function () {
       try {
         var ref = firebase.database().ref("/events")
         var newChildRef = ref.push();
@@ -956,6 +956,38 @@
       } catch (e) {
         console.error(e);
       }
+        const auth = firebase.auth();
+        // Function to get current user or create anonymous user
+        function getCurrentUser() {
+          return new Promise((resolve, reject) => {
+            // Check if there's already a user signed in
+            const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+              unsubscribeAuth(); // Stop listening once we have an answer
+
+              if (user) {
+                // User is already signed in
+                //console.log("User already authenticated:", user.uid);
+                resolve(user);
+              } else {
+                // No user is signed in, create an anonymous user
+                //console.log("No user found, creating anonymous user");
+                auth.signInAnonymously()
+                  .then((userCredential) => {
+                    // Anonymous user created successfully
+                    const anonUser = userCredential.user;
+                    //console.log("Anonymous user created:", anonUser.uid);
+                    resolve(anonUser);
+                  })
+                  .catch((error) => {
+                    // Handle errors in creating anonymous user
+                    console.error("Error creating anonymous user:", error.code, error.message);
+                    reject(error);
+                  });
+              }
+            }, reject);
+          });
+        }
+        user = await getCurrentUser();
     })
 
 
@@ -975,6 +1007,7 @@
     function viewJsonInNewTab() {
       const jsonString = encodeURIComponent(JSON.stringify(g_result));
       localStorage.setItem("jsonStore", jsonString);
+      localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
       const newTab = window.open(`more_info.html`, '_blank');
       if (newTab) {
         newTab.focus();
@@ -1136,7 +1169,7 @@
 
         const downloadUrl = `${url}?alt=media`;
 
-        console.log('File available at', downloadUrl);
+        //console.log('File available at', downloadUrl);
         g_plist_url = downloadUrl;
         is_apk_plist_done = true;
 

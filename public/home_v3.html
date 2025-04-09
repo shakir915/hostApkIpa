@@ -29,15 +29,15 @@
   <link rel="manifest" href="/site.webmanifest">
 
   <!-- update the version number as needed -->
-  <script defer src="/__/firebase/9.15.0/firebase-app-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-app-compat.js"></script>
   <!-- include only the Firebase features as you need -->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-auth-compat.js"></script>-->
-  <script defer src="/__/firebase/9.15.0/firebase-database-compat.js"></script>
+  <script defer src="/__/firebase/11.6.0/firebase-database-compat.js"></script>
   <!--    <script defer src="/__/firebase/9.15.0/firebase-firestore-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-functions-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-messaging-compat.js"></script>-->
-  <script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>
-  <script defer src="/__/firebase/9.15.0/firebase-analytics-compat.js"></script>
+  <!--<script defer src="/__/firebase/9.15.0/firebase-storage-compat.js"></script>-->
+  <script defer src="/__/firebase/11.6.0/firebase-analytics-compat.js"></script>
   <!--    <script defer src="/__/firebase/9.15.0/firebase-remote-config-compat.js"></script>-->
   <!--    <script defer src="/__/firebase/9.15.0/firebase-performance-compat.js"></script>-->
   <!--
@@ -200,18 +200,12 @@
 
     <div id="result_div_icon" style="padding-top: 10px; padding-bottom: 10px;"> </div>
     <div id="result_list_packageName"></div>
-
-    <div style="display: flex; align-items: center;">
-      <div id="result_list_versionName"></div>
-      <i class="fa fa-info-circle" aria-hidden="true" id="infoButton"
-        style="display: none; font-size:18px; color:#000; background: none; margin-left:7px; cursor:pointer; padding: 0 8px;"
-        onclick="viewJsonInNewTab()">
-      </i>
-
+    <div id="result_list_versionName"></div>
+    <div id="result_list_date"></div>
+    <div >
+      <span   id="infoButton" style="display: none; color: blue; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px; " onclick="viewJsonInNewTab()">More Info</span>
     </div>
 
-
-    <div id="result_list_date"></div>
     <p id="instruction1"></p>
     <div id="result_list_ios"></div>
     <p> </p>
@@ -232,6 +226,7 @@
 
     let lastFetchTime = 0;
     const COOLDOWN_PERIOD = 5 * 1000;
+    var g_app_name_for_url=null;
 
 
     async function refreshRedirection() {
@@ -425,19 +420,7 @@
         fetchData()
       });
 
-      // firebase.firestore().doc('/foo/bar').get().then(() => { });
-      // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-      // firebase.messaging().requestPermission().then(() => { });
-      //  firebase.storage().ref('everything_women.ipa').getDownloadURL().then((url) => {
 
-      //     const ipa = document.querySelector('#ipa');
-      //       ipa.textContent = url;
-      //  });
-      // firebase.analytics(); // call to activate
-      // firebase.analytics().logEvent('tutorial_completed');
-      // firebase.performance(); // call to activate
-      //
-      // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
 
       try {
         let app = firebase.app();
@@ -447,7 +430,7 @@
           // 'firestore',
           // 'functions',
           // 'messaging',
-          'storage',
+//          'storage',
           'analytics',
           // 'remoteConfig',
           // 'performance',
@@ -490,34 +473,6 @@
 
       }
     }
-
-
-
-    function userIdentificationCookie() {
-
-      try {
-        var brow = browser
-        if (typeof brow === "undefined") {
-          brow = chrome;
-        }
-        let date = new Date();
-        date.setTime(date.getTime() + (199 * 24 * 60 * 60 * 1000));
-        brow.cookies.set({
-          url: 'example.com',
-          name: 'HelloWorld',
-          value: 'HelloWorld',
-          expirationDate: date
-        })
-      } catch (error) {
-
-      }
-    }
-
-
-    userIdentificationCookie()
-
-
-
 
     async function viewJsonInNewTab() {
 
@@ -565,6 +520,7 @@
 
       const jsonString = encodeURIComponent(JSON.stringify(json, null, 2));
       localStorage.setItem("jsonStore", jsonString);
+      localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
       try {
         const newTab = window.open(`more_info.html`, '_blank');
         if (newTab) {
@@ -652,18 +608,8 @@
 
 
 
-    async function setData(snapshot) {
-      if (snapshot.exists()) {
-        let data = {};
-        snapshot.forEach(function (childSnapshot) {
-          var childKey = childSnapshot.key;
-          var childData = childSnapshot.val();
-          data[childKey] = childData;
-        });
-
-        console.log(`hasDataOn  ${hasDataOn(data, "ipa", "ios")} ${hasDataOn(data, "apk", "android")} ${data}`);
-
-        if (hasDataOn(data, "ipa", "ios") || hasDataOn(data, "apk", "android")) {
+     function setData(data) {
+          g_app_name_for_url=getSafeDataIosFirst(data, "g_app_name_for_url");
           appid.textContent = getSafeDataIosFirst(data, "name");
           var div = document.createElement('div')
           div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
@@ -715,12 +661,6 @@
             const qrText = document.querySelector('#qrText');
             qrText.textContent = "scan QR code to install in your phone";
           }
-        } else {
-          appid.textContent = "404 Not Found";
-        }
-      } else {
-        appid.textContent = "404 Not Found";
-      }
     }
 
 
@@ -732,14 +672,25 @@
       }
       lastFetchTime = currentTime;
       appid.textContent = "Loading...";
-      const paths = ["/app_links/", "/", "/app_links_all/"];
+      const paths = ["/app_links/"+pageID,  ("/app_links_all/"+pageID).replace("____","/")];
 
       for (const path of paths) {
+              console.log(path)
         try {
-          const snapshot = await firebase.database().ref(path + pageID).get();
+          const snapshot = await firebase.database().ref(path).get();
           if (snapshot.exists()) {
-            setData(snapshot);
-            return;
+                  let data = {};
+                  snapshot.forEach(function (childSnapshot) {
+                    var childKey = childSnapshot.key;
+                    var childData = childSnapshot.val();
+                    data[childKey] = childData;
+                  });
+                  console.log(path)
+                  console.log(data)
+                  if (hasDataOn(data, "ipa", "ios")||hasDataOn(data, "apk", "android")) {
+                      setData(data)
+                      return
+                  }
           }
         } catch (error) {
           console.error(`Error fetching data from ${path + pageID}:`, error);
