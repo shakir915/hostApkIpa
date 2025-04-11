@@ -19,6 +19,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -279,6 +280,37 @@
       gap: 5px;
       white-space: nowrap;
     }
+
+
+    .inputWrapper {
+      display: inline-block;
+      position: relative;
+    }
+
+    #customInput {
+      min-width: 10px;
+      /* Reduced from 50px */
+      font-size: 0.9em;
+      /* Smaller font size */
+      padding: 2px 4px;
+      /* Reduced padding */
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      /* Slightly smaller border radius */
+      width: auto;
+    }
+
+    #textSizer {
+      visibility: hidden;
+      white-space: pre;
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-size: 0.9em;
+      /* Match the input font size */
+      padding: 2px 4px;
+      /* Match the input padding */
+    }
   </style>
 </head>
 
@@ -375,7 +407,7 @@
       else return null;
     }
     const incoming_g_url_id = get_incoming_g_url_id();
-      var user=null;
+    var user = null;
 
 
 
@@ -396,7 +428,7 @@
 
       inputElement.addEventListener("change", (e) => {
         if (inputElement.files.length) {
-          updateThumbnail(dropZoneElement, inputElement.files[0]);
+          fileSelect()
 
         }
       });
@@ -417,54 +449,13 @@
 
         if (e.dataTransfer.files.length) {
           inputElement.files = e.dataTransfer.files;
-          updateThumbnail(dropZoneElement, e.dataTransfer.files[0]);
+          fileSelect()
         }
 
         dropZoneElement.classList.remove("drop-zone--over");
       });
     });
 
-    /**
-     * Updates the thumbnail on a drop zone element.
-     *
-     * @param {HTMLElement} dropZoneElement
-     * @param {File} file
-     */
-    function updateThumbnail(dropZoneElement, file) {
-
-      fileSelect()
-      return
-
-      let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
-
-      // First time - remove the prompt
-      if (dropZoneElement.querySelector(".drop-zone__prompt")) {
-        dropZoneElement.querySelector(".drop-zone__prompt").remove();
-      }
-
-      // First time - there is no thumbnail element, so lets create it
-      if (!thumbnailElement) {
-        thumbnailElement = document.createElement("div");
-        thumbnailElement.classList.add("drop-zone__thumb");
-        dropZoneElement.appendChild(thumbnailElement);
-      }
-
-      thumbnailElement.dataset.label = file.name;
-
-      // Show thumbnail for image files
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
-        };
-      } else {
-        thumbnailElement.style.backgroundImage = null;
-      }
-
-
-    }
 
 
 
@@ -474,50 +465,14 @@
 
 
     function setGURLID() {
-      const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
-
-      if (selectedRadio) {
-        if (selectedRadio.id === "appName") {
-          g_url_id = g_app_name_for_url;
-        } else if (selectedRadio.id === "appNameQa") {
-          g_url_id = g_app_name_for_url + "_qa";
-        } else if (selectedRadio.id === "appNameProd") {
-          g_url_id = g_app_name_for_url + "_prod";
-        } else if (selectedRadio.id === "appNameBeta") {
-          g_url_id = g_app_name_for_url + "_beta";
-        } else if (selectedRadio.id === "appNameAlpha") {
-          g_url_id = g_app_name_for_url + "_alpha";
-        } else if (selectedRadio.id === "appNameLounge") {
-          g_url_id = g_app_name_for_url + "_lounge";
-        } else if (selectedRadio.id === "appNameStaging") {
-          g_url_id = g_app_name_for_url + "_staging";
-        } else if (selectedRadio.id === "Random") {
-          g_url_id = g_url_id_random
-        } else {
-          console.log("Unknown selection");
-        }
-
-
-      } else {
-        console.log("No option selected");
-      }
-
-
 
     }
 
 
     function setGURLIDSubmit() {
-      const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
 
-      if (selectedRadio) {
-        if (is_apk_plist_done) {
-          on_apk_plist_upload();
-        }
 
-      } else {
-        console.log("No option selected");
-      }
+
 
 
 
@@ -526,10 +481,8 @@
 
 
     function copy_to_clipboard() {
-
-      var url = "https://" + window.location.hostname + "/" + g_url_id
+      var url = document.querySelector('#url_id_text').textContent
       navigator.clipboard.writeText(url);
-
       var tooltip = document.getElementById("myTooltip");
       tooltip.innerHTML = "Copied: " + url;
     }
@@ -545,8 +498,8 @@
     var g_file = null;
     var g_version = null;
     var package_bundle_id = null;
-    var g_url_id = null;
-    var g_url_id_random = null;
+
+
     var g_ipa_url = null;
     var g_plist_url = null;
     var g_apk_url = null;
@@ -563,7 +516,7 @@
 
 
 
-    function fileSelect() {
+    async function fileSelect() {
       var date = new Date(Date.now());
       readableTime = `${date.getFullYear()}_${(date.getMonth() + 1).toString().padStart(2, '0')}_${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
 
@@ -574,7 +527,7 @@
       try {
         g_file = files[0];
         const parser = new AppInfoParser(g_file)
-        parser.parse().then(result => {
+        parser.parse().then(async result => {
           g_result = result
 
           g_version = result['versionName'] || result['CFBundleShortVersionString']
@@ -588,8 +541,7 @@
             if (g_app_name == null) {
               g_app_name = result['CFBundleExecutable']
             }
-          }
-          else {
+          } else {
             if (Array.isArray(result['application']['label']))
               g_app_name = result['application']['label'][0]
             else
@@ -601,11 +553,7 @@
           g_app_icon = result.icon
 
           const div = document.createElement('div')
-
-
-
           document.getElementById("topContainer").style.display = "none";
-
           div.innerHTML = `
             <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
@@ -660,70 +608,53 @@
 
 
 
+    <span id="max10URL" style="color: red; text-align: right; width: 100px; font-weight: 200; padding-right: 8px; font-size: 8px;">Max 10 URL for an app</span>
 <form class="formClass" id="radioForms">
   <div class="radioContainer">
-
-    <div class="radioOption">
-      <input type="radio" id="appName" name="appEnvironment" value="appName" onclick="setGURLID()">
-      <label for="appName">${g_app_name_for_url}</label>
+    <div id="dynamicRadioOptions" style="display: flex; align-items: center; flex-wrap: wrap;" ></div>
+    <div class="radioOption" id="customOptionDIV" style="width: 150px;">
+      <input type="radio" id="customOption" name="appEnvironment" value="custom" onclick="setGURLID()">
+      <input type="text" id="customInput" value="${g_app_name_for_url}"  onkeypress="return restrictInput(event)"/>
+        <button type="button" onclick="refreshCustomInput()" style="margin-left: 0px; padding: 0px; background: transparent; border: transparent;">
+            <i class="fa fa-refresh" style="font-size:14px;color:black"></i>
+          </button>
     </div>
 
-    <div class="radioOption">
-      <input type="radio" id="appNameQa" name="appEnvironment" value="appNameQa" onclick="setGURLID()">
-      <label for="appNameQa">${g_app_name_for_url}_qa</label>
-    </div>
-
-    <div class="radioOption">
-      <input type="radio" id="appNameProd" name="appEnvironment" value="appNameProd" onclick="setGURLID()">
-      <label for="appNameProd">${g_app_name_for_url}_prod</label>
-    </div>
-
-<!--    <div class="radioOption">
-      <input type="radio" id="appNameBeta" name="appEnvironment" value="appNameBeta" onclick="setGURLID()">
-      <label for="appNameBeta">${g_app_name_for_url}_beta</label>
-    </div>
-
-    <div class="radioOption">
-      <input type="radio" id="appNameAlpha" name="appEnvironment" value="appNameAlpha" onclick="setGURLID()">
-      <label for="appNameAlpha">${g_app_name_for_url}_alpha</label>
-    </div>
-
-    <div class="radioOption">
-      <input type="radio" id="appNameLounge" name="appEnvironment" value="appNameLounge" onclick="setGURLID()">
-      <label for="appNameLounge">${g_app_name_for_url}_lounge</label>
-    </div>
-
-    <div class="radioOption">
-      <input type="radio" id="appNameStaging" name="appEnvironment" value="appNameStaging" onclick="setGURLID()">
-      <label for="appNameStaging">${g_app_name_for_url}_staging</label>
-    </div>-->
-
-    <div class="radioOption">
-      <input type="radio" id="Random" name="appEnvironment" value="Random" onclick="setGURLID()">
-      <label for="Random">Random</label>
-    </div>
-
-  </div>
-
-  <button type="button" id="radioSubmitBtn" onclick="setGURLIDSubmit()">Submit</button>
+  <button type="button" id="radioSubmitBtn" onclick="on_apk_plist_upload()">Submit</button>
 
 </form>
 
             </div>
           `
+
           document.getElementById('result-list').appendChild(div)
           document.getElementById("copy_button").hidden = true;
           document.getElementById("uploadNewApp").style.visibility = 'visible';
 
-          if (incoming_g_url_id !== null) {
-            const radioForms = document.getElementById('radioForms');
-            radioForms.style.display = 'none';
-            pd_zero_accept = true
-            g_url_id = incoming_g_url_id
-            uploadToFirebaseStorage()
-          } else {
-            db_entry();
+
+          var url_list = "";
+          try {
+            var ref = firebase.database().ref("/url_list/" + g_app_name_for_url);
+            const snapshot = await ref.once('value');
+            url_list = snapshot.val();
+            addDynamicRadioOptions(url_list)
+          } catch (e) {
+            console.error(e)
           }
+
+
+
+
+
+          if ((incoming_g_url_id !== null && incoming_g_url_id !== undefined && String(incoming_g_url_id).trim() !== "")) {
+            const radioForms = document.getElementById('radioForms');
+            const max10URL = document.getElementById('max10URL');
+            radioForms.style.display = 'none';
+            max10URL.style.display = 'none';
+            pd_zero_accept = true
+          }
+
+          uploadToFirebaseStorage()
 
         }).catch(e => {
           console.log("Parse Error c1", e)
@@ -753,31 +684,7 @@
 
 
 
-    function db_entry() {
 
-      var url_id = makeid(4);
-      console.log(url_id);
-      const url_id_text = document.querySelector('#url_id_text');
-
-
-      firebase.database().ref("/app_links/" + url_id).get().then((snapshot) => {
-        if (snapshot.exists()) {
-          db_entry()
-        } else {
-          g_url_id = url_id
-          g_url_id_random = url_id
-          url_id_text.textContent = "";
-          uploadToFirebaseStorage()
-        }
-      }).catch((error) => {
-        console.error(error);
-      });
-
-
-
-
-
-    }
 
 
 
@@ -789,26 +696,92 @@
         g_apk_url = downloadURL;
         const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
         is_apk_plist_done = true
-        if (selectedRadio || incoming_g_url_id !== null) {
-          on_apk_plist_upload();
-        }
+        on_apk_plist_upload();
       }
     }
 
 
-    function  getUserId(){
+    function getUserId() {
       try {
-          return user.uid
-      }catch (e) {
+        return user.uid
+      } catch (e) {
 
       }
-        return  "random"
+      return "random"
     }
 
     async function on_apk_plist_upload() {
 
+      var g_url_id = null;
+      if ((incoming_g_url_id !== null && incoming_g_url_id !== undefined && String(incoming_g_url_id).trim() !== "")) {
+        g_url_id = incoming_g_url_id
+      } else {
+
+         const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+         const customInput = document.getElementById('customInput');
+       
+
+      
+       
+        if (selectedRadio) {
+          if (selectedRadio.value === "custom") {
+            g_url_id = customInput.value
+          } else {
+            g_url_id = selectedRadio.value
+          }
+        } else {
+          console.log("No option selected");
+        }
+
+
+        try {
+        try {
+          const apkHERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "apk")).once('value')).val();
+          if (apkHERE.length > 0) {
+            const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "g_app_name_for_url")).once('value')).val();
+            if (g_app_name_for_url !== g_app_name_for_url_HERE) {
+              alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
+              g_url_id = null;
+              return;
+            }
+          }
+        } catch (e) {
+        }
+
+        try {
+          const ipaHere = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "ipa")).once('value')).val();
+          if (ipaHere.length > 0) {
+            const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "g_app_name_for_url")).once('value')).val();
+            if (g_app_name_for_url !== g_app_name_for_url_HERE) {
+              alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
+              g_url_id = null;
+              return;
+            }
+          }
+        } catch (e) {
+        }
+      } catch (e) {
+      }
+
+      }
+
+
+
+
+    
+
+
+
+      if ((is_apk_plist_done !== true) || g_url_id === null || g_url_id === undefined || g_url_id.trim() === "") {
+        return //<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+      }
+
+
+
       const radioForms = document.getElementById('radioForms');
+      const max10URL = document.getElementById('max10URL');
       radioForms.style.display = 'none';
+      max10URL.style.display = 'none';
       var platfromName = isIos ? "ios" : "android";
 
 
@@ -830,14 +803,14 @@
       }
 
       try {
-        const dbRef = firebase.database().ref("/app_links_all/" + g_app_name_for_url + "/" + "__" + g_url_id + "__" + readableTime+"/"+platfromName);
+        const dbRef = firebase.database().ref("/app_links_all/" + g_app_name_for_url + "/" + "__" + g_url_id + "__" + readableTime + "/" + platfromName);
         await dbRef.set(nexwSet);
       } catch (error) {
         console.error("Error setting data:", error)
       }
 
       try {
-        const dbRef = firebase.database().ref("/app_links/" + g_url_id+"/"+platfromName);
+        const dbRef = firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName);
         await dbRef.set(nexwSet);
       } catch (error) {
         console.error("Error setting data:", error)
@@ -853,16 +826,31 @@
         window.open(link, '_blank');
 
       };
+
       document.getElementById("copy_button").hidden = false;
       document.getElementById("topContainer").style.display = "none";
 
+      var url_list = "";
       try {
-        var ref = firebase.database().ref("/url_list/" + g_app_name_for_url)
-        var newChildRef = ref.push();
-        await newChildRef.set(g_url_id);
+        var ref = firebase.database().ref("/url_list/" + g_app_name_for_url);
+        const snapshot = await ref.once('value');
+        url_list = snapshot.val();
       } catch (e) {
-        console.error("Error setting data:", error)
+        console.error(e)
       }
+
+      try {
+        var ref = firebase.database().ref("/url_list/" + g_app_name_for_url);
+        url_list = urlSuffixCommaSeperated(url_list, g_url_id)
+        await ref.set(url_list);
+      } catch (e) {
+        console.error(e)
+      }
+
+    
+
+
+
 
       try {
         var ref = firebase.database().ref("/events")
@@ -880,8 +868,8 @@
         console.error(e);
       }
 
-//    try {await fetch(delete1, {   method: 'DELETE', headers: {    }});} catch (e) {}
-//    try {await fetch(delete2, {   method: 'DELETE', headers: {    }});} catch (e) {}
+      //    try {await fetch(delete1, {   method: 'DELETE', headers: {    }});} catch (e) {}
+      //    try {await fetch(delete2, {   method: 'DELETE', headers: {    }});} catch (e) {}
 
       try {
         await firebase.database().ref("/more_details/" + platfromName + "/" + g_url_id).set(JSON.stringify(g_result));
@@ -906,37 +894,37 @@
 
 
 
-//    function storage_space_check() {
-//      var ref = firebase.storage().ref("");
-//      ref.listAll()
-//
-//    }
+    //    function storage_space_check() {
+    //      var ref = firebase.storage().ref("");
+    //      ref.listAll()
+    //
+    //    }
 
 
-//    async function assignPrevOtherPlatformValues() {
-//      if (g_url_id != null) {
-//        try {
-//          const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
-//          if (snapshot.exists()) {
-//            const dataObj = snapshot.val();
-//            const dataSet = new Set();
-//            if (typeof dataObj === 'object' && dataObj !== null) {
-//              Object.values(dataObj).forEach(value => {
-//                dataSet.add(value);
-//              });
-//            } else {
-//              dataSet.add(dataObj);
-//            }
-//            return dataSet;
-//          } else {
-//          }
-//        } catch (error) {
-//          console.error("Error fetching data from Firebase:", error);
-//        }
-//      } else {
-//
-//      }
-//    }
+    //    async function assignPrevOtherPlatformValues() {
+    //      if (g_url_id != null) {
+    //        try {
+    //          const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
+    //          if (snapshot.exists()) {
+    //            const dataObj = snapshot.val();
+    //            const dataSet = new Set();
+    //            if (typeof dataObj === 'object' && dataObj !== null) {
+    //              Object.values(dataObj).forEach(value => {
+    //                dataSet.add(value);
+    //              });
+    //            } else {
+    //              dataSet.add(dataObj);
+    //            }
+    //            return dataSet;
+    //          } else {
+    //          }
+    //        } catch (error) {
+    //          console.error("Error fetching data from Firebase:", error);
+    //        }
+    //      } else {
+    //
+    //      }
+    //    }
 
 
 
@@ -956,38 +944,38 @@
       } catch (e) {
         console.error(e);
       }
-        const auth = firebase.auth();
-        // Function to get current user or create anonymous user
-        function getCurrentUser() {
-          return new Promise((resolve, reject) => {
-            // Check if there's already a user signed in
-            const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-              unsubscribeAuth(); // Stop listening once we have an answer
+      const auth = firebase.auth();
+      // Function to get current user or create anonymous user
+      function getCurrentUser() {
+        return new Promise((resolve, reject) => {
+          // Check if there's already a user signed in
+          const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+            unsubscribeAuth(); // Stop listening once we have an answer
 
-              if (user) {
-                // User is already signed in
-                //console.log("User already authenticated:", user.uid);
-                resolve(user);
-              } else {
-                // No user is signed in, create an anonymous user
-                //console.log("No user found, creating anonymous user");
-                auth.signInAnonymously()
-                  .then((userCredential) => {
-                    // Anonymous user created successfully
-                    const anonUser = userCredential.user;
-                    //console.log("Anonymous user created:", anonUser.uid);
-                    resolve(anonUser);
-                  })
-                  .catch((error) => {
-                    // Handle errors in creating anonymous user
-                    console.error("Error creating anonymous user:", error.code, error.message);
-                    reject(error);
-                  });
-              }
-            }, reject);
-          });
-        }
-        user = await getCurrentUser();
+            if (user) {
+              // User is already signed in
+              //console.log("User already authenticated:", user.uid);
+              resolve(user);
+            } else {
+              // No user is signed in, create an anonymous user
+              //console.log("No user found, creating anonymous user");
+              auth.signInAnonymously()
+                .then((userCredential) => {
+                  // Anonymous user created successfully
+                  const anonUser = userCredential.user;
+                  //console.log("Anonymous user created:", anonUser.uid);
+                  resolve(anonUser);
+                })
+                .catch((error) => {
+                  // Handle errors in creating anonymous user
+                  console.error("Error creating anonymous user:", error.code, error.message);
+                  reject(error);
+                });
+            }
+          }, reject);
+        });
+      }
+      user = await getCurrentUser();
     })
 
 
@@ -1172,13 +1160,93 @@
         //console.log('File available at', downloadUrl);
         g_plist_url = downloadUrl;
         is_apk_plist_done = true;
-
-        const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
-        if (selectedRadio || incoming_g_url_id !== null) {
-          on_apk_plist_upload();
-        }
+        on_apk_plist_upload();
 
       }
+
+
+    }
+
+
+    function restrictInput(event) {
+      var char = String.fromCharCode(event.which);
+      // Allow letters (a-z, A-Z), numbers (0-9), and underscore (_)
+      if (/[a-zA-Z0-9_]/.test(char)) {
+        return true;
+      } else {
+        event.preventDefault();
+        return false;
+      }
+    }
+
+
+    function urlSuffixCommaSeperated(longString, smallString) {
+      return [...new Set((longString ? `${longString},${smallString}` : smallString).split(','))].filter(item => item.trim() !== '').join(',');
+    }
+
+
+
+    function addDynamicRadioOptions(longCommaString) {
+      const optionsArray = (longCommaString && typeof longCommaString === 'string') 
+                            ? longCommaString.split(',') 
+                            : [];
+  
+
+    
+
+      const dynamicRadioContainer = document.getElementById('dynamicRadioOptions');
+      
+       if (optionsArray.length >= 10) {
+        const dynamicRadioOptions = document.getElementById('customOptionDIV');
+        if (dynamicRadioOptions) {
+          dynamicRadioOptions.style.display = 'none';
+        }
+      }
+
+      optionsArray.forEach((option, index) => {
+        const trimmedOption = option.trim();
+        if (trimmedOption) {
+          const radioDiv = document.createElement('div');
+          radioDiv.classList.add('radioOption');
+
+          const radioInput = document.createElement('input');
+          radioInput.type = 'radio';
+          radioInput.id = `dynamicOption${index}`;
+          radioInput.name = 'appEnvironment';
+          radioInput.value = trimmedOption;
+          radioInput.onclick = setGURLID; // Assuming setGURLID is defined elsewhere
+
+          const radioLabel = document.createElement('label');
+          radioLabel.setAttribute('for', `dynamicOption${index}`);
+          radioLabel.textContent = trimmedOption;
+
+          radioDiv.appendChild(radioInput);
+          radioDiv.appendChild(radioLabel);
+          dynamicRadioContainer.appendChild(radioDiv);
+        }
+      });
+    }
+
+
+    function refreshCustomInput() {
+
+      var url_id = makeid(4);
+      console.log(url_id);
+      firebase.database().ref("/app_links/" + url_id).get().then((snapshot) => {
+        if (snapshot.exists()) {
+          refreshCustomInput()
+        } else {
+          const customInput = document.getElementById('customInput');
+          customInput.value = url_id;
+          document.getElementById("customOption").checked = true;
+          
+        }
+      }).catch((error) => {
+        console.error(error);
+      });
+
+
+
 
 
     }

@@ -7,9 +7,12 @@ const path = require('path');
 
 (async () => {
 
+  const homeDir = os.homedir(); 
+  const destDir = path.join(homeDir, 'BuildCopy_my-user-data');
+  fs.mkdirSync(destDir, { recursive: true });
   const browser = await puppeteer.launch({
     headless: 'new',
-    userDataDir: './my-user-data',
+    userDataDir: destDir,
   });
 
   let exitCalled = false;
@@ -27,6 +30,12 @@ const path = require('path');
   const page = await browser.newPage();
   const pageID = process.argv[2];
   const filePath = process.argv[3];
+  if (!fs.existsSync(filePath)) {
+    console.error(`Error: File does not exist: ${filePath}`);
+    const { exec } = require('child_process');
+    exec('say "ERROR : File does not exist"');
+    process.exit(1);
+  }
 
   await page.goto(`https://install4.web.app/upload.html?g_url_id=${pageID}`);
 
