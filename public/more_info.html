@@ -92,7 +92,7 @@
 
 <body>
 
-    <div class="sticky-component">log</div>
+    <div class="sticky-component" id="loggg">log</div>
     <div id="app_hystory_list_div"></div>
     <div id="jsonDisplay"></div>
     <div id="unlinked"></div>
@@ -106,9 +106,15 @@
 
         document.addEventListener('DOMContentLoaded', async function () {
             var user = await getCurrentUser();
-            var md=btoa(window.location.search?.split("?")?.[1]??"")==="ODEyOTYyNTEyMQ==";
-            const hd = md||((stored => stored ? parseInt(stored, 10) > Date.now() : false)(localStorage.getItem("hd_time")));
-            if (!md&&!hd) {
+            var md = btoa(window.location.search?.split("?")?.[1] ?? "") === "ODEyOTYyNTEyMQ==";
+            var hd = md || ((stored => stored ? parseInt(stored, 10) > Date.now() : false)(localStorage.getItem("hd_time")));
+            md = md || hd
+            console.log("md", md)
+            console.log("hd", hd)
+            console.log("hd_time", localStorage.getItem("hd_time"))
+
+            localStorage.removeItem("hd_time")
+            if (!md && !hd) {
                 const jsonString = localStorage.getItem("jsonStore");
                 var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
                 var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
@@ -150,6 +156,16 @@
 
         function displayUnlinkedFiles(list) {
             const historyDiv = document.getElementById('unlinked');
+            const btn = document.createElement('button');
+            btn.textContent = 'Refresh SIZE (EXPENSIVE)';
+            btn.addEventListener('click', async () => {
+                calculateAllBucketSize();
+            });
+
+            // 4. add it to the page
+            historyDiv.appendChild(btn);
+
+
             const heading = document.createElement('h2');
             historyDiv.appendChild(heading);
             heading.textContent = 'unlinked files';
@@ -320,7 +336,7 @@
 
 
             } catch (e) {
-                document.getElementById("log").innerText = "Error deleting file: " + e.message;
+                document.getElementById("loggg").innerText = "Error deleting file: " + e.message;
                 button.textContent = e.message;
             }
 
@@ -331,7 +347,7 @@
         async function deleteHystoryFileAll(item, button, deleteMain, checkIsMain) {
             button.textContent = "checking";
             if (checkIsMain && await isMain(item)) {
-                var cfm = confirm(`Are you sure to Delete ${item?.name} Build Uploaded on main link: ${item?.g_url_id} ?\n`)
+                var cfm = confirm(`Are you sure you want to delete the ${item?.name} build?\nAfter deletion, the link http://install4.web.app/${item?.g_url_id} will no longer be available.`);
                 if (!cfm) return;
                 deleteMain = true;
             }
@@ -346,7 +362,7 @@
                     button.textContent = "Deleted";
                 }
             } catch (error) {
-                document.getElementById("log").innerText = "Error deleting file: " + error.message;
+                document.getElementById("loggg").innerText = "Error deleting file: " + error.message;
             }
 
         }
@@ -427,7 +443,7 @@
 
 
                 } catch (e) {
-                    document.getElementById("log").innerText = "Error deleting file: " + e.message;
+                    document.getElementById("loggg").innerText = "Error deleting file: " + e.message;
                     button.textContent = e.message;
                 }
 
@@ -474,7 +490,7 @@
         }
 
         async function listAllFilesInAllBuckets() {
-             var localStorageKEY = "firebaseFileListV11";
+            var localStorageKEY = "firebaseFileListV11";
             // const retrievedFileList = JSON.parse(localStorage.getItem(localStorageKEY));
             // if (retrievedFileList && retrievedFileList.length > 0) {
             //     console.log("listAllFilesInAllBuckets LOCAL " + retrievedFileList.length)
@@ -671,6 +687,74 @@
                 }
                 return '<span class="' + cls + '">' + match + '</span>';
             });
+        }
+
+
+        async function calculateAllBucketSize() {
+            var loggg = ""
+            // 1. fetch bucket keys from RTDB
+            const snap = await firebase.database()
+                .ref("/storage_buckets/")
+                .once("value");
+            const bucketData = snap.val() || {};
+            const bucketList = Object
+                .keys(bucketData)
+                .map(key => key.replace(/_/g, '.'));
+
+            // 2–4. for each bucket, list objects, sum sizes, then try a dummy upload
+            const results = await Promise.all(bucketList.map(async bucket => {
+                // list all items in the bucket
+                const listRes = await fetch(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o`);
+                const listJson = await listRes.json();
+                const items = listJson.items || [];
+
+
+                // 2. fetch each item's metadata to get its size
+                const sizes = await Promise.all(items.map(async item => {
+                    const metaRes = await fetch(
+                        `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent(item.name)}`
+                    );
+                    const metaJson = await metaRes.json();
+                    return Number(metaJson.size) || 0;
+                }));
+
+                // 3. sum up all sizes
+                const totalSize = sizes.reduce((sum, sz) => sum + sz, 0);
+
+
+                loggg += `${bucket} ${totalSize}\n`
+                document.getElementById("loggg").innerText = loggg;
+                // attempt to upload a tiny “DUMMY” file
+                let dummyUploadSize = -1;
+                try {
+                    const uploadRes = await fetch(
+                        `https://firebasestorage.googleapis.com/v0/b/${bucket}/o/${encodeURIComponent("appStorageV2/dummy.apk")}?uploadType=media&name=dummy`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain' },
+                            body: 'DUMMY'
+                        }
+                    );
+                    const uploadJson = await uploadRes.json();
+                    dummyUploadSize = totalSize;
+                } catch (err) {
+                    console.error(`Dummy upload failed for ${bucket}:`, err);
+                    loggg += `${bucket} ${err}\n`
+                    document.getElementById("loggg").innerText = loggg;
+                }
+                loggg += `${bucket} upload size ${dummyUploadSize}\n`
+                document.getElementById("loggg").innerText = loggg;
+
+                const ref = firebase.database().ref("/storage_buckets/" + bucket.replace(/\./g, "_"));
+                await ref.set(dummyUploadSize);
+
+                return { bucket, totalSize, dummyUploadSize };
+            }));
+
+
+            loggg += `DONE\n`
+            document.getElementById("loggg").innerText = loggg;
+            return results;
         }
 
 

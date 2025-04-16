@@ -519,6 +519,7 @@
 
 
       const jsonString = encodeURIComponent(JSON.stringify(json, null, 2));
+      localStorage.removeItem("hd_time");
       localStorage.setItem("jsonStore", jsonString);
       localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
       try {

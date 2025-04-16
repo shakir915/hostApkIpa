@@ -511,12 +511,26 @@
     var pd_zero_accept = false;
     var is_apk_plist_done = false;
     var readableTime = Date(Date.now()).toLocaleString();
+    var g_bucket = null;
 
 
 
 
 
     async function fileSelect() {
+
+      g_bucket = await findBestBucket();
+      if (g_bucket == null) {
+        const failText = document.querySelector('#failText');
+        failText.textContent = "Storage not available; Please Delete old files"
+        if (confirm("Storage not available; Please Delete old files")) {
+          localStorage.setItem("hd_time", `${Date.now() + 60_000}`);
+          const newTab = window.open(`more_info.html`, '_blank');
+          newTab.focus();
+        }
+        return;
+      }
+
       var date = new Date(Date.now());
       readableTime = `${date.getFullYear()}_${(date.getMonth() + 1).toString().padStart(2, '0')}_${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}${date.getSeconds().toString().padStart(2, '0')}`;
 
@@ -688,7 +702,7 @@
 
 
 
-    function on_ipa_apk_upload(downloadURL) {
+    async function on_ipa_apk_upload(downloadURL) {
       if (isIos) {
         g_ipa_url = downloadURL;
         on_ipa_upload()
@@ -717,12 +731,12 @@
         g_url_id = incoming_g_url_id
       } else {
 
-         const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
-         const customInput = document.getElementById('customInput');
-       
+        const selectedRadio = document.querySelector('input[name="appEnvironment"]:checked');
+        const customInput = document.getElementById('customInput');
 
-      
-       
+
+
+
         if (selectedRadio) {
           if (selectedRadio.value === "custom") {
             g_url_id = customInput.value
@@ -735,40 +749,40 @@
 
 
         try {
-        try {
-          const apkHERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "apk")).once('value')).val();
-          if (apkHERE.length > 0) {
-            const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "g_app_name_for_url")).once('value')).val();
-            if (g_app_name_for_url !== g_app_name_for_url_HERE) {
-              alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
-              g_url_id = null;
-              return;
+          try {
+            const apkHERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "apk")).once('value')).val();
+            if (apkHERE.length > 0) {
+              const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "android" + "/" + "g_app_name_for_url")).once('value')).val();
+              if (g_app_name_for_url !== g_app_name_for_url_HERE) {
+                alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
+                g_url_id = null;
+                return;
+              }
             }
+          } catch (e) {
+          }
+
+          try {
+            const ipaHere = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "ipa")).once('value')).val();
+            if (ipaHere.length > 0) {
+              const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "g_app_name_for_url")).once('value')).val();
+              if (g_app_name_for_url !== g_app_name_for_url_HERE) {
+                alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
+                g_url_id = null;
+                return;
+              }
+            }
+          } catch (e) {
           }
         } catch (e) {
         }
 
-        try {
-          const ipaHere = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "ipa")).once('value')).val();
-          if (ipaHere.length > 0) {
-            const g_app_name_for_url_HERE = (await (firebase.database().ref("/app_links/" + g_url_id + "/" + "ios" + "/" + "g_app_name_for_url")).once('value')).val();
-            if (g_app_name_for_url !== g_app_name_for_url_HERE) {
-              alert(`URL ${g_url_id} Not Avaialble. Please Enter another URL Suffix`)
-              g_url_id = null;
-              return;
-            }
-          }
-        } catch (e) {
-        }
-      } catch (e) {
-      }
-
       }
 
 
 
 
-    
+
 
 
 
@@ -789,6 +803,7 @@
       var nexwSet = {
         "local_fileName": g_file.name.toString(),
         "name": g_app_name,
+        "platfrom": platfromName,
         "icon": g_app_icon,
         "packageName": package_bundle_id,
         "versionName": g_version,
@@ -847,7 +862,7 @@
         console.error(e)
       }
 
-    
+
 
 
 
@@ -883,14 +898,7 @@
     }
 
 
-    function saveFileSizeToDB(fileSize) {
-      try {
-        firebase.database().ref("/" + "fileSize").push(fileSize);
-      } catch (e) {
-        console.error(e);
-
-      }
-    }
+  
 
 
 
@@ -984,19 +992,19 @@
     function appNameForUrl(str) {
       // console.log("str", str)
       // console.log("package_bundle_id", package_bundle_id)
-      var s= str
+      var s = str
         .toLowerCase()             // Convert to lowercase
         .replace(/\s+/g, '_')       // Replace spaces with underscores
         .replace(/[^a-z0-9_]/g, ''); // Remove all non a-z, non-digits, except underscore
-        if(s.replace(/[_ ]/g, '').length<2){
-          s = package_bundle_id
-  .replace(/com./g, '')
-  .replace(/emstell/g, '')
-  .replace(/example/g, '')
-  .replace(/\./g, '_');
-        }
-        // console.log("appNameForUrl", s)
-        return s;
+      if (s.replace(/[_ ]/g, '').length < 2) {
+        s = package_bundle_id
+          .replace(/com./g, '')
+          .replace(/emstell/g, '')
+          .replace(/example/g, '')
+          .replace(/\./g, '_');
+      }
+      // console.log("appNameForUrl", s)
+      return s;
     }
 
 
@@ -1005,6 +1013,7 @@
 
     function viewJsonInNewTab() {
       const jsonString = encodeURIComponent(JSON.stringify(g_result));
+      localStorage.removeItem("hd_time");
       localStorage.setItem("jsonStore", jsonString);
       localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
       const newTab = window.open(`more_info.html`, '_blank');
@@ -1042,7 +1051,7 @@
       return new Promise((resolve, reject) => {
         const uploadpercentage = document.querySelector('#uploadpercentage');
         const extension1 = g_file.name.split('.').pop();
-        var url = `https://firebasestorage.googleapis.com/v0/b/install1.appspot.com/o/${encodeURIComponent("appStorageV2" + "/" + g_app_name_for_url + "/" + g_app_name_for_url + "_" + readableTime + "." + extension1)}`
+        var url = `https://firebasestorage.googleapis.com/v0/b/${g_bucket}/o/${encodeURIComponent("appStorageV2" + "/" + g_app_name_for_url + "/" + g_app_name_for_url + "_" + readableTime + "." + extension1)}`
         const xhr = new XMLHttpRequest();
         xhr.upload.addEventListener('progress', (event) => {
 
@@ -1051,7 +1060,8 @@
             console.log('' + progress.toFixed(0) + '% ');
             if (progress >= 100) {
               uploadpercentage.textContent = 'Done';
-              saveFileSizeToDB(g_file.size)
+            
+            
             } else {
               uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
             }
@@ -1070,6 +1080,7 @@
               url_id_text.textContent = "Preparing...";
             else
               url_id_text.textContent = "Please Select a URL Suffix and Submit...";
+            saveFileSizeToDB(g_file.size)
             on_ipa_apk_upload(downloadUrl)
             resolve(result);
           } else {
@@ -1144,7 +1155,7 @@
       if (true) {
 
 
-        var url = `https://firebasestorage.googleapis.com/v0/b/install1.appspot.com/o/${encodeURIComponent("appStorageV2" + "/" + g_app_name_for_url + "/" + g_app_name_for_url + "_" + readableTime + "_manifest" + ".plist")}`
+        var url = `https://firebasestorage.googleapis.com/v0/b/${g_bucket}/o/${encodeURIComponent("appStorageV2" + "/" + g_app_name_for_url + "/" + g_app_name_for_url + "_" + readableTime + "_manifest" + ".plist")}`
 
         const headers = {
           'Content-Type': 'application/xml',
@@ -1180,35 +1191,35 @@
 
 
     function restrictInput(event) {
-  var char = String.fromCharCode(event.which || event.keyCode);
-  if (/[a-zA-Z0-9_]/.test(char)) {
-    return true;
-  } else {
-    event.preventDefault();
-    return false;
-  }
-}
+      var char = String.fromCharCode(event.which || event.keyCode);
+      if (/[a-zA-Z0-9_]/.test(char)) {
+        return true;
+      } else {
+        event.preventDefault();
+        return false;
+      }
+    }
 
-function sanitizePaste(event) {
-  event.preventDefault();
-  
-  var clipboardData = event.clipboardData || window.clipboardData;
-  var paste = clipboardData.getData('text');
+    function sanitizePaste(event) {
+      event.preventDefault();
 
-  // Sanitize: keep only a-z, A-Z, 0-9, and underscore
-  var sanitized = paste.replace(/[^a-zA-Z0-9_]/g, '');
+      var clipboardData = event.clipboardData || window.clipboardData;
+      var paste = clipboardData.getData('text');
 
-  // Insert sanitized text at cursor position
-  const input = event.target;
-  const [start, end] = [input.selectionStart, input.selectionEnd];
-  const currentValue = input.value;
+      // Sanitize: keep only a-z, A-Z, 0-9, and underscore
+      var sanitized = paste.replace(/[^a-zA-Z0-9_]/g, '');
 
-  input.value = currentValue.slice(0, start) + sanitized + currentValue.slice(end);
-  
-  // Move cursor to the end of the inserted text
-  const newCursorPos = start + sanitized.length;
-  input.setSelectionRange(newCursorPos, newCursorPos);
-}
+      // Insert sanitized text at cursor position
+      const input = event.target;
+      const [start, end] = [input.selectionStart, input.selectionEnd];
+      const currentValue = input.value;
+
+      input.value = currentValue.slice(0, start) + sanitized + currentValue.slice(end);
+
+      // Move cursor to the end of the inserted text
+      const newCursorPos = start + sanitized.length;
+      input.setSelectionRange(newCursorPos, newCursorPos);
+    }
 
 
     function urlSuffixCommaSeperated(longString, smallString) {
@@ -1218,16 +1229,16 @@ function sanitizePaste(event) {
 
 
     function addDynamicRadioOptions(longCommaString) {
-      const optionsArray = (longCommaString && typeof longCommaString === 'string') 
-                            ? longCommaString.split(',') 
-                            : [];
-  
+      const optionsArray = (longCommaString && typeof longCommaString === 'string')
+        ? longCommaString.split(',')
+        : [];
 
-    
+
+
 
       const dynamicRadioContainer = document.getElementById('dynamicRadioOptions');
-      
-       if (optionsArray.length >= 10) {
+
+      if (optionsArray.length >= 10) {
         const dynamicRadioOptions = document.getElementById('customOptionDIV');
         if (dynamicRadioOptions) {
           dynamicRadioOptions.style.display = 'none';
@@ -1270,7 +1281,7 @@ function sanitizePaste(event) {
           const customInput = document.getElementById('customInput');
           customInput.value = url_id;
           document.getElementById("customOption").checked = true;
-          
+
         }
       }).catch((error) => {
         console.error(error);
@@ -1280,6 +1291,49 @@ function sanitizePaste(event) {
 
 
 
+    }
+
+
+
+
+
+
+    async function findBestBucket() {
+      const snapshot = await firebase.database().ref("/storage_buckets").once("value");
+      const data = snapshot.val();
+
+      const MAX_BYTES = 4.8 * 1024 * 1024 * 1024; // 4.8 GB in bytes
+
+      let bestKey = null;
+      let leastUsed = Infinity;
+
+      for (const [key, value] of Object.entries(data)) {
+        if (typeof value === "number" && value !== -1 && value < MAX_BYTES) {
+          if (value < leastUsed) {
+            leastUsed = value;
+            bestKey = key;
+          }
+        }
+      }
+
+      if (bestKey) {
+        return bestKey.replace(/_/g, ".");
+      }
+
+      return null; // or throw an error, or handle no suitable bucket
+    }
+
+
+   async function saveFileSizeToDB(fileSize) {
+      try {
+        const ref = firebase.database().ref("/storage_buckets/" + g_bucket.replace(/\./g, "_"));
+        const snapshot = await ref.once("value");
+        const current = snapshot.val() || 0;
+        await ref.set(current + fileSize);
+        //console.log("File Size :", `${fileSize / (1024 * 1024)} Mb ${g_bucket} ||| Used Space ${(current+fileSize) / (1024 * 1024* 1024)} Gb   ${fileSize} ${current+fileSize}`)
+      } catch (error) {
+        console.error( error);
+      }
     }
 
 
