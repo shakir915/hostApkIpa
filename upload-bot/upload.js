@@ -8,7 +8,7 @@ const path = require('path');
 (async () => {
 
   const homeDir = os.homedir(); 
-  const destDir = path.join(homeDir, 'BuildCopy_my-user-data');
+  const destDir = path.join(homeDir, 'install4_uploader_my-user-data');
   fs.mkdirSync(destDir, { recursive: true });
   const browser = await puppeteer.launch({
     headless: 'new',
@@ -41,25 +41,25 @@ const path = require('path');
 
   const input = await page.$('input[type=file]');
 
-  try {
-    const homeDir = os.homedir(); // e.g., /Users/shakir
-    const destDir = path.join(homeDir, 'BuildCopy');
-    fs.mkdirSync(destDir, { recursive: true });
-    const now = new Date();
-    const timestamp = now.toISOString().replace(/[:T]/g, '_').split('.')[0]; // YYYY_MM_dd_HH_mm_ss
-    const fileName = `${pageID}_${timestamp}${path.extname(filePath)}`;
-    const destPath = path.join(destDir, fileName);
+  // try {
+  //   const homeDir = os.homedir(); // e.g., /Users/shakir
+  //   const destDir = path.join(homeDir, 'BuildCopy');
+  //   fs.mkdirSync(destDir, { recursive: true });
+  //   const now = new Date();
+  //   const timestamp = now.toISOString().replace(/[:T]/g, '_').split('.')[0]; // YYYY_MM_dd_HH_mm_ss
+  //   const fileName = `${pageID}_${timestamp}${path.extname(filePath)}`;
+  //   const destPath = path.join(destDir, fileName);
 
-    fs.copyFile(filePath, destPath, (err) => {
-      if (err) {
-        console.error('Error copying file:', err);
-      } else {
-        console.log('File copied to:', destPath);
-      }
-    });
-  }catch (e) {
-    console.error(e);
-  }
+  //   fs.copyFile(filePath, destPath, (err) => {
+  //     if (err) {
+  //       console.error('Error copying file:', err);
+  //     } else {
+  //       console.log('File copied to:', destPath);
+  //     }
+  //   });
+  // }catch (e) {
+  //   console.error(e);
+  // }
 
   await input.uploadFile(filePath);
 
