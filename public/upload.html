@@ -677,9 +677,9 @@
 
         })
       } catch (e) {
-        console.log("Parse Error c2", e)
+
         const failText = document.querySelector('#failText');
-        failText.textContent = "Parse Error 2 \n" + e
+        failText.textContent = "" + e
       }
     }
 
@@ -899,40 +899,6 @@
 
 
   
-
-
-
-    //    function storage_space_check() {
-    //      var ref = firebase.storage().ref("");
-    //      ref.listAll()
-    //
-    //    }
-
-
-    //    async function assignPrevOtherPlatformValues() {
-    //      if (g_url_id != null) {
-    //        try {
-    //          const snapshot = await firebase.database().ref("/app_links/" + g_url_id).get();
-    //          if (snapshot.exists()) {
-    //            const dataObj = snapshot.val();
-    //            const dataSet = new Set();
-    //            if (typeof dataObj === 'object' && dataObj !== null) {
-    //              Object.values(dataObj).forEach(value => {
-    //                dataSet.add(value);
-    //              });
-    //            } else {
-    //              dataSet.add(dataObj);
-    //            }
-    //            return dataSet;
-    //          } else {
-    //          }
-    //        } catch (error) {
-    //          console.error("Error fetching data from Firebase:", error);
-    //        }
-    //      } else {
-    //
-    //      }
-    //    }
 
 
 
