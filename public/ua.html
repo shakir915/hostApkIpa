@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head><title>Device Info</title></head>
+<body>
+    <h1>Device/OS Information</h1>
+    <p>Current time: <script>document.write(new Date().toLocaleString());</script> (Location context: Edappal, Kerala, India)</p>
+
+    <h2>Attempting Detection via JavaScript:</h2>
+    <div id="info"></div>
+
+    <script>
+        const infoDiv = document.getElementById('info');
+        let output = "";
+
+        // --- Device Name ---
+        output += "<p><b>Device Name:</b> Not directly accessible via browser JavaScript due to privacy.</p>";
+
+        // --- Operating System ---
+        output += "<h3>Operating System Detection:</h3>";
+
+        // Method 1: User Agent String (Legacy)
+        const ua = navigator.userAgent;
+        output += `<p><b>User Agent String:</b> ${ua}</p>`;
+        let osFromUA = "Unknown";
+        if (ua.includes("Win")) osFromUA = "Windows";
+        else if (ua.includes("Macintosh") || (ua.includes("Mac") && !ua.includes("like Mac"))) osFromUA = "macOS"; // Avoid matching iOS/iPadOS
+        else if (ua.includes("Android")) osFromUA = "Android"; // Check Android before Linux
+        else if (ua.includes("Linux")) osFromUA = "Linux";
+        else if (ua.includes("iPhone") || ua.includes("iPad") || (ua.includes("Mac") && ua.includes("like Mac"))) osFromUA = "iOS/iPadOS";
+        output += `<p><b>OS (Inferred from User Agent):</b> ${osFromUA}</p>`;
+
+        // Method 2: User-Agent Client Hints (Modern & Preferred)
+        if (navigator.userAgentData) {
+            output += `<p><b>Platform (from userAgentData API):</b> ${navigator.userAgentData.platform || 'N/A'}</p>`;
+            output += `<p><b>Is Mobile (from userAgentData API):</b> ${navigator.userAgentData.mobile}</p>`;
+
+            // Try getting more detailed info (async)
+             output += `<p><b>High Entropy Values (async):</b> Checking...</p>`;
+             navigator.userAgentData.getHighEntropyValues(['platformVersion', 'model'])
+                .then(uaData => {
+                    console.log("Received High Entropy Data:", uaData);
+                    let highEntropyInfo = document.createElement('p');
+                    highEntropyInfo.innerHTML = `<b>High Entropy Values (async result):</b><br/>` +
+                                                 `&nbsp;&nbsp;- Platform Version: ${uaData.platformVersion || 'N/A'}<br/>` +
+                                                 `&nbsp;&nbsp;- Device Model: ${uaData.model || 'N/A (often empty)'}`; // Model is often not provided
+                    infoDiv.appendChild(highEntropyInfo);
+                 })
+                 .catch(error => {
+                    console.error("Error getting high entropy UA data:", error);
+                     let errorInfo = document.createElement('p');
+                     errorInfo.innerHTML = `<b>High Entropy Values (async):</b> Error fetching - ${error.message}`;
+                     infoDiv.appendChild(errorInfo);
+                 });
+
+        } else {
+            output += "<p><b>User-Agent Client Hints API (navigator.userAgentData):</b> Not available in this browser.</p>";
+        }
+
+        infoDiv.innerHTML = output;
+    </script>
+</body>
+</html>

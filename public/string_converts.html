@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text/Base64/URL/Hash Tools</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #1e1e1e; /* Dark background */
+            color: #d4d4d4; /* Light text */
+        }
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #333; /* Darker border */
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #252525; /* Slightly lighter dark background */
+        }
+        h1, h2 {
+            color: #f0c808; /* Accent color for headings */
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            background-color: #333; /* Darker input background */
+            color: #d4d4d4;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #666;
+            background-color: #444;
+            color: #d4d4d4;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        .output {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px dashed #555; /* Darker dashed border */
+            border-radius: 5px;
+            background-color: #333; /* Darker output background */
+            color: #d4d4d4;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        a {
+            color: #80cbc4; /* Teal-like color for links */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1><span style="color: #f0c808;">Text</span>/<span style="color: #80cbc4;">Base64</span>/<span style="color: #aed581;">URL</span>/<span style="color: #ff8a65;">Hash</span> Tools</h1>
+
+    <div class="section">
+        <h2><span style="color: #80cbc4;">Text to Base64</span> / <span style="color: #80cbc4;">Base64 to Text</span></h2>
+        <textarea id="base64Input" placeholder="Enter text or Base64"></textarea>
+        <button onclick="textToBase64()">Text to Base64</button>
+        <button onclick="base64ToText()">Base64 to Text</button>
+        <div class="output" id="base64Output"></div>
+    </div>
+
+    <div class="section">
+        <h2><span style="color: #80cbc4;">URL-safe Base64</span> Encode / Decode</h2>
+        <textarea id="urlsafeBase64Input" placeholder="Enter text or URL-safe Base64"></textarea>
+        <button onclick="textToURLSafeBase64()">Text to URL-safe Base64</button>
+        <button onclick="urlSafeBase64ToText()">URL-safe Base64 to Text</button>
+        <div class="output" id="urlsafeBase64Output"></div>
+    </div>
+
+    <div class="section">
+        <h2><span style="color: #aed581;">URL</span> Encode / Decode</h2>
+        <textarea id="urlEncodeInput" placeholder="Enter URL"></textarea>
+        <h3>Full Mode</h3>
+        <button onclick="urlEncodeFull()">Encode</button>
+        <button onclick="urlDecodeFull()">Decode</button>
+        <div class="output" id="urlEncodeFullOutput"></div>
+
+        <h3>Components Mode (<span style="color: #aed581;">encodeURIComponent</span> / <span style="color: #aed581;">decodeURIComponent</span>)</h3>
+        <button onclick="urlEncodeComponent()">Encode Component</button>
+        <button onclick="urlDecodeComponent()">Decode Component</button>
+        <div class="output" id="urlEncodeComponentOutput"></div>
+
+        <h3>Parameters Mode (for key=value pairs)</h3>
+        <button onclick="urlEncodeParameters()">Encode Parameters</button>
+        <button onclick="urlDecodeParameters()">Decode Parameters</button>
+        <div class="output" id="urlEncodeParametersOutput"></div>
+    </div>
+
+    <div class="section">
+        <h2><span style="color: #ff8a65;">Text Hashing</span> (MD5, SHA1, SHA256)</h2>
+        <textarea id="hashInput" placeholder="Enter text to hash"></textarea>
+        <button onclick="calculateMD5()">Calculate MD5</button>
+        <button onclick="calculateSHA1()">Calculate SHA1</button>
+        <button onclick="calculateSHA256()">Calculate SHA256</button>
+        <div class="output" id="md5Output"></div>
+        <div class="output" id="sha1Output"></div>
+        <div class="output" id="sha256Output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha1/0.6.0/sha1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
+    <script>
+        function textToBase64() {
+            const text = document.getElementById('base64Input').value;
+            const base64 = btoa(unescape(encodeURIComponent(text)));
+            document.getElementById('base64Output').textContent = base64;
+        }
+
+        function base64ToText() {
+            const base64 = document.getElementById('base64Input').value;
+            try {
+                const text = decodeURIComponent(escape(atob(base64)));
+                document.getElementById('base64Output').textContent = text;
+            } catch (e) {
+                document.getElementById('base64Output').textContent = '<span style="color: #ff6d00;">Invalid Base64 string</span>';
+            }
+        }
+
+        function textToURLSafeBase64() {
+            const text = document.getElementById('urlsafeBase64Input').value;
+            const base64 = btoa(unescape(encodeURIComponent(text)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+            document.getElementById('urlsafeBase64Output').textContent = base64;
+        }
+
+        function urlSafeBase64ToText() {
+            const base64 = document.getElementById('urlsafeBase64Input').value
+                .replace(/-/g, '+')
+                .replace(/_/g, '/');
+            while (base64.length % 4) {
+                base64 += '=';
+            }
+            try {
+                const text = decodeURIComponent(escape(atob(base64)));
+                document.getElementById('urlsafeBase64Output').textContent = text;
+            } catch (e) {
+                document.getElementById('urlsafeBase64Output').textContent = '<span style="color: #ff6d00;">Invalid URL-safe Base64 string</span>';
+            }
+        }
+
+        function urlEncodeFull() {
+            const url = document.getElementById('urlEncodeInput').value;
+            document.getElementById('urlEncodeFullOutput').textContent = encodeURI(url);
+        }
+
+        function urlDecodeFull() {
+            const url = document.getElementById('urlEncodeInput').value;
+            try {
+                document.getElementById('urlEncodeFullOutput').textContent = decodeURI(url);
+            } catch (e) {
+                document.getElementById('urlEncodeFullOutput').textContent = '<span style="color: #ff6d00;">Invalid URL</span>';
+            }
+        }
+
+        function urlEncodeComponent() {
+            const component = document.getElementById('urlEncodeInput').value;
+            document.getElementById('urlEncodeComponentOutput').textContent = encodeURIComponent(component);
+        }
+
+        function urlDecodeComponent() {
+            const component = document.getElementById('urlEncodeInput').value;
+            try {
+                document.getElementById('urlEncodeComponentOutput').textContent = decodeURIComponent(component);
+            } catch (e) {
+                document.getElementById('urlEncodeComponentOutput').textContent = '<span style="color: #ff6d00;">Invalid URL component</span>';
+            }
+        }
+
+        function urlEncodeParameters() {
+            const paramsString = document.getElementById('urlEncodeInput').value;
+            const params = {};
+            paramsString.split('&').forEach(pair => {
+                const [key, value] = pair.split('=');
+                if (key && value !== undefined) {
+                    params[decodeURIComponent(key)] = decodeURIComponent(value);
+                }
+            });
+            const encodedParams = Object.keys(params)
+                .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+                .join('&');
+            document.getElementById('urlEncodeParametersOutput').textContent = encodedParams;
+        }
+
+        function urlDecodeParameters() {
+            const paramsString = document.getElementById('urlEncodeInput').value;
+            const decodedParams = {};
+            paramsString.split('&').forEach(pair => {
+                const [key, value] = pair.split('=');
+                if (key && value !== undefined) {
+                    decodedParams[decodeURIComponent(key)] = decodeURIComponent(value);
+                } else if (key) {
+                    decodedParams[decodeURIComponent(key)] = '';
+                }
+            });
+            const output = Object.entries(decodedParams)
+                .map(([key, value]) => `${key}=${value}`)
+                .join('\n');
+            document.getElementById('urlEncodeParametersOutput').textContent = output;
+        }
+
+        function calculateMD5() {
+     const text = document.getElementById('hashInput').value;
+    const hash = md5(text); // Get the MD5 hash
+    document.getElementById('md5Output').textContent = hash; 
+        }
+
+        function calculateSHA1() {
+            const text = document.getElementById('hashInput').value;
+            document.getElementById('sha1Output').textContent = sha1(text);
+        }
+
+        function calculateSHA256() {
+            const text = document.getElementById('hashInput').value;
+            document.getElementById('sha256Output').textContent = sha256(text);
+        }
+    </script>
+
+</body>
+</html>

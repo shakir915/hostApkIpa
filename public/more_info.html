@@ -23,7 +23,8 @@
 
 
 
-        #jsonDisplay {
+        #jsonStore_1,
+        #jsonStore_2 {
             background-color: #fff;
             /* White container */
             padding: 20px;
@@ -92,12 +93,14 @@
 
 <body>
 
-    <div class="sticky-component" id="More Info" onclick="">log</div>
+    <div class="sticky-component" id="More Info" onclick="showLog(null)">Loading...</div>
     <div id="app_hystory_list_div"></div>
-    <div id="jsonDisplay"></div>
+    <div id="jsonStore_1" style="display: none;"></div>
+    <div id="jsonStore_2" style="display: none;"></div>
     <div id="unlinked"></div>
     <div id="non_main_hystory_files"></div>
     <div id="main_files"></div>
+    <div id="refreshExpensiveDiv"></div>
 
     <script>
 
@@ -115,60 +118,96 @@
 
             localStorage.removeItem("hd_time")
             if (!md && !hd) {
-                const jsonString = localStorage.getItem("jsonStore");
                 var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
                 var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
                 displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
-                if (jsonString) {
-                    const jsonObj = JSON.parse(decodeURIComponent(jsonString));
-                    if (jsonObj?.ios?.mobileProvision?.DeveloperCertificates) {
-                        delete jsonObj.ios.mobileProvision.DeveloperCertificates;
-                    }
-                    if (jsonObj?.ios?.mobileProvision?.["DER-Encoded-Profile"]) {
-                        delete jsonObj.ios.mobileProvision["DER-Encoded-Profile"];
-                    }
-                    if (jsonObj?.mobileProvision?.DeveloperCertificates) {
-                        delete jsonObj.mobileProvision.DeveloperCertificates;
-                    }
-                    if (jsonObj?.mobileProvision?.["DER-Encoded-Profile"]) {
-                        delete jsonObj.mobileProvision["DER-Encoded-Profile"];
-                    }
-                    document.getElementById('jsonDisplay').innerHTML = syntaxHighlight(JSON.stringify(jsonObj, null, 2));
-                } else {
-                    document.getElementById('jsonDisplay').textContent = "No JSON data provided.";
-                }
+                showJsonDiaplay("jsonStore_1")
+                showJsonDiaplay("jsonStore_2")
 
             } else {
+                showLog("loading 1/5 : listAllFilesInAllBuckets")
                 var allFiles = await listAllFilesInAllBuckets();
+                showLog("loading 2/5 : listMainFileList")
                 var mainList = await listMainFileList();
+                showLog("loading 3/5: listMainFileList")
                 var hystoryList = await listHystoryFileList()
+                showLog("loading 4/5: getUnLinkedFiles")
                 var unlinkedFiles = getUnLinkedFiles(allFiles, mainList, hystoryList)
+                showLog("loading 5/5: getHystoryNonMain")
                 var hystoryNonMain = getHystoryNonMain(mainList, hystoryList)
+                showLog(null)
                 displayUnlinkedFiles(unlinkedFiles)
                 displayTableItem(hystoryNonMain, "non_main_hystory_files", 'Hystory Non Main Files', false, true, user, false)
                 displayTableItem(mainList, "main_files", `Main Files  : Don't Delete`, true, md, user, true)
+                addExpensivRefreshButtun()
             }
 
         })
 
 
+        function showJsonDiaplay(id) {
+            const jsonString = localStorage.getItem(id);
+            if (jsonString) {
+                try {
+                    const jsonObj = JSON.parse(decodeURIComponent(jsonString));
 
+
+                    if (jsonObj?.ios?.mobileProvision) {
+                        processMobileProvision(jsonObj.ios.mobileProvision);
+                    }
+
+                    if (jsonObj?.mobileProvision) {
+                        processMobileProvision(jsonObj.mobileProvision);
+                    }
+
+                    document.getElementById(id).innerHTML = syntaxHighlight(JSON.stringify(jsonObj, null, 2));
+                    document.getElementById(id).style.display = "block";
+                } catch (error) {
+
+                }
+
+            } else {
+                document.getElementById(id).textContent = "No JSON data provided.";
+            }
+            showLog(null)
+
+        }
+
+        function processMobileProvision(mobileProvision) {
+            if (mobileProvision) {
+                if (mobileProvision.DeveloperCertificates) {
+                    mobileProvision.DeveloperCertificates = JSON.stringify(mobileProvision.DeveloperCertificates).replace(/\s/g, '').replace(/\\"/g, '"');
+                }
+                if (mobileProvision["DER-Encoded-Profile"]) {
+                    mobileProvision["DER-Encoded-Profile"] = JSON.stringify(mobileProvision["DER-Encoded-Profile"]).replace(/\s/g, '').replace(/\\"/g, '"');
+                }
+            }
+        }
+
+
+
+        function showLog(msg) {
+            if (msg == null)
+                document.getElementById("More Info").style.display = "none";
+            else {
+                document.getElementById("More Info").textContent = msg;
+                document.getElementById("More Info").style.display = "block";
+            }
+
+        }
 
         function displayUnlinkedFiles(list) {
             const historyDiv = document.getElementById('unlinked');
-            const btn = document.createElement('button');
-            btn.textContent = 'Refresh SIZE (EXPENSIVE)';
-            btn.addEventListener('click', async () => {
-                calculateAllBucketSize();
-            });
-
-            // 4. add it to the page
-            historyDiv.appendChild(btn);
-
-
             const heading = document.createElement('h2');
             historyDiv.appendChild(heading);
             heading.textContent = 'unlinked files';
+            if (!list || (Array.isArray(list) && list.length === 0) || (typeof list === 'object' && Object.keys(list).length === 0)) {
+                const span = document.createElement('span');
+                historyDiv.appendChild(span);
+                span.textContent = '0 unlinked files';
+            }
+
+
             const table = document.createElement('table');
             table.style.width = "auto";
             table.style.borderCollapse = "collapse";
@@ -176,7 +215,6 @@
 
                 <tbody></tbody>
             `;
-
             const tbody = table.querySelector('tbody')
             list.forEach(file => {
                 const row = document.createElement('tr');
@@ -200,6 +238,11 @@
             const heading = document.createElement('h2');
             historyDiv.appendChild(heading);
             heading.textContent = title;
+            if (!list || (Array.isArray(list) && list.length === 0) || (typeof list === 'object' && Object.keys(list).length === 0)) {
+                const span = document.createElement('span');
+                historyDiv.appendChild(span);
+                span.textContent = '0 ' + title;
+            }
             const table = document.createElement('table');
             table.style.width = "auto";
             table.style.borderCollapse = "collapse";
@@ -266,6 +309,17 @@
                 }
             })
             historyDiv.appendChild(table);
+        }
+
+
+        function addExpensivRefreshButtun() {
+            const refreshExpensiveDiv = document.getElementById("refreshExpensiveDiv");
+            const btn = document.createElement('button');
+            btn.textContent = 'Refresh SIZE (Expensive Operation)';
+            btn.addEventListener('click', async () => {
+                calculateAllBucketSize();
+            });
+            refreshExpensiveDiv.appendChild(btn);
         }
 
 

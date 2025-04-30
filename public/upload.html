@@ -56,7 +56,7 @@
       padding: 0;
       margin: 0;
       font-size: 12px;
-      background: #efefef;
+      background: #2B2D30;
     }
 
     p {
@@ -78,7 +78,17 @@
       padding-top: 20px;
       padding-bottom: 20px;
       font-family: Georgia, serif;
+      color: #fff;
     }
+
+    h5 {
+      text-align: center;
+      margin: auto;
+      padding-bottom: 20px;
+      font-family:  serif;
+      color: #fff;
+    }
+
 
 
     .title {
@@ -318,12 +328,58 @@
   <div class="container">
 
 
+    <div style="position: relative;">
+      <a href="epoch_converter.html" target="_blank"
+        style="font-size: 12px; color: rgb(209, 218, 197); opacity: .7; margin-left: 10px; text-decoration: none;">
+        Epoch Timestamp Converter
+      </a>
+      <a href="string_converts.html" target="_blank"
+        style="font-size: 12px; color: rgb(195, 181, 164); opacity: .7; margin-left: 10px; text-decoration: none;">
+        Text/Base64/URL/Hash Tools
+      </a>
+
+      <a href="encryption.html" target="_blank"
+        style="font-size: 12px; color: rgb(170, 170, 196); opacity: .7; margin-left: 10px; text-decoration: none;">
+        String Encryption Tool
+      </a>
+
+      <a href="sqlite_viewer.html" target="_blank"
+        style="font-size: 12px; color: rgb(241, 249, 193); opacity: .7; margin-left: 10px; text-decoration: none;">
+        SQLite Viewer
+      </a>
+
+      <a href="qr-code-generator.html" target="_blank"
+        style="font-size: 12px; color: rgb(216, 205, 254); opacity: .7; margin-left: 10px; text-decoration: none;">
+        QR code generator
+      </a>
+
+
+
+      <a href="https://hexed.it/" target="_blank"
+        style="font-size: 12px; color: rgb(255, 198, 198); opacity: .7; margin-left: 10px; text-decoration: none;">
+        Hex Editor
+      </a>
+
+      <a href="file-transfer-app (2).html" target="_blank"
+        style="font-size: 12px; color: rgb(216, 177, 211); opacity: .7; margin-left: 10px; text-decoration: none;">
+        Local Network File Transfer er
+      </a>
+
+    </div>
+
+
     <h1>Upload APK, IPA</h1>
+    <h5 id="availableSpace"> </h5>
+
+
 
     <div id="topContainer" class="drop-zone">
-      <span class="drop-zone__prompt">Drop ipa/apk here <br />or click to select a file</span>
+      <span class="drop-zone__prompt">
+        Drop ipa/apk here <br />or click to select a file
+      </span>
       <input id="file-input" type="file" name="myFile" class="drop-zone__input">
     </div>
+
 
 
 
@@ -338,7 +394,8 @@
 
 
 
-    <a class="uploadNewApp" id="uploadNewApp" target="_blank" style="color: #00f;opacity: 1;  font-weight: 600; ">Upload
+    <a class="uploadNewApp" id="uploadNewApp" target="_blank"
+      style="color:  rgb(193, 129, 56);opacity: 1;  font-weight: 600; ">Upload
       another App</a>
     <br />
 
@@ -346,16 +403,14 @@
 
 
       async function refreshRedirection() {
+        if (window.location.href.includes("localhost") || window.location.href.startsWith("file:///")) {
+          return; // Exit the function without fetching
+        }
         const response = await fetch("https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/redirection.json");
         const new_redirection = await response.json();
-        console.log(new_redirection);
+        //console.log(new_redirection);
         var old_redirection = localStorage.getItem('redirection');
         localStorage.setItem('redirection', new_redirection);
-
-
-
-
-
         if (new_redirection != null && new_redirection.trim != "" && !window.location.href.includes("g_url_id") && !window.location.href.includes("localhost") && window.location.href != new_redirection) {
           window.location = new_redirection;
         }
@@ -398,10 +453,10 @@
 
     function get_incoming_g_url_id() {
       const queryString = window.location.search;
-      console.log(queryString);
+      //console.log(queryString);
       const urlParams = new URLSearchParams(queryString);
       const incoming_g_url_id = urlParams.get('g_url_id')
-      console.log(incoming_g_url_id);
+      //console.log(incoming_g_url_id);
       if (incoming_g_url_id != "new" && incoming_g_url_id != null && incoming_g_url_id.trim() != "")
         return incoming_g_url_id;
       else return null;
@@ -569,34 +624,34 @@
           const div = document.createElement('div')
           document.getElementById("topContainer").style.display = "none";
           div.innerHTML = `
-            <div style="padding: 20px; margin-bottom: 10px; background: #fff; border-radius: 4px; font-size: 16px; color: #717171; border: 1px solid #d9d9d9; border-color: #e9e9e9;">
+            <div style="padding: 20px; margin-bottom: 10px; background: #1E1F22; border-radius: 4px; font-size: 16px; color: #BCBEC3; border: 1px solid #fff; border-color: #222222;">
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">File Name: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">File Name: </span>
                 <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${files[0].name}</span>
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Icon: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">App Icon: </span>
                 <img style="width: 80px; height: 80px;" src="${g_app_icon}" alt="">
-                <span style="color: blue; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;" onclick="viewJsonInNewTab()"  >More Info</span>
+                <span style="color:  rgb(193, 129, 56); text-align: right; width: 100px;  padding-right: 20px;" onclick="viewJsonInNewTab()"  >More Info</span>
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Name: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">App Name: </span>
                 <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${g_app_name}</span>
               </p>
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">App Version: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">App Version: </span>
                 <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${g_version}</span>
               </p>
 
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Bundle ID / App ID: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">Bundle ID / App ID: </span>
                 <span style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">${package_bundle_id}</span>
               </p>
 
 
 
               <p style="padding: 10px 0; display: flex; overflow: hidden;">
-                <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">Uploading: </span>
+                <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">Uploading: </span>
                 <span id="uploadpercentage" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;">0%</span>
               </p>
 
@@ -610,7 +665,7 @@
               <p >
 
                 <div class="tooltip" style="padding: 10px 0; display: flex; overflow: hidden;">
-                  <span style="color: #000; text-align: right; width: 100px; font-weight: 600; padding-right: 20px;">URL: </span>
+                  <span style="color: #C59172; text-align: right; width: 100px;  padding-right: 20px;">URL: </span>
                 <span id="url_id_text" style="width: 0; flex: 1; overflow-wrap: break-word; word-wrap: break-word;"></span>
 <button id="copy_button" onclick="copy_to_clipboard()" onmouseout="copy_to_clipboard_show()">
   <span class="tooltiptext" id="myTooltip">Copy to clipboard</span>
@@ -622,7 +677,7 @@
 
 
 
-    <span id="max10URL" style="color: red; text-align: right; width: 100px; font-weight: 200; padding-right: 8px; font-size: 8px;">Max 10 URL for an app</span>
+    <span id="max10URL" style="color: red; text-align: right; width: 100px; font-weight: 200; padding-right: 8px; font-size: 8px;"></span>
 <form class="formClass" id="radioForms">
   <div class="radioContainer">
     <div id="dynamicRadioOptions" style="display: flex; align-items: center; flex-wrap: wrap;" ></div>
@@ -630,7 +685,7 @@
       <input type="radio" id="customOption" name="appEnvironment" value="custom" onclick="setGURLID()">
       <input type="text" id="customInput" value="${g_app_name_for_url}"  onkeypress="return restrictInput(event)"  onpaste="return sanitizePaste(event)"  />
         <button type="button" onclick="refreshCustomInput()" style="margin-left: 0px; padding: 0px; background: transparent; border: transparent;">
-            <i class="fa fa-refresh" style="font-size:14px;color:black"></i>
+            <i class="fa fa-refresh" style="font-size:14px;color:#BCBEC3"></i>
           </button>
     </div>
 
@@ -803,7 +858,7 @@
       var nexwSet = {
         "local_fileName": g_file.name.toString(),
         "name": g_app_name,
-        "platfrom": platfromName,
+        "platform": platfromName,
         "icon": g_app_icon,
         "packageName": package_bundle_id,
         "versionName": g_version,
@@ -836,7 +891,7 @@
       const url_id_text = document.querySelector('#url_id_text');
       var link = "https://" + window.location.hostname + "/" + g_url_id
       url_id_text.textContent = link;
-      url_id_text.style.color = "blue";
+      url_id_text.style.color = "rgb(193, 129, 56)";
       url_id_text.onclick = function () {
         window.open(link, '_blank');
 
@@ -898,7 +953,7 @@
     }
 
 
-  
+
 
 
 
@@ -906,6 +961,7 @@
 
     document.addEventListener('DOMContentLoaded', async function () {
       try {
+        g_bucket = await findBestBucket();
         var ref = firebase.database().ref("/events")
         var newChildRef = ref.push();
         newChildRef.set({
@@ -980,7 +1036,9 @@
     function viewJsonInNewTab() {
       const jsonString = encodeURIComponent(JSON.stringify(g_result));
       localStorage.removeItem("hd_time");
-      localStorage.setItem("jsonStore", jsonString);
+      localStorage.removeItem("jsonStore_1");
+      localStorage.removeItem("jsonStore_2");
+      localStorage.setItem("jsonStore_1", jsonString);
       localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
       const newTab = window.open(`more_info.html`, '_blank');
       if (newTab) {
@@ -999,9 +1057,8 @@
         try {
           pd = g_result["mobileProvision"]["ProvisionedDevices"].length
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
-        console.log("pd" + pd)
         if (pd == 0) {
           if (confirm("Provisioned Devices : " + pd + ".\nNo UDID added.\nUplaod any way? ")) {
             pd_zero_accept = true;
@@ -1026,8 +1083,8 @@
             console.log('' + progress.toFixed(0) + '% ');
             if (progress >= 100) {
               uploadpercentage.textContent = 'Done';
-            
-            
+
+
             } else {
               uploadpercentage.textContent = '' + progress.toFixed(0) + '%';
             }
@@ -1200,11 +1257,22 @@
         : [];
 
 
+      try {
+        if (optionsArray.includes(g_app_name_for_url)) {
+          document.getElementById('customInput').value = g_app_name_for_url + "QA";
+        }
+      } catch (error) {
+
+      }
+
+
+
+
 
 
       const dynamicRadioContainer = document.getElementById('dynamicRadioOptions');
 
-      if (optionsArray.length >= 10) {
+      if (optionsArray.length >= 100) {
         const dynamicRadioOptions = document.getElementById('customOptionDIV');
         if (dynamicRadioOptions) {
           dynamicRadioOptions.style.display = 'none';
@@ -1272,17 +1340,24 @@
 
       let bestKey = null;
       let leastUsed = Infinity;
+      var totalSpace=Object.entries(data).length*MAX_BYTES
+      var usedSpace=0.0
 
       for (const [key, value] of Object.entries(data)) {
         if (typeof value === "number" && value !== -1 && value < MAX_BYTES) {
+          usedSpace+=value
           if (value < leastUsed) {
             leastUsed = value;
             bestKey = key;
           }
         }
       }
-
-      if (bestKey) {
+      var availableSpace=totalSpace-usedSpace
+      const availableSpacePercentage = ((usedSpace / totalSpace) * 100).toFixed(0);
+     var text= "Available Space : " +  (availableSpace / (1024 * 1024 * 1024)).toFixed(2)+" Gb / "+(totalSpace / (1024 * 1024 * 1024)).toFixed(2) +" Gb ("+availableSpacePercentage+"% Used)";
+     document.getElementById('availableSpace').innerText=text;
+     //console.log(text)
+     if (bestKey) {
         return bestKey.replace(/_/g, ".");
       }
 
@@ -1290,7 +1365,7 @@
     }
 
 
-   async function saveFileSizeToDB(fileSize) {
+    async function saveFileSizeToDB(fileSize) {
       try {
         const ref = firebase.database().ref("/storage_buckets/" + g_bucket.replace(/\./g, "_"));
         const snapshot = await ref.once("value");
@@ -1298,7 +1373,7 @@
         await ref.set(current + fileSize);
         //console.log("File Size :", `${fileSize / (1024 * 1024)} Mb ${g_bucket} ||| Used Space ${(current+fileSize) / (1024 * 1024* 1024)} Gb   ${fileSize} ${current+fileSize}`)
       } catch (error) {
-        console.error( error);
+        console.error(error);
       }
     }
 

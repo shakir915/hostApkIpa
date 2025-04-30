@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite Database Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .panel {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .file-input {
+            margin-bottom: 15px;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        .query-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            overflow: auto;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fadbd8;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .table-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .status {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .results-container {
+            overflow-x: auto;
+        }
+        .info-box {
+            background-color: #d5f5e3;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <h1>SQLite Database Viewer</h1>
+    
+    <div class="container">
+        <div class="panel">
+            <div class="file-input">
+                <h3>Open SQLite Database</h3>
+                <p>Select a SQLite database file (.db, .sqlite, .sqlite3) to view its contents</p>
+                <input type="file" id="dbFile" accept=".db,.sqlite,.sqlite3">
+                <div id="loadingIndicator" class="loading" style="display: none;">Loading database...</div>
+            </div>
+            
+            <div id="dbInfo" class="info-box" style="display: none;">
+                <strong>Database loaded!</strong> <span id="dbSize"></span>
+            </div>
+        </div>
+        
+        <div id="tablesPanel" class="panel" style="display: none;">
+            <h3>Database Tables</h3>
+            <select id="tableList">
+                <option value="">-- Select a table --</option>
+            </select>
+            
+            <div class="table-info">
+                <span id="tableRowCount"></span>
+                <span id="tableColumnCount"></span>
+            </div>
+            
+            <div id="tableStructure"></div>
+        </div>
+        
+        <div id="queryPanel" class="panel" style="display: none;">
+            <h3>Custom SQL Query</h3>
+            <div class="query-container">
+                <textarea id="sqlQuery" placeholder="Enter SQL query here...
+Example: SELECT * FROM tableName LIMIT 100"></textarea>
+                <button id="runQuery">Run Query</button>
+            </div>
+        </div>
+        
+        <div id="resultsPanel" class="panel" style="display: none;">
+            <h3>Query Results</h3>
+            <div id="resultsStatus" class="status"></div>
+            <div class="results-container">
+                <div id="queryResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let db = null;
+        let SQL = null;
+        
+        // Renamed function to sqlInit to avoid any name conflicts with library
+        async function sqlInit() {
+            try {
+                // Store a reference to the global function
+                const initFunc = window.initSqlJs;
+                
+                if (typeof initFunc !== 'function') {
+                    throw new Error('SQL.js library not loaded properly.');
+                }
+                
+                // Call the global function with our config
+                return await initFunc({
+                    locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+                });
+            } catch (err) {
+                console.error('Failed to initialize SQL.js', err);
+                throw err;
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Just set up event listeners, don't initialize SQL.js yet
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // File input change event
+            document.getElementById('dbFile').addEventListener('change', handleFileSelection);
+            
+            // Table selection change event
+            document.getElementById('tableList').addEventListener('change', handleTableSelection);
+            
+            // Run query button click event
+            document.getElementById('runQuery').addEventListener('click', executeCustomQuery);
+        }
+
+        // Handle database file selection
+        async function handleFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('loadingIndicator').textContent = 'Loading SQLite engine...';
+                
+                // Initialize SQL.js only when needed (after file selection)
+                if (!SQL) {
+                    SQL = await sqlInit();
+                }
+                
+                document.getElementById('loadingIndicator').textContent = 'Reading database file...';
+                
+                // Read file as ArrayBuffer
+                const buffer = await readFileAsArrayBuffer(file);
+                
+                // Create database from the buffer
+                if (db) {
+                    db.close();
+                }
+                
+                db = new SQL.Database(new Uint8Array(buffer));
+                
+                // Display database info
+                document.getElementById('dbSize').textContent = `File size: ${formatFileSize(file.size)}`;
+                document.getElementById('dbInfo').style.display = 'block';
+                
+                // Load tables
+                loadTables();
+                
+                // Show panels
+                document.getElementById('tablesPanel').style.display = 'block';
+                document.getElementById('queryPanel').style.display = 'block';
+                
+                document.getElementById('loadingIndicator').style.display = 'none';
+            } catch (err) {
+                console.error('Error loading database', err);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                displayError(`Error loading database: ${err.message}`);
+            }
+        }
+
+        // Read file as ArrayBuffer (Promise-based)
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = event => resolve(event.target.result);
+                reader.onerror = error => reject(error);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // Load tables from the database
+        function loadTables() {
+            try {
+                // Query to get all table names
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+                
+                const tableList = document.getElementById('tableList');
+                // Clear previous options (except the default one)
+                tableList.innerHTML = '<option value="">-- Select a table --</option>';
+                
+                if (tables.length > 0 && tables[0].values) {
+                    tables[0].values.forEach(table => {
+                        const option = document.createElement('option');
+                        option.value = table[0];
+                        option.textContent = table[0];
+                        tableList.appendChild(option);
+                    });
+                } else {
+                    displayError('No tables found in the database.');
+                }
+            } catch (err) {
+                console.error('Error loading tables', err);
+                displayError('Error loading tables from database.');
+            }
+        }
+
+        // Handle table selection
+        function handleTableSelection(event) {
+            const tableName = event.target.value;
+            if (!tableName) return;
+            
+            try {
+                // Get table structure
+                const tableInfo = db.exec(`PRAGMA table_info(${escapeIdentifier(tableName)})`);
+                
+                // Get row count
+                const rowCount = db.exec(`SELECT COUNT(*) FROM ${escapeIdentifier(tableName)}`);
+                
+                // Display table info
+                if (tableInfo.length > 0) {
+                    document.getElementById('tableColumnCount').textContent = 
+                        `Columns: ${tableInfo[0].values.length}`;
+                }
+                
+                if (rowCount.length > 0) {
+                    document.getElementById('tableRowCount').textContent = 
+                        `Rows: ${rowCount[0].values[0][0]}`;
+                }
+                
+                // Set default query
+                document.getElementById('sqlQuery').value = 
+                    `SELECT * FROM ${tableName} LIMIT 100`;
+                
+                // Execute the query
+                executeCustomQuery();
+            } catch (err) {
+                console.error('Error getting table information', err);
+                displayError('Error retrieving table structure.');
+            }
+        }
+
+        // Execute custom SQL query
+        function executeCustomQuery() {
+            const query = document.getElementById('sqlQuery').value.trim();
+            if (!query) {
+                displayError('Please enter a SQL query.');
+                return;
+            }
+            
+            try {
+                const startTime = performance.now();
+                const results = db.exec(query);
+                const endTime = performance.now();
+                
+                // Show results panel
+                document.getElementById('resultsPanel').style.display = 'block';
+                
+                // Display results
+                if (results.length > 0) {
+                    const executionTime = ((endTime - startTime) / 1000).toFixed(3);
+                    document.getElementById('resultsStatus').textContent = 
+                        `Query executed in ${executionTime} seconds, returned ${results[0].values.length} rows`;
+                    
+                    displayQueryResults(results[0]);
+                } else {
+                    // For non-SELECT queries (INSERT, UPDATE, DELETE, etc.)
+                    document.getElementById('resultsStatus').textContent = 
+                        'Query executed successfully. No results to display.';
+                    document.getElementById('queryResults').innerHTML = '';
+                }
+            } catch (err) {
+                console.error('Error executing query', err);
+                displayError(`Error executing query: ${err.message}`);
+            }
+        }
+
+        // Display query results as table
+        function displayQueryResults(result) {
+            const container = document.getElementById('queryResults');
+            
+            if (!result || !result.columns || !result.values) {
+                container.innerHTML = '<p>No results to display.</p>';
+                return;
+            }
+            
+            // Create table
+            const table = document.createElement('table');
+            
+            // Add headers
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            
+            result.columns.forEach(column => {
+                const th = document.createElement('th');
+                th.textContent = column;
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // Add data rows
+            const tbody = document.createElement('tbody');
+            
+            result.values.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                row.forEach(cell => {
+                    const td = document.createElement('td');
+                    td.textContent = formatCell(cell);
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            table.appendChild(tbody);
+            
+            // Clear previous results and add table
+            container.innerHTML = '';
+            container.appendChild(table);
+        }
+
+        // Format cell value for display
+        function formatCell(value) {
+            if (value === null) return 'NULL';
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        // Display error message
+        function displayError(message) {
+            const container = document.getElementById('queryResults');
+            const resultsPanel = document.getElementById('resultsPanel');
+            
+            resultsPanel.style.display = 'block';
+            container.innerHTML = `<div class="error">${message}</div>`;
+            document.getElementById('resultsStatus').textContent = '';
+        }
+
+        // Format file size for display
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+            else return (bytes / 1048576).toFixed(2) + ' MB';
+        }
+
+        // Escape SQL identifier to prevent SQL injection
+        function escapeIdentifier(identifier) {
+            return `"${identifier.replace(/"/g, '""')}"`;
+        }
+    </script>
+</body>
+</html>

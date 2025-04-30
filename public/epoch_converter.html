@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epoch & Unix Timestamp Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1, h2 {
+            color: #eee;
+            text-shadow: 1px 1px 2px #000;
+        }
+        .converter {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #252525;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ccc;
+        }
+        input[type="number"], input[type="text"], select {
+            width: calc(100% - 18px);
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #eee;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #epochToHumanOutput, #humanToEpochOutput {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            background-color: #333;
+            color: #eee;
+            white-space: pre-wrap; /* Preserve formatting for better readability */
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        strong {
+            color: #a7d1eb;
+        }
+    </style>
+</head>
+<body>
+    <h1><span style="color: #a7d1eb;">Epoch</span> & <span style="color: #f08080;">Unix</span> Timestamp Converter</h1>
+
+    <div class="converter">
+        <h2><span style="color: #a7d1eb;">Timestamp</span> to Human Date</h2>
+        <label for="timestampInput">Enter Unix Timestamp (<span style="color: #f08080;">seconds</span>, <span style="color: #f08080;">milliseconds</span>, <span style="color: #f08080;">microseconds</span>, or <span style="color: #f08080;">nanoseconds</span>):</label>
+        <input type="number" id="timestampInput" placeholder="e.g., 1678886400 or 1678886400000">
+        <label for="timestampUnit">Unit:</label>
+        <select id="timestampUnit">
+            <option value="seconds" selected>Seconds</option>
+            <option value="milliseconds">Milliseconds</option>
+            <option value="microseconds">Microseconds</option>
+            <option value="nanoseconds">Nanoseconds</option>
+        </select>
+        <button onclick="epochToHuman()">Convert to Human Date</button>
+        <div id="epochToHumanOutput"></div>
+    </div>
+
+    <div class="converter">
+        <h2>Human Date to <span style="color: #a7d1eb;">Timestamp</span></h2>
+        <label for="humanDateInput">Enter Human Date (<span style="color: #f08080;">YYYY-MM-DD HH:MM:SS</span>):</label>
+        <input type="text" id="humanDateInput" placeholder="e.g., 2023-03-15 10:00:00">
+        <label for="humanDateOutputUnit">Output Unit:</label>
+        <select id="humanDateOutputUnit">
+            <option value="seconds" selected>Seconds</option>
+            <option value="milliseconds">Milliseconds</option>
+        </select>
+        <button onclick="humanToEpoch()">Convert to Timestamp</button>
+        <div id="humanToEpochOutput"></div>
+    </div>
+
+    <script>
+        function epochToHuman() {
+            const timestampInput = document.getElementById("timestampInput").value;
+            const timestampUnit = document.getElementById("timestampUnit").value;
+            const outputDiv = document.getElementById("epochToHumanOutput");
+            outputDiv.innerHTML = ""; // Clear previous output
+
+            if (!timestampInput) {
+                outputDiv.innerHTML = '<p class="error">Please enter a timestamp.</p>';
+                return;
+            }
+
+            let date;
+            const timestamp = parseFloat(timestampInput);
+
+            switch (timestampUnit) {
+                case "seconds":
+                    date = new Date(timestamp * 1000);
+                    break;
+                case "milliseconds":
+                    date = new Date(timestamp);
+                    break;
+                case "microseconds":
+                    date = new Date(timestamp / 1000);
+                    break;
+                case "nanoseconds":
+                    date = new Date(timestamp / 1000000);
+                    break;
+                default:
+                    outputDiv.innerHTML = '<p class="error">Invalid timestamp unit.</p>';
+                    return;
+            }
+
+            const gmtDate = date.toISOString().replace('T', ' ').slice(0, -5) + 'Z';
+            const localDate = date.toLocaleString();
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            let relativeTime;
+            if (diffInSeconds < 60) {
+                relativeTime = diffInSeconds + ' seconds ago';
+            } else if (diffInSeconds < 3600) {
+                relativeTime = Math.floor(diffInSeconds / 60) + ' minutes ago';
+            } else if (diffInSeconds < 86400) {
+                relativeTime = Math.floor(diffInSeconds / 3600) + ' hours ago';
+            } else {
+                relativeTime = Math.floor(diffInSeconds / 86400) + ' days ago';
+            }
+
+            outputDiv.innerHTML = `
+                <p>Assuming that this timestamp is in <strong>${timestampUnit}</strong>:</p>
+                <p><strong>GMT:</strong> ${gmtDate}</p>
+                <p><strong>Your time zone:</strong> ${localDate} (GMT${(new Date()).getTimezoneOffset() > 0 ? '-' : '+'}${Math.abs((new Date()).getTimezoneOffset() / 60).toString().padStart(2, '0')}:${(Math.abs((new Date()).getTimezoneOffset()) % 60).toString().padStart(2, '0')})</p>
+                <p><strong>Relative:</strong> ${relativeTime}</p>
+            `;
+        }
+
+        function humanToEpoch() {
+            const humanDateInput = document.getElementById("humanDateInput").value;
+            const outputUnit = document.getElementById("humanDateOutputUnit").value;
+            const outputDiv = document.getElementById("humanToEpochOutput");
+            outputDiv.innerHTML = ""; // Clear previous output
+
+            if (!humanDateInput) {
+                outputDiv.innerHTML = '<p class="error">Please enter a human date.</p>';
+                return;
+            }
+
+            const date = new Date(humanDateInput);
+
+            if (isNaN(date.getTime())) {
+                outputDiv.innerHTML = '<p class="error">Invalid date format. Please use YYYY-MM-DD HH:MM:SS.</p>';
+                return;
+            }
+
+            let timestamp;
+            switch (outputUnit) {
+                case "seconds":
+                    timestamp = Math.floor(date.getTime() / 1000);
+                    break;
+                case "milliseconds":
+                    timestamp = date.getTime();
+                    break;
+                default:
+                    outputDiv.innerHTML = '<p class="error">Invalid output unit.</p>';
+                    return;
+            }
+
+            outputDiv.innerHTML = `<p>The Unix timestamp in <strong>${outputUnit}</strong> is: <strong>${timestamp}</strong></p>`;
+        }
+
+        // Display current epoch time on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentEpoch = Math.floor(Date.now() / 1000);
+            const currentEpochDisplay = document.createElement('p');
+            currentEpochDisplay.style.color = '#bbb';
+            currentEpochDisplay.style.marginBottom = '15px';
+            currentEpochDisplay.innerHTML = `The current <strong>Unix epoch time</strong> is <strong>${currentEpoch}</strong>`;
+            document.body.insertBefore(currentEpochDisplay, document.body.firstChild);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encryption Tool</title>
+    <style>
+        :root {
+            --primary: #8a2be2;
+            --secondary: #00bfff;
+            --accent: #ff1493;
+            --bg-dark: #121212;
+            --bg-light: #1e1e1e;
+            --text: #f0f0f0;
+            --text-muted: #b0b0b0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 800px;
+            padding: 2rem;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--secondary);
+            text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            background: var(--bg-dark);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 3px solid var(--accent);
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+        
+        textarea, input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: var(--bg-dark);
+            color: var(--text);
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        
+        textarea {
+            min-height: 100px;
+        }
+        
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.6%205.4-7.9%205.4-12.9%200-5-1.9-9.2-5.5-12.7z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 12px;
+            padding-right: 2rem;
+        }
+        
+        button {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+        }
+        
+        .result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 6px;
+            background-color: var(--bg-dark);
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            width: auto;
+        }
+        
+        .glow {
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(0, 191, 255, 0.7);
+            }
+        }
+        
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .alert.show {
+            opacity: 1;
+        }
+        
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.8);
+        }
+        
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="glow">String Encryption Tool</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-operation="encrypt">Encrypt</div>
+            <div class="tab" data-operation="decrypt">Decrypt</div>
+        </div>
+        
+        <div class="alert" id="alert"></div>
+        
+        <div class="form-group">
+            <label for="algorithm">Encryption Algorithm</label>
+            <select id="algorithm">
+                <option value="aes">AES (Advanced Encryption Standard)</option>
+                <option value="des">DES (Data Encryption Standard)</option>
+                <option value="rc4">RC4 (Rivest Cipher 4)</option>
+                <option value="rabbit">Rabbit</option>
+                <option value="tripledes">Triple DES</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="secret">Secret Key</label>
+            <input type="password" id="secret" placeholder="Enter your secret key">
+        </div>
+        
+        <div class="form-group">
+            <label for="input">Input Text</label>
+            <textarea id="input" placeholder="Enter text to encrypt/decrypt"></textarea>
+        </div>
+        
+        <button id="process-btn">Encrypt</button>
+        
+        <div class="result" id="result">
+            Result will appear here
+            <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const processBtn = document.getElementById('process-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const resultElement = document.getElementById('result');
+            const alertElement = document.getElementById('alert');
+            let currentOperation = 'encrypt';
+            
+            // Tab switching logic
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentOperation = this.dataset.operation;
+                    processBtn.textContent = currentOperation.charAt(0).toUpperCase() + currentOperation.slice(1);
+                });
+            });
+            
+            // Process button click handler
+            processBtn.addEventListener('click', function() {
+                const algorithm = document.getElementById('algorithm').value;
+                const secret = document.getElementById('secret').value;
+                const input = document.getElementById('input').value;
+                
+                if (!secret || !input) {
+                    showAlert('Please provide both a secret key and input text', 'error');
+                    return;
+                }
+                
+                try {
+                    let result;
+                    
+                    if (currentOperation === 'encrypt') {
+                        result = encrypt(algorithm, input, secret);
+                    } else {
+                        result = decrypt(algorithm, input, secret);
+                    }
+                    
+                    resultElement.innerHTML = result;
+                    resultElement.appendChild(copyBtn);
+                    showAlert(`Text ${currentOperation}ed successfully!`, 'success');
+                } catch (error) {
+                    showAlert(`Error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Copy button click handler
+            copyBtn.addEventListener('click', function() {
+                const textToCopy = resultElement.textContent.replace('Copy', '').trim();
+                navigator.clipboard.writeText(textToCopy)
+                    .then(() => {
+                        showAlert('Copied to clipboard!', 'success');
+                    })
+                    .catch(err => {
+                        showAlert('Failed to copy text', 'error');
+                    });
+            });
+            
+            // Encryption function
+            function encrypt(algorithm, text, key) {
+                switch (algorithm) {
+                    case 'aes':
+                        return CryptoJS.AES.encrypt(text, key).toString();
+                    case 'des':
+                        return CryptoJS.DES.encrypt(text, key).toString();
+                    case 'rc4':
+                        return CryptoJS.RC4.encrypt(text, key).toString();
+                    case 'rabbit':
+                        return CryptoJS.Rabbit.encrypt(text, key).toString();
+                    case 'tripledes':
+                        return CryptoJS.TripleDES.encrypt(text, key).toString();
+                    default:
+                        throw new Error('Unknown algorithm');
+                }
+            }
+            
+            // Decryption function
+            function decrypt(algorithm, ciphertext, key) {
+                try {
+                    let bytes;
+                    switch (algorithm) {
+                        case 'aes':
+                            bytes = CryptoJS.AES.decrypt(ciphertext, key);
+                            break;
+                        case 'des':
+                            bytes = CryptoJS.DES.decrypt(ciphertext, key);
+                            break;
+                        case 'rc4':
+                            bytes = CryptoJS.RC4.decrypt(ciphertext, key);
+                            break;
+                        case 'rabbit':
+                            bytes = CryptoJS.Rabbit.decrypt(ciphertext, key);
+                            break;
+                        case 'tripledes':
+                            bytes = CryptoJS.TripleDES.decrypt(ciphertext, key);
+                            break;
+                        default:
+                            throw new Error('Unknown algorithm');
+                    }
+                    
+                    const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+                    if (!decrypted) {
+                        throw new Error('Invalid key or corrupt ciphertext');
+                    }
+                    return decrypted;
+                } catch (error) {
+                    throw new Error('Decryption failed. Please check your key and input.');
+                }
+            }
+            
+            // Alert display function
+            function showAlert(message, type) {
+                alertElement.textContent = message;
+                alertElement.className = `alert alert-${type} show`;
+                
+                setTimeout(() => {
+                    alertElement.className = 'alert';
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
