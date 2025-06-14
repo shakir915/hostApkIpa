@@ -390,7 +390,7 @@
 
 
             } catch (e) {
-                document.getElementById("loggg").innerText = "Error deleting file: " + e.message;
+                document.getElementById("More Info").innerText = "Error deleting file: " + e.message;
                 button.textContent = e.message;
             }
 
@@ -416,7 +416,7 @@
                     button.textContent = "Deleted";
                 }
             } catch (error) {
-                document.getElementById("loggg").innerText = "Error deleting file: " + error.message;
+                document.getElementById("More Info").innerText = "Error deleting file: " + error.message;
             }
 
         }
@@ -497,7 +497,7 @@
 
 
                 } catch (e) {
-                    document.getElementById("loggg").innerText = "Error deleting file: " + e.message;
+                    document.getElementById("More Info").innerText = "Error deleting file: " + e.message;
                     button.textContent = e.message;
                 }
 
@@ -745,7 +745,7 @@
 
 
         async function calculateAllBucketSize() {
-            var loggg = ""
+            var More_Info = ""
             // 1. fetch bucket keys from RTDB
             const snap = await firebase.database()
                 .ref("/storage_buckets/")
@@ -776,8 +776,8 @@
                 const totalSize = sizes.reduce((sum, sz) => sum + sz, 0);
 
 
-                loggg += `${bucket} ${totalSize}\n`
-                document.getElementById("loggg").innerText = loggg;
+                More_Info += `${bucket} ${totalSize}\n`
+                document.getElementById("More Info").innerText = More_Info;
                 // attempt to upload a tiny “DUMMY” file
                 let dummyUploadSize = -1;
                 try {
@@ -793,11 +793,11 @@
                     dummyUploadSize = totalSize;
                 } catch (err) {
                     console.error(`Dummy upload failed for ${bucket}:`, err);
-                    loggg += `${bucket} ${err}\n`
-                    document.getElementById("loggg").innerText = loggg;
+                    More_Info += `${bucket} ${err}\n`
+                    document.getElementById("More Info").innerText = More_Info;
                 }
-                loggg += `${bucket} upload size ${dummyUploadSize}\n`
-                document.getElementById("loggg").innerText = loggg;
+                More_Info += `${bucket} upload size ${dummyUploadSize}\n`
+                document.getElementById("More Info").innerText = More_Info;
 
                 const ref = firebase.database().ref("/storage_buckets/" + bucket.replace(/\./g, "_"));
                 await ref.set(dummyUploadSize);
@@ -806,8 +806,8 @@
             }));
 
 
-            loggg += `DONE\n`
-            document.getElementById("loggg").innerText = loggg;
+            More_Info += `DONE\n`
+            document.getElementById("More Info").innerText = More_Info;
             return results;
         }
 

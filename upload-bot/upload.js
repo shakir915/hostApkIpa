@@ -8,10 +8,11 @@ const path = require('path');
 (async () => {
 
   const homeDir = os.homedir(); 
-  const destDir = path.join(homeDir, 'install4_uploader_my-user-data');
+  const destDir = path.join(homeDir, 'puppeteer_user_data');
   fs.mkdirSync(destDir, { recursive: true });
   const browser = await puppeteer.launch({
     headless: 'new',
+    timeout: 60000, 
     userDataDir: destDir,
   });
 
@@ -74,7 +75,7 @@ const path = require('path');
       // Skip
     } else if (text.includes("BUILD LINK")) {
       console.log('\n');
-      console.log(text);
+      console.log('\x1b[34m%s\x1b[0m', text);
       console.log('\n');
       close_browser(0);
     } else {
@@ -86,7 +87,7 @@ const path = require('path');
     await page.waitForFunction(() => {
       const el = document.querySelector('#url_id_text');
       return el && el.textContent.trim().startsWith('https://');
-    }, { timeout: 5 * 60 * 1000 });
+    }, { timeout: 10 * 60 * 1000 });
 
     // Do not call browser.close here — let it happen in the console handler
   } catch (error) {

@@ -62,7 +62,7 @@
     <h2>(Manual Signaling)</h2>
     <p style="text-align: center; font-size: 0.9em; color: #555;">
         Current time: <span id="currentTime"></span><br>
-        <small>Location context: Edappal, Kerala, India</small>
+        <small>Location context: </small>
     </p>
 
     <div id="status" class="status-disconnected">Disconnected</div>
@@ -398,14 +398,8 @@
             try {
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
-                console.log("Offer created and set.");
-                updateStatus('Offer Created - Copy below and send to Peer B');
-               
-
                 const dbRef = firebase.database().ref("/web_rtc/" +  user.uid  );
                 await dbRef.set(JSON.stringify(peerConnection.localDescription));
-
-
             } catch (e) {
                 console.error("Error creating offer:", e);
                 updateStatus(`Offer Error: ${e}`, 'disconnected');

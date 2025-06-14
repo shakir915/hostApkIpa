@@ -1,5 +1,5 @@
 const { spawn } = require('child_process');
-
+//--target-platform=android-arm,android-arm64
 
 
 const args = process.argv.slice(2); // this gets only the arguments passed in
@@ -11,22 +11,84 @@ const otherArgs = args.slice(2);
 var UPLD=`node "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/upload.js"`;
 var commandString = ""
 
-if(currentDirectory.endsWith("/jezly")||firstArgument=="jezly"){
+if(currentDirectory.endsWith("/27jezly-user")||firstArgument=="jezly"){
   if(firstArgument=="jezly")
-    currentDirectory="/Users/shakir/PROJECTS/Emstell/27jezly-user/jezly";
+    currentDirectory="/Users/shakir/PROJECTS/Emstell/27jezly-user";
 var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=qa=true --export-options-plist="${plist}" 
-cd "${currentDirectory}" && ${UPLD} jezly_qa "./build/ios/ipa/27Jezly.ipa"
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=qa=false --export-options-plist="${plist}"
-cd "${currentDirectory}" && ${UPLD} jezly_prod "./build/ios/ipa/27Jezly.ipa"
-cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=qa=true  
-cd "${currentDirectory}" && ${UPLD} jezly_qa "./build/app/outputs/flutter-apk/app-release.apk"
-cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=qa=false  
-cd "${currentDirectory}" && ${UPLD} jezly_prod "./build/app/outputs/flutter-apk/app-release.apk"
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && ${UPLD} 27JezlyQA "./build/ios/ipa/27Jezly.ipa"
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=prod --export-options-plist="${plist}"
+cd "${currentDirectory}" && ${UPLD} 27Jezly "./build/ios/ipa/27Jezly.ipa"
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa  --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} 27JezlyQA "./build/app/outputs/flutter-apk/app-release.apk"
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=prod  --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} 27Jezly "./build/app/outputs/flutter-apk/app-release.apk"
 say completed
 `;
 }
+
+
+
+if(currentDirectory.endsWith("/27jezlyBusiness")||firstArgument=="jezlyb"){
+  if(firstArgument=="jezlyb")
+    currentDirectory="/Users/shakir/PROJECTS/Emstell/27jezlyBusiness";
+var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
+commandString=`
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && ${UPLD} 27JezlyBusinessQA "./build/ios/ipa/27Jezly Business.ipa"
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=prod  --export-options-plist="${plist}"
+cd "${currentDirectory}" && ${UPLD} 27JezlyBusiness "./build/ios/ipa/27Jezly Business.ipa"
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} 27JezlyBusinessQA "./build/app/outputs/flutter-apk/app-release.apk"
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=prod  --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} 27JezlyBusiness "./build/app/outputs/flutter-apk/app-release.apk"
+say completed
+`;
+}
+
+if(currentDirectory.endsWith("/salem-apps-mobile")||firstArgument=="salem"){
+  if(firstArgument=="salem")
+    currentDirectory="/Users/shakir/salem-apps-mobile";
+var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
+commandString=`
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/salem.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && ${UPLD} salem "./build/ios/ipa/salem.ipa"
+
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} salem "./build/app/outputs/flutter-apk/app-release.apk"
+
+say completed
+`;
+}
+
+
+if(currentDirectory.endsWith("/yourbillboard-app")||firstArgument=="billboard"){
+  if(firstArgument=="billboard")
+    currentDirectory="/Users/shakir/yourbillboard-app";
+var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
+commandString=`
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/your_billboard.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && ${UPLD} billboard "./build/ios/ipa/your_billboard.ipa"
+
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} billboard "./build/app/outputs/flutter-apk/app-release.apk"
+
+say completed
+`;
+}
+
+
+
+
+
+
+
+
 
 
 if(currentDirectory.endsWith("hostApkIpa")&&firstArgument=="upload"){

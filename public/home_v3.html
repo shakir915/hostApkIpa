@@ -388,9 +388,8 @@
       console.log('deviceType ', deviceType)
 
 
-      if (deviceType == 0)
-        document.getElementById("upload").style.visibility = 'visible';
-
+     
+       
 
 
 
@@ -683,6 +682,7 @@
            // console.log(data)
             if (hasDataOn(data, "ipa", "ios") || hasDataOn(data, "apk", "android")) {
               setData(data)
+              document.getElementById("upload").style.visibility = 'visible';
               return
             }
           }
@@ -692,6 +692,7 @@
       }
 
       appid.textContent = "404 Not Found";
+      
     }
 
 
