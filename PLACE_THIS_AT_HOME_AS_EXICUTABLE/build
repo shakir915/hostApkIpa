@@ -4,4 +4,11 @@
 #echo "Called from directory: $PWD"
 #echo "Script was called from: $0"
 #echo "Script was called from: $1"
+
+
+#  PLACE THIS FILE IN HOME DIRECTORY AND MAKE / GIVE EXICUATABLE PERMISIION
+# SO THAT, YOU CAN TAKE BUILD AND UPLOAD by simple commamnd "build" in project direcory
+# OR simple command like "build jezly" from anywhere
+# please note : upload-bot/buildApp.js should be configured according to your flutter project path and names
+
 node /Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/buildApp.js "$PWD" "$1" "${@:2}"
