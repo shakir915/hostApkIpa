@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local File Transfer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Local File Transfer</h1>
+            <p>Share files instantly across your local network</p>
+            <div class="device-id">
+                Device ID: <span id="deviceId">Generating...</span>
+            </div>
+            <div class="device-id" style="margin-top: 10px;">
+                Local IP: <span id="localIP">Detecting...</span>
+            </div>
+            <div style="margin-top: 15px;">
+                Status: <span id="connectionStatus" class="status offline">Offline</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Available Devices Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    🔍 Available Devices
+                    <div style="margin-left: auto; display: flex; gap: 10px;">
+                        <button id="addDeviceBtn" class="btn" style="background: #28a745;">
+                            <span>+ Add Device</span>
+                        </button>
+                        <button id="scanBtn" class="btn">
+                            <span>Scan Network</span>
+                        </button>
+                    </div>
+                </h2>
+                
+                <!-- Connection Instructions -->
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem;">
+                    📱 <strong>Cross-Device Setup:</strong><br>
+                    1. Open this app on both Mac and iPhone using the same WiFi<br>
+                    2. Click "Add Device" and enter the other device's ID<br>
+                    3. Your Device ID: <strong id="shareableDeviceId"></strong>
+                    <button onclick="copyDeviceId()" style="margin-left: 10px; padding: 5px 10px; background: #4facfe; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        📋 Copy ID
+                    </button>
+                    <button onclick="shareDeviceId()" style="margin-left: 5px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        📤 Share
+                    </button>
+                </div>
+                <div id="devicesContainer">
+                    <div class="devices-grid" id="devicesGrid">
+                        <div style="text-align: center; color: #6c757d; grid-column: 1/-1; padding: 40px;">
+                            No devices found. Click "Scan Network" to discover devices.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Transfer Section -->
+            <div class="section">
+                <h2 class="section-title">📁 Send Files</h2>
+                <div id="selectedDevice" style="margin-bottom: 20px; display: none;">
+                    <strong>Target Device:</strong> <span id="targetDeviceName"></span>
+                </div>
+                
+                <div class="file-drop-zone" id="dropZone">
+                    <div class="drop-icon">📁</div>
+                    <h3>Drop files here or click to select</h3>
+                    <p>Select a device first, then choose files to transfer</p>
+                    <input type="file" id="fileInput" class="file-input" multiple>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+
+            <!-- Received Files Section -->
+            <div class="section">
+                <h2 class="section-title">📥 Received Files</h2>
+                <div id="receivedFiles">
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        No files received yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="section">
+                <h2 class="section-title">📊 Activity Log</h2>
+                <div class="log" id="activityLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load JavaScript Files -->
+    <script src="utils.js"></script>
+    <script src="ip-detection.js"></script>
+    <script src="session-manager.js"></script>
+    <script src="network-manager.js"></script>
+    <script src="file-manager.js"></script>
+    <script src="ui-manager.js"></script>
+    <script src="app.js"></script>
+    
+    <script>
+        // Device ID sharing functions
+        function copyDeviceId() {
+            const deviceId = document.getElementById('shareableDeviceId').textContent;
+            navigator.clipboard.writeText(deviceId).then(() => {
+                window.uiManager?.showAlert('Device ID copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = deviceId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                window.uiManager?.showAlert('Device ID copied!', 'success');
+            });
+        }
+        
+        function shareDeviceId() {
+            const deviceId = document.getElementById('shareableDeviceId').textContent;
+            const shareText = `Join my File Transfer session!\n\nDevice ID: ${deviceId}\n\nOpen the same app and add this Device ID.`;
+            
+            if (navigator.share) {
+                // Use native sharing on mobile devices
+                navigator.share({
+                    title: 'File Transfer - Device ID',
+                    text: shareText
+                }).catch(console.log);
+            } else {
+                // Fallback to copying
+                copyDeviceId();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC P2P File Transfer (Fixed)</title>
+    
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            padding: 1em; 
+            line-height: 1.5; 
+            max-width: 900px; 
+            margin: auto; 
+            background: #f5f7fa; 
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { 
+            text-align: center; 
+            color: #2563eb; 
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        textarea { 
+            width: 100%; 
+            height: 100px; 
+            margin: 10px 0; 
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9em;
+            resize: vertical;
+        }
+        button { 
+            margin: 5px; 
+            padding: 10px 16px; 
+            cursor: pointer; 
+            background: #2563eb; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        button:disabled { 
+            background: #9ca3af; 
+            cursor: not-allowed; 
+        }
+        .btn-success { background: #059669; }
+        .btn-success:hover { background: #047857; }
+        .btn-warning { background: #d97706; }
+        .btn-warning:hover { background: #b45309; }
+        
+        input[type="text"], input[type="file"] { 
+            padding: 10px; 
+            margin: 5px; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 6px; 
+            font-size: 1rem;
+        }
+        
+        .status {
+            font-weight: bold; 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-radius: 8px; 
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .status-disconnected { background: #fef2f2; color: #dc2626; border: 2px solid #fecaca; }
+        .status-connecting { background: #fffbeb; color: #d97706; border: 2px solid #fed7aa; }
+        .status-connected { background: #f0fdf4; color: #16a34a; border: 2px solid #bbf7d0; }
+        
+        .section {
+            margin: 30px 0;
+            padding: 25px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .section h2 {
+            margin: 0 0 20px 0;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #2563eb;
+        }
+        .step-title {
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .hidden { display: none; }
+        
+        #chat-log { 
+            border: 2px solid #e5e7eb; 
+            padding: 15px; 
+            min-height: 120px; 
+            margin: 15px 0; 
+            background: white; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            border-radius: 6px;
+            font-family: system-ui;
+        }
+        .chat-message {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .chat-me { background: #dbeafe; border-left: 3px solid #2563eb; }
+        .chat-peer { background: #f3f4f6; border-left: 3px solid #6b7280; }
+        .chat-system { background: #fef3c7; border-left: 3px solid #d97706; font-style: italic; }
+        
+        .file-transfer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .file-transfer input[type="file"] {
+            flex: 1;
+        }
+        
+        .progress-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+        progress { 
+            width: 100%; 
+            height: 20px; 
+            margin: 10px 0;
+            border-radius: 10px;
+        }
+        progress::-webkit-progress-bar { 
+            background: #f3f4f6; 
+            border-radius: 10px; 
+        }
+        progress::-webkit-progress-value { 
+            background: #10b981; 
+            border-radius: 10px; 
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 12px 20px;
+            background: #059669;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .download-link:hover {
+            background: #047857;
+        }
+        
+        .instructions {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .instructions h3 {
+            margin: 0 0 10px 0;
+            color: #1e40af;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📡 WebRTC P2P File Transfer</h1>
+        <div class="subtitle">Direct device-to-device file sharing</div>
+
+        <div id="status" class="status status-disconnected">Not Connected</div>
+
+        <div class="instructions">
+            <h3>🔧 Setup Instructions:</h3>
+            <ol>
+                <li><strong>Device A:</strong> Click "Create Offer" and copy the offer text</li>
+                <li><strong>Device B:</strong> Paste the offer and click "Create Answer", then copy the answer</li>
+                <li><strong>Device A:</strong> Paste the answer and click "Set Answer"</li>
+                <li><strong>Both devices:</strong> Exchange ICE candidates when they appear</li>
+                <li><strong>Connected!</strong> Chat and transfer files</li>
+            </ol>
+        </div>
+
+        <!-- Connection Setup -->
+        <div class="section">
+            <h2>🔗 Connection Setup</h2>
+            
+            <div class="step">
+                <div class="step-title">Step 1: Create Offer (Device A)</div>
+                <button id="create-offer-btn">Create Offer</button>
+                <textarea id="offer-output" placeholder="Offer will appear here - copy to Device B" readonly></textarea>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Step 2: Create Answer (Device B)</div>
+                <textarea id="offer-input" placeholder="Paste offer from Device A here"></textarea>
+                <button id="create-answer-btn">Create Answer</button>
+                <textarea id="answer-output" placeholder="Answer will appear here - copy to Device A" readonly></textarea>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Step 3: Set Answer (Device A)</div>
+                <textarea id="answer-input" placeholder="Paste answer from Device B here"></textarea>
+                <button id="set-answer-btn">Set Answer</button>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Step 4: Exchange ICE Candidates (Both Devices)</div>
+                <div style="margin: 10px 0;">
+                    <strong>Your ICE Candidates (copy these):</strong>
+                    <textarea id="ice-output" placeholder="Your ICE candidates will appear here..." readonly></textarea>
+                </div>
+                <div style="margin: 10px 0;">
+                    <strong>Paste Remote ICE Candidates:</strong>
+                    <textarea id="ice-input" placeholder="Paste ICE candidates from other device here"></textarea>
+                    <button id="add-ice-btn">Add ICE Candidates</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chat-section" class="section hidden">
+            <h2>💬 Chat</h2>
+            <div id="chat-log"></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="chat-input" placeholder="Type a message..." style="flex: 1;">
+                <button id="send-chat-btn">Send</button>
+            </div>
+        </div>
+
+        <!-- File Transfer Section -->
+        <div id="file-section" class="section hidden">
+            <h2>📁 File Transfer</h2>
+            
+            <div class="file-transfer">
+                <input type="file" id="file-input">
+                <button id="send-file-btn" class="btn-success">Send File</button>
+            </div>
+
+            <div id="send-progress" class="progress-section hidden">
+                <strong>Sending:</strong> <span id="send-filename"></span>
+                <progress id="send-progress-bar" value="0" max="100"></progress>
+                <div id="send-status">Preparing...</div>
+            </div>
+
+            <div id="receive-progress" class="progress-section hidden">
+                <strong>Receiving:</strong> <span id="receive-filename"></span>
+                <progress id="receive-progress-bar" value="0" max="100"></progress>
+                <div id="receive-status">Receiving...</div>
+            </div>
+
+            <div id="download-area"></div>
+        </div>
+    </div>
+
+    <script>
+        let peerConnection = null;
+        let dataChannel = null;
+        let isInitiator = false;
+
+        // File transfer state
+        let receivedFileData = [];
+        let receivedFileInfo = null;
+        let receivedBytes = 0;
+
+        const configuration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun.services.mozilla.com:3478' }
+            ]
+        };
+
+        // UI Elements
+        const elements = {
+            status: document.getElementById('status'),
+            offerOutput: document.getElementById('offer-output'),
+            offerInput: document.getElementById('offer-input'),
+            answerOutput: document.getElementById('answer-output'),
+            answerInput: document.getElementById('answer-input'),
+            iceOutput: document.getElementById('ice-output'),
+            iceInput: document.getElementById('ice-input'),
+            chatSection: document.getElementById('chat-section'),
+            fileSection: document.getElementById('file-section'),
+            chatLog: document.getElementById('chat-log'),
+            chatInput: document.getElementById('chat-input'),
+            fileInput: document.getElementById('file-input'),
+            sendProgress: document.getElementById('send-progress'),
+            receiveProgress: document.getElementById('receive-progress'),
+            downloadArea: document.getElementById('download-area')
+        };
+
+        function updateStatus(message, type = 'disconnected') {
+            elements.status.textContent = message;
+            elements.status.className = `status status-${type}`;
+        }
+
+        function logMessage(sender, message, type = 'peer') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message chat-${type}`;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            elements.chatLog.appendChild(messageDiv);
+            elements.chatLog.scrollTop = elements.chatLog.scrollHeight;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function initializePeerConnection() {
+            if (peerConnection) {
+                peerConnection.close();
+            }
+
+            peerConnection = new RTCPeerConnection(configuration);
+            elements.iceOutput.value = '';
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    elements.iceOutput.value += JSON.stringify(event.candidate) + '\n';
+                    console.log('ICE candidate generated');
+                }
+            };
+
+            peerConnection.oniceconnectionstatechange = () => {
+                const state = peerConnection.iceConnectionState;
+                console.log('ICE connection state:', state);
+                
+                if (state === 'connected' || state === 'completed') {
+                    updateStatus('Connected!', 'connected');
+                } else if (state === 'disconnected' || state === 'failed') {
+                    updateStatus('Disconnected', 'disconnected');
+                    elements.chatSection.classList.add('hidden');
+                    elements.fileSection.classList.add('hidden');
+                } else {
+                    updateStatus('Connecting...', 'connecting');
+                }
+            };
+
+            peerConnection.ondatachannel = (event) => {
+                console.log('Data channel received');
+                dataChannel = event.channel;
+                setupDataChannel();
+            };
+
+            // Reset file transfer state
+            receivedFileData = [];
+            receivedFileInfo = null;
+            receivedBytes = 0;
+        }
+
+        function setupDataChannel() {
+            if (!dataChannel) return;
+
+            dataChannel.binaryType = 'arraybuffer';
+
+            dataChannel.onopen = () => {
+                console.log('Data channel opened');
+                updateStatus('Ready for chat and file transfer!', 'connected');
+                elements.chatSection.classList.remove('hidden');
+                elements.fileSection.classList.remove('hidden');
+                elements.chatInput.focus();
+            };
+
+            dataChannel.onclose = () => {
+                console.log('Data channel closed');
+                updateStatus('Data channel closed', 'disconnected');
+                elements.chatSection.classList.add('hidden');
+                elements.fileSection.classList.add('hidden');
+            };
+
+            dataChannel.onmessage = (event) => {
+                if (typeof event.data === 'string') {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleMessage(data);
+                    } catch (e) {
+                        logMessage('Peer', event.data);
+                    }
+                } else if (event.data instanceof ArrayBuffer) {
+                    handleFileChunk(event.data);
+                }
+            };
+        }
+
+        function handleMessage(data) {
+            switch (data.type) {
+                case 'chat':
+                    logMessage('Peer', data.message);
+                    break;
+                case 'file-start':
+                    startReceivingFile(data);
+                    break;
+                case 'file-end':
+                    finishReceivingFile();
+                    break;
+            }
+        }
+
+        function startReceivingFile(fileInfo) {
+            receivedFileInfo = fileInfo;
+            receivedFileData = [];
+            receivedBytes = 0;
+
+            document.getElementById('receive-filename').textContent = fileInfo.name;
+            document.getElementById('receive-progress-bar').max = fileInfo.size;
+            document.getElementById('receive-progress-bar').value = 0;
+            document.getElementById('receive-status').textContent = 'Starting...';
+            elements.receiveProgress.classList.remove('hidden');
+
+            logMessage('System', `Receiving: ${fileInfo.name} (${formatBytes(fileInfo.size)})`, 'system');
+        }
+
+        function handleFileChunk(chunk) {
+            if (!receivedFileInfo) return;
+
+            receivedFileData.push(chunk);
+            receivedBytes += chunk.byteLength;
+
+            const progress = (receivedBytes / receivedFileInfo.size) * 100;
+            document.getElementById('receive-progress-bar').value = receivedBytes;
+            document.getElementById('receive-status').textContent = 
+                `${formatBytes(receivedBytes)} / ${formatBytes(receivedFileInfo.size)} (${progress.toFixed(1)}%)`;
+
+            if (receivedBytes >= receivedFileInfo.size) {
+                finishReceivingFile();
+            }
+        }
+
+        function finishReceivingFile() {
+            if (!receivedFileInfo || receivedFileData.length === 0) return;
+
+            const blob = new Blob(receivedFileData, { type: receivedFileInfo.type });
+            const url = URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = receivedFileInfo.name;
+            downloadLink.className = 'download-link';
+            downloadLink.textContent = `📥 Download ${receivedFileInfo.name} (${formatBytes(receivedFileInfo.size)})`;
+
+            elements.downloadArea.appendChild(downloadLink);
+            elements.receiveProgress.classList.add('hidden');
+
+            logMessage('System', `File received: ${receivedFileInfo.name}`, 'system');
+
+            // Reset state
+            receivedFileInfo = null;
+            receivedFileData = [];
+            receivedBytes = 0;
+        }
+
+        async function sendFile(file) {
+            if (!dataChannel || dataChannel.readyState !== 'open') {
+                alert('Data channel not ready');
+                return;
+            }
+
+            // Send file metadata
+            const fileInfo = {
+                type: 'file-start',
+                name: file.name,
+                size: file.size,
+                fileType: file.type
+            };
+
+            dataChannel.send(JSON.stringify(fileInfo));
+
+            // Setup progress tracking
+            document.getElementById('send-filename').textContent = file.name;
+            document.getElementById('send-progress-bar').max = file.size;
+            document.getElementById('send-progress-bar').value = 0;
+            elements.sendProgress.classList.remove('hidden');
+
+            logMessage('System', `Sending: ${file.name} (${formatBytes(file.size)})`, 'system');
+
+            // Send file in chunks
+            const chunkSize = 16 * 1024; // 16KB chunks
+            let offset = 0;
+
+            const sendChunk = () => {
+                if (offset >= file.size) {
+                    // File complete
+                    dataChannel.send(JSON.stringify({ type: 'file-end' }));
+                    elements.sendProgress.classList.add('hidden');
+                    logMessage('System', `File sent: ${file.name}`, 'system');
+                    return;
+                }
+
+                const chunk = file.slice(offset, offset + chunkSize);
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    if (dataChannel.readyState === 'open') {
+                        dataChannel.send(e.target.result);
+                        offset += e.target.result.byteLength;
+
+                        const progress = (offset / file.size) * 100;
+                        document.getElementById('send-progress-bar').value = offset;
+                        document.getElementById('send-status').textContent = 
+                            `${formatBytes(offset)} / ${formatBytes(file.size)} (${progress.toFixed(1)}%)`;
+
+                        // Send next chunk with small delay to prevent overwhelming
+                        setTimeout(sendChunk, 10);
+                    }
+                };
+
+                reader.readAsArrayBuffer(chunk);
+            };
+
+            sendChunk();
+        }
+
+        // Event Listeners
+        document.getElementById('create-offer-btn').onclick = async () => {
+            initializePeerConnection();
+            isInitiator = true;
+
+            // Create data channel
+            dataChannel = peerConnection.createDataChannel('fileTransfer', {
+                ordered: true
+            });
+            setupDataChannel();
+
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                elements.offerOutput.value = JSON.stringify(offer);
+                updateStatus('Offer created - copy to other device', 'connecting');
+            } catch (e) {
+                console.error('Error creating offer:', e);
+                updateStatus('Error creating offer', 'disconnected');
+            }
+        };
+
+        document.getElementById('create-answer-btn').onclick = async () => {
+            const offerJson = elements.offerInput.value.trim();
+            if (!offerJson) {
+                alert('Please paste the offer first');
+                return;
+            }
+
+            initializePeerConnection();
+            isInitiator = false;
+
+            try {
+                const offer = JSON.parse(offerJson);
+                await peerConnection.setRemoteDescription(offer);
+                
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                elements.answerOutput.value = JSON.stringify(answer);
+                updateStatus('Answer created - copy to other device', 'connecting');
+            } catch (e) {
+                console.error('Error creating answer:', e);
+                updateStatus('Error creating answer', 'disconnected');
+            }
+        };
+
+        document.getElementById('set-answer-btn').onclick = async () => {
+            const answerJson = elements.answerInput.value.trim();
+            if (!answerJson) {
+                alert('Please paste the answer first');
+                return;
+            }
+
+            try {
+                const answer = JSON.parse(answerJson);
+                await peerConnection.setRemoteDescription(answer);
+                updateStatus('Answer set - exchange ICE candidates', 'connecting');
+            } catch (e) {
+                console.error('Error setting answer:', e);
+                updateStatus('Error setting answer', 'disconnected');
+            }
+        };
+
+        document.getElementById('add-ice-btn').onclick = async () => {
+            const candidatesText = elements.iceInput.value.trim();
+            if (!candidatesText) {
+                alert('Please paste ICE candidates first');
+                return;
+            }
+
+            const lines = candidatesText.split('\n').filter(line => line.trim());
+            let added = 0;
+
+            for (const line of lines) {
+                try {
+                    const candidate = JSON.parse(line.trim());
+                    await peerConnection.addIceCandidate(candidate);
+                    added++;
+                } catch (e) {
+                    console.error('Error adding ICE candidate:', e);
+                }
+            }
+
+            console.log(`Added ${added} ICE candidates`);
+            elements.iceInput.value = '';
+            updateStatus(`Added ${added} ICE candidates`, 'connecting');
+        };
+
+        document.getElementById('send-chat-btn').onclick = () => {
+            const message = elements.chatInput.value.trim();
+            if (!message || !dataChannel || dataChannel.readyState !== 'open') return;
+
+            const data = {
+                type: 'chat',
+                message: message
+            };
+
+            dataChannel.send(JSON.stringify(data));
+            logMessage('Me', message, 'me');
+            elements.chatInput.value = '';
+        };
+
+        elements.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('send-chat-btn').click();
+            }
+        });
+
+        document.getElementById('send-file-btn').onclick = () => {
+            const file = elements.fileInput.files[0];
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+
+            sendFile(file);
+            elements.fileInput.value = '';
+        };
+
+        // Initialize
+        updateStatus('Ready to connect', 'disconnected');
+    </script>
+</body>
+</html>

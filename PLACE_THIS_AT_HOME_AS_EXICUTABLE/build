@@ -1,0 +1,7 @@
+# ~/bin/appName
+#!/bin/bash
+
+#echo "Called from directory: $PWD"
+#echo "Script was called from: $0"
+#echo "Script was called from: $1"
+node /Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/buildApp.js "$PWD" "$1" "${@:2}"

@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Transfer - No IP Required</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .device-id {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            margin: 10px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .connection-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .method-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .method-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #4facfe;
+        }
+
+        .method-card.active {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .method-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .method-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .method-desc {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .qr-code {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .qr-code canvas {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+        }
+
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .device-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .device-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #4facfe;
+        }
+
+        .device-card.selected {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .file-drop-zone {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f0f8ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            background: #e6f3ff;
+            border-color: #0066cc;
+        }
+
+        .file-drop-zone.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .drop-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #4facfe;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .timestamp {
+            color: #a0aec0;
+            margin-right: 10px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #4facfe;
+        }
+
+        .file-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 2px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .connection-methods {
+                grid-template-columns: 1fr;
+            }
+            
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 File Transfer</h1>
+            <p>Share files instantly - No IP detection required!</p>
+            <div class="device-id">
+                📱 <span id="deviceId">Generating...</span>
+            </div>
+            <div style="margin-top: 15px;">
+                Status: <span id="connectionStatus" class="status online">Ready</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Connection Methods Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    🔗 Choose Connection Method
+                </h2>
+                
+                <div class="connection-methods">
+                    <div class="method-card" onclick="selectMethod('manual')">
+                        <div class="method-icon">⌨️</div>
+                        <div class="method-title">Manual Pairing</div>
+                        <div class="method-desc">Enter Device ID manually - works on all devices</div>
+                    </div>
+                    
+                    <div class="method-card" onclick="selectMethod('qr')">
+                        <div class="method-icon">📱</div>
+                        <div class="method-title">QR Code</div>
+                        <div class="method-desc">Scan QR code for instant pairing</div>
+                    </div>
+                    
+                    <div class="method-card" onclick="selectMethod('nearby')">
+                        <div class="method-icon">📡</div>
+                        <div class="method-title">Nearby Devices</div>
+                        <div class="method-desc">Auto-discover devices using BroadcastChannel</div>
+                    </div>
+                    
+                    <div class="method-card" onclick="selectMethod('link')">
+                        <div class="method-icon">🔗</div>
+                        <div class="method-title">Share Link</div>
+                        <div class="method-desc">Generate shareable connection link</div>
+                    </div>
+                </div>
+
+                <!-- Method-specific content -->
+                <div id="methodContent">
+                    <p style="text-align: center; color: #6c757d; padding: 20px;">
+                        Select a connection method above to get started
+                    </p>
+                </div>
+            </div>
+
+            <!-- Available Devices Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    🔍 Connected Devices
+                </h2>
+                
+                <div id="devicesContainer">
+                    <div class="devices-grid" id="devicesGrid">
+                        <div style="text-align: center; color: #6c757d; grid-column: 1/-1; padding: 40px;">
+                            No devices connected. Use a connection method above to add devices.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Transfer Section -->
+            <div class="section">
+                <h2 class="section-title">📁 Send Files</h2>
+                <div id="selectedDevice" style="margin-bottom: 20px; display: none;">
+                    <strong>Target Device:</strong> <span id="targetDeviceName"></span>
+                </div>
+                
+                <div class="file-drop-zone disabled" id="dropZone">
+                    <div class="drop-icon">📁</div>
+                    <h3>Drop files here or click to select</h3>
+                    <p>Connect to a device first, then choose files to transfer</p>
+                    <input type="file" id="fileInput" class="file-input" multiple>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+
+            <!-- Received Files Section -->
+            <div class="section">
+                <h2 class="section-title">📥 Received Files</h2>
+                <div id="receivedFiles">
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        No files received yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="section">
+                <h2 class="section-title">📊 Activity Log</h2>
+                <div class="log" id="activityLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple File Transfer App (No IP Required)
+        class NoIPFileTransfer {
+            constructor() {
+                this.deviceId = this.generateDeviceId();
+                this.connectedDevices = new Map();
+                this.selectedDevice = null;
+                this.receivedFiles = [];
+                this.currentMethod = null;
+                this.broadcastChannel = null;
+                
+                this.init();
+            }
+
+            generateDeviceId() {
+                const adjectives = ['Swift', 'Bright', 'Quick', 'Smart', 'Cool', 'Fast', 'Sharp', 'Bold'];
+                const nouns = ['Falcon', 'Tiger', 'Eagle', 'Shark', 'Wolf', 'Bear', 'Lion', 'Fox'];
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const num = Math.floor(Math.random() * 1000);
+                return `${adj}${noun}${num}`;
+            }
+
+            init() {
+                document.getElementById('deviceId').textContent = this.deviceId;
+                this.setupEventListeners();
+                this.setupBroadcastChannel();
+                this.loadReceivedFiles();
+                this.log(`🚀 App initialized. Device ID: ${this.deviceId}`);
+            }
+
+            setupEventListeners() {
+                // File drop zone
+                const dropZone = document.getElementById('dropZone');
+                const fileInput = document.getElementById('fileInput');
+
+                dropZone.addEventListener('click', () => {
+                    if (!this.selectedDevice) {
+                        this.showAlert('Please connect to a device first!', 'warning');
+                        return;
+                    }
+                    fileInput.click();
+                });
+
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (this.selectedDevice) {
+                        dropZone.classList.add('dragover');
+                    }
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('dragover');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    
+                    if (!this.selectedDevice) {
+                        this.showAlert('Please connect to a device first!', 'warning');
+                        return;
+                    }
+                    
+                    const files = Array.from(e.dataTransfer.files);
+                    this.handleFiles(files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    const files = Array.from(e.target.files);
+                    this.handleFiles(files);
+                    e.target.value = '';
+                });
+            }
+
+            setupBroadcastChannel() {
+                try {
+                    this.broadcastChannel = new BroadcastChannel('fileTransfer');
+                    this.broadcastChannel.addEventListener('message', (event) => {
+                        this.handleBroadcastMessage(event.data);
+                    });
+                    this.log('📡 BroadcastChannel ready for nearby device discovery');
+                } catch (error) {
+                    this.log('❌ BroadcastChannel not available');
+                }
+            }
+
+            handleBroadcastMessage(data) {
+                if (data.type === 'device_announcement' && data.deviceId !== this.deviceId) {
+                    this.log(`📡 Discovered nearby device: ${data.deviceId}`);
+                    this.addDevice(data.deviceId, 'nearby', data);
+                } else if (data.type === 'file_transfer' && data.targetDevice === this.deviceId) {
+                    this.receiveFile(data.file);
+                }
+            }
+
+            selectMethod(method) {
+                this.currentMethod = method;
+                
+                // Update method cards
+                document.querySelectorAll('.method-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+                event.target.closest('.method-card').classList.add('active');
+
+                // Show method-specific content
+                this.showMethodContent(method);
+                this.log(`🔗 Selected connection method: ${method}`);
+            }
+
+            showMethodContent(method) {
+                const content = document.getElementById('methodContent');
+                
+                switch(method) {
+                    case 'manual':
+                        content.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3>Manual Device Pairing</h3>
+                                <p>Your Device ID: <strong>${this.deviceId}</strong></p>
+                                <button class="btn" onclick="app.copyDeviceId()">📋 Copy My Device ID</button>
+                                <button class="btn" onclick="app.addDeviceManually()">➕ Add Device</button>
+                            </div>
+                        `;
+                        break;
+                        
+                    case 'qr':
+                        content.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3>QR Code Pairing</h3>
+                                <p>Show this QR code to other devices:</p>
+                                <div id="qrCodeContainer"></div>
+                                <button class="btn" onclick="app.generateQRCode()">📱 Generate QR Code</button>
+                                <button class="btn" onclick="app.scanQRCode()">📷 Scan QR Code</button>
+                            </div>
+                        `;
+                        break;
+                        
+                    case 'nearby':
+                        content.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3>Nearby Device Discovery</h3>
+                                <p>Automatically discover devices in the same browser/origin</p>
+                                <button class="btn" onclick="app.announceDevice()">📡 Announce Presence</button>
+                                <button class="btn" onclick="app.scanNearby()">🔍 Scan for Nearby</button>
+                            </div>
+                        `;
+                        break;
+                        
+                    case 'link':
+                        content.innerHTML = `
+                            <div style="text-align: center; padding: 20px;">
+                                <h3>Share Connection Link</h3>
+                                <p>Generate a link to share with other devices</p>
+                                <button class="btn" onclick="app.generateLink()">🔗 Generate Link</button>
+                                <input type="text" id="connectionLink" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd;" placeholder="Paste connection link here">
+                                <button class="btn" onclick="app.connectViaLink()">🔗 Connect via Link</button>
+                            </div>
+                        `;
+                        break;
+                }
+            }
+
+            copyDeviceId() {
+                navigator.clipboard.writeText(this.deviceId).then(() => {
+                    this.showAlert('Device ID copied to clipboard!', 'success');
+                }).catch(() => {
+                    this.showAlert('Copy failed. Your Device ID: ' + this.deviceId, 'info');
+                });
+            }
+
+            addDeviceManually() {
+                const deviceId = prompt(`Enter the Device ID of the device you want to connect to:\n\nYour Device ID (share this): ${this.deviceId}`);
+                
+                if (!deviceId) return;
+                
+                if (deviceId === this.deviceId) {
+                    this.showAlert('Cannot connect to your own device!', 'warning');
+                    return;
+                }
+                
+                this.addDevice(deviceId, 'manual');
+                this.log(`✅ Manually added device: ${deviceId}`);
+            }
+
+            generateQRCode() {
+                const qrData = JSON.stringify({
+                    deviceId: this.deviceId,
+                    method: 'qr',
+                    timestamp: Date.now()
+                });
+                
+                // Simple QR code representation (in real app, use QR library)
+                document.getElementById('qrCodeContainer').innerHTML = `
+                    <div style="border: 2px solid #333; padding: 20px; margin: 20px auto; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; background: #f0f0f0;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 40px;">📱</div>
+                            <div style="font-size: 12px; margin-top: 10px;">${this.deviceId}</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: #666;">QR Code Data: ${qrData}</p>
+                `;
+                
+                this.log('📱 QR Code generated');
+            }
+
+            scanQRCode() {
+                const qrData = prompt('Enter QR code data or Device ID:');
+                if (!qrData) return;
+                
+                try {
+                    const data = JSON.parse(qrData);
+                    if (data.deviceId) {
+                        this.addDevice(data.deviceId, 'qr', data);
+                        this.log(`📱 Connected via QR code: ${data.deviceId}`);
+                    }
+                } catch (error) {
+                    // Treat as plain Device ID
+                    this.addDevice(qrData, 'qr');
+                    this.log(`📱 Connected via Device ID: ${qrData}`);
+                }
+            }
+
+            announceDevice() {
+                if (this.broadcastChannel) {
+                    this.broadcastChannel.postMessage({
+                        type: 'device_announcement',
+                        deviceId: this.deviceId,
+                        timestamp: Date.now()
+                    });
+                    this.log('📡 Announced presence to nearby devices');
+                    this.showAlert('Announced to nearby devices!', 'success');
+                } else {
+                    this.showAlert('BroadcastChannel not available', 'error');
+                }
+            }
+
+            scanNearby() {
+                this.log('🔍 Scanning for nearby devices...');
+                this.announceDevice(); // Announce self to trigger responses
+                setTimeout(() => {
+                    const nearbyCount = Array.from(this.connectedDevices.values()).filter(d => d.method === 'nearby').length;
+                    this.log(`📡 Found ${nearbyCount} nearby devices`);
+                }, 2000);
+            }
+
+            generateLink() {
+                const linkData = {
+                    deviceId: this.deviceId,
+                    method: 'link',
+                    timestamp: Date.now()
+                };
+                
+                const linkUrl = `${window.location.origin}${window.location.pathname}?connect=${btoa(JSON.stringify(linkData))}`;
+                document.getElementById('connectionLink').value = linkUrl;
+                
+                navigator.clipboard.writeText(linkUrl).then(() => {
+                    this.showAlert('Connection link copied to clipboard!', 'success');
+                }).catch(() => {
+                    this.showAlert('Link generated - copy from the text field', 'info');
+                });
+                
+                this.log('🔗 Connection link generated');
+            }
+
+            connectViaLink() {
+                const link = document.getElementById('connectionLink').value;
+                if (!link) return;
+                
+                try {
+                    const url = new URL(link);
+                    const connectData = url.searchParams.get('connect');
+                    if (connectData) {
+                        const data = JSON.parse(atob(connectData));
+                        this.addDevice(data.deviceId, 'link', data);
+                        this.log(`🔗 Connected via link: ${data.deviceId}`);
+                    }
+                } catch (error) {
+                    this.showAlert('Invalid connection link', 'error');
+                }
+            }
+
+            addDevice(deviceId, method, data = {}) {
+                const device = {
+                    deviceId,
+                    method,
+                    connected: Date.now(),
+                    lastSeen: Date.now(),
+                    ...data
+                };
+                
+                this.connectedDevices.set(deviceId, device);
+                this.updateDevicesUI();
+                this.showAlert(`Device connected: ${deviceId}`, 'success');
+            }
+
+            updateDevicesUI() {
+                const devicesGrid = document.getElementById('devicesGrid');
+                
+                if (this.connectedDevices.size === 0) {
+                    devicesGrid.innerHTML = `
+                        <div style="text-align: center; color: #6c757d; grid-column: 1/-1; padding: 40px;">
+                            No devices connected. Use a connection method above to add devices.
+                        </div>
+                    `;
+                    return;
+                }
+
+                devicesGrid.innerHTML = '';
+                
+                this.connectedDevices.forEach((device, deviceId) => {
+                    const deviceCard = document.createElement('div');
+                    deviceCard.className = 'device-card';
+                    deviceCard.dataset.deviceId = deviceId;
+                    
+                    if (this.selectedDevice === deviceId) {
+                        deviceCard.classList.add('selected');
+                    }
+                    
+                    const methodIcon = {
+                        'manual': '⌨️',
+                        'qr': '📱',
+                        'nearby': '📡',
+                        'link': '🔗'
+                    }[device.method] || '🔗';
+                    
+                    deviceCard.innerHTML = `
+                        <div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
+                            ${methodIcon} ${deviceId}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 15px;">
+                            Connected via: ${device.method}<br>
+                            ${new Date(device.connected).toLocaleString()}
+                        </div>
+                        <div style="text-align: center;">
+                            <button class="btn" onclick="app.selectDevice('${deviceId}')">
+                                ${this.selectedDevice === deviceId ? 'Selected' : 'Select'}
+                            </button>
+                            <button class="download-btn" style="background: #dc3545;" onclick="app.removeDevice('${deviceId}')">
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                    
+                    devicesGrid.appendChild(deviceCard);
+                });
+            }
+
+            selectDevice(deviceId) {
+                this.selectedDevice = deviceId;
+                
+                // Update UI
+                document.getElementById('selectedDevice').style.display = 'block';
+                document.getElementById('targetDeviceName').textContent = deviceId;
+                
+                // Enable drop zone
+                const dropZone = document.getElementById('dropZone');
+                dropZone.classList.remove('disabled');
+                dropZone.querySelector('p').textContent = `Files will be sent to ${deviceId}`;
+                
+                this.updateDevicesUI();
+                this.log(`🎯 Selected target device: ${deviceId}`);
+            }
+
+            removeDevice(deviceId) {
+                this.connectedDevices.delete(deviceId);
+                
+                if (this.selectedDevice === deviceId) {
+                    this.selectedDevice = null;
+                    document.getElementById('selectedDevice').style.display = 'none';
+                    document.getElementById('dropZone').classList.add('disabled');
+                }
+                
+                this.updateDevicesUI();
+                this.log(`❌ Removed device: ${deviceId}`);
+            }
+
+            async handleFiles(files) {
+                if (!files.length) return;
+                
+                this.log(`📤 Preparing to send ${files.length} file(s) to ${this.selectedDevice}`);
+                this.showProgress(true);
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    await this.sendFile(file, i + 1, files.length);
+                }
+                
+                setTimeout(() => this.showProgress(false), 2000);
+            }
+
+            async sendFile(file, current, total) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const fileData = {
+                            id: this.generateFileId(),
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            data: e.target.result,
+                            timestamp: Date.now(),
+                            fromDevice: this.deviceId,
+                            targetDevice: this.selectedDevice
+                        };
+                        
+                        // Simulate transfer progress
+                        let progress = 0;
+                        const interval = setInterval(() => {
+                            progress += Math.random() * 20 + 5;
+                            if (progress >= 100) {
+                                progress = 100;
+                                clearInterval(interval);
+                                
+                                // Send via broadcast if nearby device
+                                const targetDevice = this.connectedDevices.get(this.selectedDevice);
+                                if (targetDevice && targetDevice.method === 'nearby' && this.broadcastChannel) {
+                                    this.broadcastChannel.postMessage({
+                                        type: 'file_transfer',
+                                        file: fileData,
+                                        targetDevice: this.selectedDevice
+                                    });
+                                } else {
+                                    // Simulate file transfer for other methods
+                                    this.simulateFileReceive(fileData);
+                                }
+                                
+                                this.updateProgress(current, total, 100);
+                                this.log(`✅ Sent: ${file.name} (${this.formatFileSize(file.size)})`);
+                                resolve();
+                            } else {
+                                this.updateProgress(current, total, progress, file.name);
+                            }
+                        }, 100);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            simulateFileReceive(fileData) {
+                // Simulate receiving file on target device (for demo)
+                if (Math.random() > 0.3) { // 70% success rate
+                    setTimeout(() => {
+                        this.receiveFile(fileData);
+                    }, 1000 + Math.random() * 2000);
+                }
+            }
+
+            receiveFile(fileData) {
+                const receivedFile = {
+                    ...fileData,
+                    receivedAt: Date.now(),
+                    id: fileData.id || this.generateFileId()
+                };
+                
+                // Check for duplicates
+                const existingIndex = this.receivedFiles.findIndex(f => f.id === receivedFile.id);
+                if (existingIndex >= 0) return;
+                
+                this.receivedFiles.unshift(receivedFile);
+                
+                // Limit stored files
+                if (this.receivedFiles.length > 50) {
+                    this.receivedFiles = this.receivedFiles.slice(0, 50);
+                }
+                
+                this.saveReceivedFiles();
+                this.updateReceivedFilesUI();
+                this.log(`📥 Received: ${receivedFile.name} from ${receivedFile.fromDevice}`);
+                this.showAlert(`Received: ${receivedFile.name}`, 'success');
+            }
+
+            updateProgress(current, total, progress, fileName = '') {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                const overallProgress = ((current - 1) / total * 100) + (progress / total);
+                progressFill.style.width = `${overallProgress}%`;
+                
+                if (fileName) {
+                    progressText.textContent = `Sending ${fileName}... ${Math.round(progress)}%`;
+                } else {
+                    progressText.textContent = `File ${current}/${total} completed`;
+                }
+            }
+
+            showProgress(show) {
+                const progressContainer = document.getElementById('progressContainer');
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                if (show) {
+                    progressContainer.style.display = 'block';
+                    progressFill.style.width = '0%';
+                    progressText.textContent = 'Preparing transfer...';
+                } else {
+                    progressContainer.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    progressText.textContent = '0%';
+                }
+            }
+
+            updateReceivedFilesUI() {
+                const receivedFilesContainer = document.getElementById('receivedFiles');
+                
+                if (this.receivedFiles.length === 0) {
+                    receivedFilesContainer.innerHTML = `
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
+                            No files received yet.
+                        </div>
+                    `;
+                    return;
+                }
+
+                receivedFilesContainer.innerHTML = '';
+                
+                this.receivedFiles.forEach((file) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    const fileIcon = this.getFileIcon(file.name);
+                    const fileSize = this.formatFileSize(file.size);
+                    const receivedTime = new Date(file.receivedAt).toLocaleString();
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-icon">${fileIcon}</div>
+                            <div class="file-details">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">
+                                    ${fileSize} • From: ${file.fromDevice} • ${receivedTime}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="download-btn" onclick="app.downloadFile('${file.id}')">
+                                📥 Download
+                            </button>
+                            <button class="download-btn" style="background: #dc3545;" onclick="app.deleteFile('${file.id}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    `;
+                    
+                    receivedFilesContainer.appendChild(fileItem);
+                });
+            }
+
+            downloadFile(fileId) {
+                const file = this.receivedFiles.find(f => f.id === fileId);
+                if (!file) return;
+                
+                try {
+                    const link = document.createElement('a');
+                    link.href = file.data;
+                    link.download = file.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.log(`📥 Downloaded: ${file.name}`);
+                } catch (error) {
+                    this.showAlert('Download failed', 'error');
+                }
+            }
+
+            deleteFile(fileId) {
+                if (confirm('Are you sure you want to delete this file?')) {
+                    const index = this.receivedFiles.findIndex(f => f.id === fileId);
+                    if (index >= 0) {
+                        const file = this.receivedFiles[index];
+                        this.receivedFiles.splice(index, 1);
+                        this.saveReceivedFiles();
+                        this.updateReceivedFilesUI();
+                        this.log(`🗑️ Deleted: ${file.name}`);
+                    }
+                }
+            }
+
+            loadReceivedFiles() {
+                try {
+                    const saved = localStorage.getItem('fileTransfer_receivedFiles');
+                    if (saved) {
+                        this.receivedFiles = JSON.parse(saved);
+                        this.updateReceivedFilesUI();
+                    }
+                } catch (error) {
+                    this.log('❌ Failed to load received files');
+                }
+            }
+
+            saveReceivedFiles() {
+                try {
+                    localStorage.setItem('fileTransfer_receivedFiles', JSON.stringify(this.receivedFiles));
+                } catch (error) {
+                    this.log('❌ Failed to save received files');
+                }
+            }
+
+            generateFileId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            formatFileSize(bytes) {
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                if (bytes === 0) return '0 B';
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const iconMap = {
+                    'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'bmp': '🖼️', 'svg': '🖼️',
+                    'pdf': '📄', 'doc': '📝', 'docx': '📝', 'txt': '📄', 'rtf': '📄',
+                    'xlsx': '📊', 'xls': '📊', 'csv': '📊',
+                    'zip': '📦', 'rar': '📦', '7z': '📦',
+                    'mp3': '🎵', 'wav': '🎵', 'mp4': '🎬', 'avi': '🎬'
+                };
+                return iconMap[ext] || '📄';
+            }
+
+            log(message) {
+                const logContainer = document.getElementById('activityLog');
+                const timestamp = new Date().toLocaleTimeString();
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only recent entries
+                const entries = logContainer.querySelectorAll('.log-entry');
+                if (entries.length > 50) {
+                    entries[0].remove();
+                }
+            }
+
+            showAlert(message, type = 'info') {
+                const alert = document.createElement('div');
+                alert.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 1000;
+                    max-width: 300px;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                const colors = {
+                    'success': '#28a745',
+                    'warning': '#ffc107',
+                    'error': '#dc3545',
+                    'info': '#17a2b8'
+                };
+                alert.style.backgroundColor = colors[type] || colors.info;
+                alert.textContent = message;
+                
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.style.animation = 'slideOut 0.3s ease';
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 300);
+                    }
+                }, 3000);
+            }
+
+            // Check for connection link in URL
+            checkURLConnection() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const connectData = urlParams.get('connect');
+                
+                if (connectData) {
+                    try {
+                        const data = JSON.parse(atob(connectData));
+                        this.addDevice(data.deviceId, 'link', data);
+                        this.log(`🔗 Auto-connected via URL: ${data.deviceId}`);
+                        
+                        // Clean URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } catch (error) {
+                        this.log('❌ Invalid connection link in URL');
+                    }
+                }
+            }
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize app
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new NoIPFileTransfer();
+            window.app = app; // Make globally accessible
+            
+            // Check for URL connection
+            app.checkURLConnection();
+        });
+
+        // Global functions for HTML onclick handlers
+        window.selectMethod = (method) => app.selectMethod(method);
+    </script>
+</body>
+</html>

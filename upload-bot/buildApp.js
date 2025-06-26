@@ -17,9 +17,9 @@ if(currentDirectory.endsWith("/27jezly-user")||firstArgument=="jezly"){
 var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=qa  --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} 27JezlyQA "./build/ios/ipa/27Jezly.ipa"
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=prod --export-options-plist="${plist}"
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=prod  --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} 27Jezly "./build/ios/ipa/27Jezly.ipa"
 cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa  --target-platform=android-arm64
 cd "${currentDirectory}" && ${UPLD} 27JezlyQA "./build/app/outputs/flutter-apk/app-release.apk"
@@ -37,9 +37,9 @@ if(currentDirectory.endsWith("/27jezlyBusiness")||firstArgument=="jezlyb"){
 var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=qa  --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} 27JezlyBusinessQA "./build/ios/ipa/27Jezly Business.ipa"
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=prod  --export-options-plist="${plist}"
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=prod   --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} 27JezlyBusiness "./build/ios/ipa/27Jezly Business.ipa"
 cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
 cd "${currentDirectory}" && ${UPLD} 27JezlyBusinessQA "./build/app/outputs/flutter-apk/app-release.apk"
@@ -51,11 +51,11 @@ say completed
 
 if(currentDirectory.endsWith("/salem-apps-mobile")||firstArgument=="salem"){
   if(firstArgument=="salem")
-    currentDirectory="/Users/shakir/salem-apps-mobile";
+    currentDirectory="/Users/shakir/PROJECTS/Emstell/salem-apps-mobile";
 var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/salem.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/salem.ipa"  && flutter build ipa  --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} salem "./build/ios/ipa/salem.ipa"
 
 cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
@@ -68,11 +68,11 @@ say completed
 
 if(currentDirectory.endsWith("/yourbillboard-app")||firstArgument=="billboard"){
   if(firstArgument=="billboard")
-    currentDirectory="/Users/shakir/yourbillboard-app";
+    currentDirectory="/Users/shakir/PROJECTS/Emstell/yourbillboard-app";
 var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
-cd "${currentDirectory}" && rm -f "./build/ios/ipa/your_billboard.ipa"  && flutter build ipa  --dart-define=BACKEND=qa --export-options-plist="${plist}" 
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/your_billboard.ipa"  && flutter build ipa   --export-method=ad-hoc
 cd "${currentDirectory}" && ${UPLD} billboard "./build/ios/ipa/your_billboard.ipa"
 
 cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=BACKEND=qa --target-platform=android-arm64
@@ -83,6 +83,22 @@ say completed
 }
 
 
+
+if(currentDirectory.endsWith("/Talat")||firstArgument=="talat"){
+  if(firstArgument=="talat")
+    currentDirectory="/Users/shakir/PROJECTS/Emstell/Talat";
+var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/talat_ExportOptions.plist";
+commandString=`
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/talat.ipa"  && flutter build ipa  --dart-define=key=value  --export-method=ad-hoc
+cd "${currentDirectory}" && ${UPLD} talat "./build/ios/ipa/talat.ipa"
+
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=key=value --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} talat "./build/app/outputs/flutter-apk/app-release.apk"
+
+say completed
+`;
+}
 
 
 

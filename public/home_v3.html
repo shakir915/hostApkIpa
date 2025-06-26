@@ -237,10 +237,10 @@
       }
       const response = await fetch("https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/redirection.json");
       const new_redirection = await response.json();
-     // console.log(new_redirection);
+      // console.log(new_redirection);
       var old_redirection = localStorage.getItem('redirection');
       localStorage.setItem('redirection', new_redirection);
-     // console.log("old_redirection $old_redirection new_redirection $new_redirection");
+      // console.log("old_redirection $old_redirection new_redirection $new_redirection");
 
       var pageID = window.location.toString().split("/").slice(-1)[0].replace("#", "");
 
@@ -266,7 +266,7 @@
   <script>
     try {
       var k = new Map();
-     // console.log("ES6 supported!!");
+      // console.log("ES6 supported!!");
     } catch (err) {
       window.location = "./es5_redirect.html?id=" + window.location.toString().split("/").slice(-1)[0].replace("#", "");
       //return;
@@ -388,8 +388,8 @@
       console.log('deviceType ', deviceType)
 
 
-     
-       
+
+
 
 
 
@@ -564,12 +564,12 @@
       var androidData = null;
       try { iosData = new Date(data["ios"][name]).toDateString(); } catch (e) { console.error(e); }
       try { androidData = new Date(data["android"][name]).toDateString(); } catch (e) { console.error(e); }
-      if (androidData !== null&&deviceType == 1) {
+      if (androidData !== null && deviceType == 1) {
         return androidData;
-      } 
+      }
       if (iosData !== null) {
         return iosData;
-      } 
+      }
       return androidData;
     }
 
@@ -618,7 +618,22 @@
       clearElementContent('result_list_date')
       document.getElementById('result_list_date').appendChild(div)
       div = document.createElement('div')
-      div.innerHTML = `<img src="${getSafeDataIosFirst(data, "icon")}"  class="centerIMG"  > </img>`
+      
+      var imagedata = getSafeDataIosFirst(data, "icon");
+      if (imagedata == null || imagedata === "") {
+        if (data && data.ios && data.ios.icon) {
+          imagedata = data.ios.icon;
+        }
+      }
+      if (imagedata == null || imagedata === "") {
+        if (data && data.android && data.android.icon) {
+          imagedata = data.android.icon;
+        }
+      }
+      if (imagedata != null && imagedata !== "") {
+        div.innerHTML = `<img src="${imagedata}" class="centerIMG">`;
+      }
+
       clearElementContent('result_div_icon')
       document.getElementById('result_div_icon').appendChild(div)
       if ((deviceType == 2) && hasDataOn(data, "plist", "ios")) {
@@ -668,7 +683,7 @@
       const paths = ["/app_links/" + pageID, ("/app_links_all/" + pageID).replace("____", "/")];
 
       for (const path of paths) {
-      //  console.log(path)
+        //  console.log(path)
         try {
           const snapshot = await firebase.database().ref(path).get();
           if (snapshot.exists()) {
@@ -678,8 +693,8 @@
               var childData = childSnapshot.val();
               data[childKey] = childData;
             });
-          //  console.log(path)
-           // console.log(data)
+            //  console.log(path)
+            // console.log(data)
             if (hasDataOn(data, "ipa", "ios") || hasDataOn(data, "apk", "android")) {
               setData(data)
               document.getElementById("upload").style.visibility = 'visible';
@@ -692,7 +707,7 @@
       }
 
       appid.textContent = "404 Not Found";
-      
+
     }
 
 

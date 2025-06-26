@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "q8",
+    "site": "install4",
     "public": "public",
     "ignore": [
       "firebase.json",

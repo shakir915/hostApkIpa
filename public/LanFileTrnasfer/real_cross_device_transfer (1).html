@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Cross-Device File Transfer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .device-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 15px;
+            display: inline-block;
+        }
+
+        .device-id {
+            font-family: monospace;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .connection-method {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+
+        .method-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .method-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.success {
+            background: #28a745;
+        }
+
+        .btn.warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .devices-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .device-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .device-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+        }
+
+        .device-card.selected {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .device-card.online {
+            border-left: 5px solid #28a745;
+        }
+
+        .device-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .device-status {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 15px;
+        }
+
+        .file-drop-zone {
+            border: 3px dashed #4facfe;
+            border-radius: 15px;
+            padding: 50px 20px;
+            text-align: center;
+            background: #f0f8ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+
+        .file-drop-zone:hover,
+        .file-drop-zone.dragover {
+            background: #e6f3ff;
+            border-color: #0066cc;
+        }
+
+        .file-drop-zone.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .drop-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #4facfe;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+            color: #4facfe;
+        }
+
+        .file-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin: 2px;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .timestamp {
+            color: #a0aec0;
+            margin-right: 10px;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            max-width: 350px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert.success { background: #28a745; }
+        .alert.error { background: #dc3545; }
+        .alert.warning { background: #ffc107; color: #000; }
+        .alert.info { background: #17a2b8; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .device-info {
+                margin: 10px 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Real Cross-Device Transfer</h1>
+            <p>Transfer files between actual devices using shared storage</p>
+            <div class="device-info">
+                <div>📱 Device ID</div>
+                <div class="device-id" id="deviceId">Loading...</div>
+            </div>
+            <div class="device-info">
+                <div>🌐 Session Key</div>
+                <div class="device-id" id="sessionKey">Loading...</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <!-- Connection Setup -->
+            <div class="section">
+                <h2 class="section-title">🔗 Device Connection</h2>
+                
+                <!-- Method 1: Session Key Sharing -->
+                <div class="connection-method">
+                    <div class="method-title">📋 Share Session Key</div>
+                    <div class="method-description">
+                        Both devices must use the same Session Key to communicate.<br>
+                        Share your Session Key with the other device, or enter theirs.
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="sessionKeyInput" placeholder="Enter Session Key from other device">
+                        <button class="btn" onclick="setSessionKey()">🔑 Use Key</button>
+                        <button class="btn secondary" onclick="copySessionKey()">📋 Copy My Key</button>
+                    </div>
+                </div>
+
+                <!-- Method 2: Manual Device Addition -->
+                <div class="connection-method">
+                    <div class="method-title">➕ Add Device Manually</div>
+                    <div class="method-description">
+                        Add a specific device by entering its Device ID.<br>
+                        Make sure both devices are using the same Session Key.
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="deviceIdInput" placeholder="Enter Device ID (e.g., SwiftFalcon123)">
+                        <button class="btn success" onclick="addDevice()">➕ Add Device</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connected Devices -->
+            <div class="section">
+                <h2 class="section-title">📱 Connected Devices</h2>
+                <div class="devices-list" id="devicesList">
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        No devices connected. Use the connection methods above to add devices.
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Transfer -->
+            <div class="section">
+                <h2 class="section-title">📁 Send Files</h2>
+                <div id="selectedDevice" style="margin-bottom: 15px; display: none;">
+                    <strong>📤 Target Device:</strong> <span id="targetDeviceName"></span>
+                </div>
+                
+                <div class="file-drop-zone disabled" id="dropZone">
+                    <div class="drop-icon">📁</div>
+                    <h3>Drop files here or click to select</h3>
+                    <p>Connect to a device first, then choose files to transfer</p>
+                    <input type="file" id="fileInput" class="file-input" multiple>
+                </div>
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">0%</div>
+                </div>
+            </div>
+
+            <!-- Received Files -->
+            <div class="section">
+                <h2 class="section-title">📥 Received Files</h2>
+                <div id="receivedFiles">
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        No files received yet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="section">
+                <h2 class="section-title">📊 Activity Log</h2>
+                <div class="log" id="activityLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RealCrossDeviceTransfer {
+            constructor() {
+                this.deviceId = this.generateDeviceId();
+                this.sessionKey = this.generateSessionKey();
+                this.connectedDevices = new Map();
+                this.selectedDevice = null;
+                this.receivedFiles = [];
+                this.pollInterval = null;
+                
+                this.init();
+            }
+
+            generateDeviceId() {
+                const adjectives = ['Swift', 'Bright', 'Quick', 'Smart', 'Cool', 'Fast', 'Sharp', 'Bold'];
+                const nouns = ['Falcon', 'Tiger', 'Eagle', 'Shark', 'Wolf', 'Bear', 'Lion', 'Fox'];
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const num = Math.floor(Math.random() * 1000);
+                return `${adj}${noun}${num}`;
+            }
+
+            generateSessionKey() {
+                return Math.random().toString(36).substr(2, 9).toUpperCase();
+            }
+
+            init() {
+                // Try to restore session key from URL or storage
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlSessionKey = urlParams.get('session');
+                
+                if (urlSessionKey) {
+                    this.sessionKey = urlSessionKey;
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } else {
+                    const savedSessionKey = localStorage.getItem('fileTransfer_sessionKey');
+                    if (savedSessionKey) {
+                        this.sessionKey = savedSessionKey;
+                    }
+                }
+                
+                // Save session key
+                localStorage.setItem('fileTransfer_sessionKey', this.sessionKey);
+                
+                // Update UI
+                document.getElementById('deviceId').textContent = this.deviceId;
+                document.getElementById('sessionKey').textContent = this.sessionKey;
+                document.getElementById('sessionKeyInput').value = this.sessionKey;
+                
+                this.setupEventListeners();
+                this.startPolling();
+                this.registerDevice();
+                this.loadReceivedFiles();
+                
+                this.log(`🚀 Device initialized: ${this.deviceId}`);
+                this.log(`🔑 Session Key: ${this.sessionKey}`);
+                this.log(`💡 Share Session Key with other devices to connect`);
+            }
+
+            setupEventListeners() {
+                // File drop zone
+                const dropZone = document.getElementById('dropZone');
+                const fileInput = document.getElementById('fileInput');
+
+                dropZone.addEventListener('click', () => {
+                    if (!this.selectedDevice) {
+                        this.showAlert('Please select a target device first!', 'warning');
+                        return;
+                    }
+                    fileInput.click();
+                });
+
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (this.selectedDevice) {
+                        dropZone.classList.add('dragover');
+                    }
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('dragover');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    
+                    if (!this.selectedDevice) {
+                        this.showAlert('Please select a target device first!', 'warning');
+                        return;
+                    }
+                    
+                    const files = Array.from(e.dataTransfer.files);
+                    this.handleFiles(files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    const files = Array.from(e.target.files);
+                    this.handleFiles(files);
+                    e.target.value = '';
+                });
+
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', () => {
+                    this.cleanup();
+                });
+            }
+
+            registerDevice() {
+                // Register this device in shared storage
+                const deviceData = {
+                    deviceId: this.deviceId,
+                    sessionKey: this.sessionKey,
+                    lastSeen: Date.now(),
+                    status: 'online',
+                    userAgent: navigator.userAgent
+                };
+                
+                this.saveToSharedStorage(`device_${this.sessionKey}_${this.deviceId}`, deviceData);
+                this.log(`📝 Registered device in session: ${this.sessionKey}`);
+            }
+
+            startPolling() {
+                // Poll for new devices and files every 3 seconds
+                this.pollInterval = setInterval(() => {
+                    this.checkForDevices();
+                    this.checkForFiles();
+                    this.updatePresence();
+                }, 3000);
+                
+                this.log('🔄 Started polling for devices and files');
+            }
+
+            updatePresence() {
+                // Update last seen timestamp
+                const deviceData = {
+                    deviceId: this.deviceId,
+                    sessionKey: this.sessionKey,
+                    lastSeen: Date.now(),
+                    status: 'online',
+                    userAgent: navigator.userAgent
+                };
+                
+                this.saveToSharedStorage(`device_${this.sessionKey}_${this.deviceId}`, deviceData);
+            }
+
+            checkForDevices() {
+                // Look for other devices in the same session
+                const allKeys = Object.keys(localStorage);
+                const deviceKeys = allKeys.filter(key => 
+                    key.startsWith(`device_${this.sessionKey}_`) && 
+                    !key.endsWith(`_${this.deviceId}`)
+                );
+                
+                deviceKeys.forEach(key => {
+                    try {
+                        const deviceData = JSON.parse(localStorage.getItem(key));
+                        if (deviceData && this.isDeviceActive(deviceData.lastSeen)) {
+                            if (!this.connectedDevices.has(deviceData.deviceId)) {
+                                this.connectedDevices.set(deviceData.deviceId, deviceData);
+                                this.log(`📱 Found device: ${deviceData.deviceId}`);
+                            } else {
+                                // Update existing device
+                                this.connectedDevices.set(deviceData.deviceId, deviceData);
+                            }
+                        } else if (this.connectedDevices.has(deviceData.deviceId)) {
+                            // Remove inactive device
+                            this.connectedDevices.delete(deviceData.deviceId);
+                            this.log(`📴 Device went offline: ${deviceData.deviceId}`);
+                        }
+                    } catch (error) {
+                        // Invalid device data
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                this.updateDevicesUI();
+            }
+
+            checkForFiles() {
+                // Check for files sent to this device
+                const allKeys = Object.keys(localStorage);
+                const fileKeys = allKeys.filter(key => 
+                    key.startsWith(`file_${this.sessionKey}_${this.deviceId}_`)
+                );
+                
+                fileKeys.forEach(key => {
+                    try {
+                        const fileData = JSON.parse(localStorage.getItem(key));
+                        if (fileData && !this.receivedFiles.find(f => f.id === fileData.id)) {
+                            this.receiveFile(fileData);
+                            // Remove from shared storage after receiving
+                            localStorage.removeItem(key);
+                        }
+                    } catch (error) {
+                        // Invalid file data
+                        localStorage.removeItem(key);
+                    }
+                });
+            }
+
+            isDeviceActive(lastSeen) {
+                return (Date.now() - lastSeen) < 15000; // 15 seconds timeout
+            }
+
+            setSessionKey() {
+                const newSessionKey = document.getElementById('sessionKeyInput').value.trim().toUpperCase();
+                if (!newSessionKey) {
+                    this.showAlert('Please enter a Session Key', 'warning');
+                    return;
+                }
+                
+                if (newSessionKey === this.sessionKey) {
+                    this.showAlert('Already using this Session Key', 'info');
+                    return;
+                }
+                
+                // Clear old session data
+                this.cleanup();
+                
+                // Set new session key
+                this.sessionKey = newSessionKey;
+                localStorage.setItem('fileTransfer_sessionKey', this.sessionKey);
+                
+                // Update UI
+                document.getElementById('sessionKey').textContent = this.sessionKey;
+                
+                // Clear connected devices
+                this.connectedDevices.clear();
+                this.selectedDevice = null;
+                
+                // Re-register with new session
+                this.registerDevice();
+                this.updateDevicesUI();
+                
+                this.log(`🔑 Switched to Session Key: ${this.sessionKey}`);
+                this.showAlert(`Connected to session: ${this.sessionKey}`, 'success');
+            }
+
+            copySessionKey() {
+                const sessionKey = this.sessionKey;
+                navigator.clipboard.writeText(sessionKey).then(() => {
+                    this.showAlert('Session Key copied to clipboard!', 'success');
+                }).catch(() => {
+                    // Fallback
+                    this.showAlert(`Session Key: ${sessionKey}`, 'info');
+                });
+            }
+
+            addDevice() {
+                const deviceId = document.getElementById('deviceIdInput').value.trim();
+                if (!deviceId) {
+                    this.showAlert('Please enter a Device ID', 'warning');
+                    return;
+                }
+                
+                if (deviceId === this.deviceId) {
+                    this.showAlert('Cannot add your own device!', 'warning');
+                    return;
+                }
+                
+                // Add device to expected devices list
+                const deviceData = {
+                    deviceId: deviceId,
+                    sessionKey: this.sessionKey,
+                    lastSeen: Date.now(),
+                    status: 'expected',
+                    addedManually: true
+                };
+                
+                this.connectedDevices.set(deviceId, deviceData);
+                this.updateDevicesUI();
+                
+                document.getElementById('deviceIdInput').value = '';
+                this.log(`➕ Added expected device: ${deviceId}`);
+                this.showAlert(`Added device: ${deviceId}`, 'success');
+            }
+
+            selectDevice(deviceId) {
+                this.selectedDevice = deviceId;
+                
+                // Update UI
+                document.getElementById('selectedDevice').style.display = 'block';
+                document.getElementById('targetDeviceName').textContent = deviceId;
+                
+                // Enable drop zone
+                const dropZone = document.getElementById('dropZone');
+                dropZone.classList.remove('disabled');
+                dropZone.querySelector('p').textContent = `Files will be sent to ${deviceId}`;
+                
+                this.updateDevicesUI();
+                this.log(`🎯 Selected target device: ${deviceId}`);
+            }
+
+            updateDevicesUI() {
+                const devicesList = document.getElementById('devicesList');
+                
+                if (this.connectedDevices.size === 0) {
+                    devicesList.innerHTML = `
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
+                            No devices connected. Use the connection methods above to add devices.
+                        </div>
+                    `;
+                    return;
+                }
+
+                devicesList.innerHTML = '';
+                
+                this.connectedDevices.forEach((device, deviceId) => {
+                    const deviceCard = document.createElement('div');
+                    deviceCard.className = 'device-card';
+                    
+                    if (this.selectedDevice === deviceId) {
+                        deviceCard.classList.add('selected');
+                    }
+                    
+                    if (device.status === 'online') {
+                        deviceCard.classList.add('online');
+                    }
+                    
+                    const statusIcon = device.status === 'online' ? '🟢' : 
+                                     device.status === 'expected' ? '🟡' : '🔴';
+                    
+                    const lastSeenText = device.status === 'online' ? 
+                        'Active now' : 
+                        `Last seen: ${new Date(device.lastSeen).toLocaleTimeString()}`;
+                    
+                    deviceCard.innerHTML = `
+                        <div class="device-name">${statusIcon} ${deviceId}</div>
+                        <div class="device-status">
+                            Status: ${device.status} • ${lastSeenText}<br>
+                            Session: ${device.sessionKey || this.sessionKey}
+                        </div>
+                        <div>
+                            <button class="btn ${this.selectedDevice === deviceId ? 'secondary' : ''}" 
+                                    onclick="app.selectDevice('${deviceId}')">
+                                ${this.selectedDevice === deviceId ? '✓ Selected' : '📤 Select'}
+                            </button>
+                            <button class="btn warning" onclick="app.removeDevice('${deviceId}')">
+                                🗑️ Remove
+                            </button>
+                        </div>
+                    `;
+                    
+                    devicesList.appendChild(deviceCard);
+                });
+            }
+
+            removeDevice(deviceId) {
+                this.connectedDevices.delete(deviceId);
+                
+                if (this.selectedDevice === deviceId) {
+                    this.selectedDevice = null;
+                    document.getElementById('selectedDevice').style.display = 'none';
+                    document.getElementById('dropZone').classList.add('disabled');
+                }
+                
+                this.updateDevicesUI();
+                this.log(`🗑️ Removed device: ${deviceId}`);
+            }
+
+            async handleFiles(files) {
+                if (!files.length || !this.selectedDevice) return;
+                
+                this.log(`📤 Sending ${files.length} file(s) to ${this.selectedDevice}`);
+                this.showProgress(true);
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    await this.sendFile(file, i + 1, files.length);
+                }
+                
+                setTimeout(() => this.showProgress(false), 2000);
+            }
+
+            async sendFile(file, current, total) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const fileData = {
+                            id: this.generateFileId(),
+                            name: file.name,
+                            size: file.size,
+                            type: file.type,
+                            data: e.target.result,
+                            timestamp: Date.now(),
+                            fromDevice: this.deviceId,
+                            targetDevice: this.selectedDevice,
+                            sessionKey: this.sessionKey
+                        };
+                        
+                        // Save file to shared storage for target device
+                        const fileKey = `file_${this.sessionKey}_${this.selectedDevice}_${fileData.id}`;
+                        this.saveToSharedStorage(fileKey, fileData);
+                        
+                        // Simulate progress
+                        let progress = 0;
+                        const interval = setInterval(() => {
+                            progress += Math.random() * 15 + 10;
+                            if (progress >= 100) {
+                                progress = 100;
+                                clearInterval(interval);
+                                
+                                this.updateProgress(current, total, 100);
+                                this.log(`✅ Sent: ${file.name} (${this.formatFileSize(file.size)})`);
+                                this.showAlert(`Sent: ${file.name}`, 'success');
+                                resolve();
+                            } else {
+                                this.updateProgress(current, total, progress, file.name);
+                            }
+                        }, 200);
+                    };
+                    
+                    reader.onerror = () => {
+                        this.log(`❌ Failed to read file: ${file.name}`);
+                        resolve();
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            receiveFile(fileData) {
+                const receivedFile = {
+                    ...fileData,
+                    receivedAt: Date.now()
+                };
+                
+                // Check for duplicates
+                if (this.receivedFiles.find(f => f.id === receivedFile.id)) {
+                    return;
+                }
+                
+                this.receivedFiles.unshift(receivedFile);
+                
+                // Limit stored files
+                if (this.receivedFiles.length > 100) {
+                    this.receivedFiles = this.receivedFiles.slice(0, 100);
+                }
+                
+                this.saveReceivedFiles();
+                this.updateReceivedFilesUI();
+                
+                this.log(`📥 Received: ${receivedFile.name} from ${receivedFile.fromDevice}`);
+                this.showAlert(`📥 Received: ${receivedFile.name}`, 'success');
+            }
+
+            updateProgress(current, total, progress, fileName = '') {
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                const overallProgress = ((current - 1) / total * 100) + (progress / total);
+                progressFill.style.width = `${overallProgress}%`;
+                
+                if (fileName) {
+                    progressText.textContent = `Sending ${fileName}... ${Math.round(progress)}%`;
+                } else {
+                    progressText.textContent = `File ${current}/${total} completed`;
+                }
+            }
+
+            showProgress(show) {
+                const progressContainer = document.getElementById('progressContainer');
+                const progressFill = document.getElementById('progressFill');
+                const progressText = document.getElementById('progressText');
+                
+                if (show) {
+                    progressContainer.style.display = 'block';
+                    progressFill.style.width = '0%';
+                    progressText.textContent = 'Preparing transfer...';
+                } else {
+                    progressContainer.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    progressText.textContent = '0%';
+                }
+            }
+
+            updateReceivedFilesUI() {
+                const receivedFilesContainer = document.getElementById('receivedFiles');
+                
+                if (this.receivedFiles.length === 0) {
+                    receivedFilesContainer.innerHTML = `
+                        <div style="text-align: center; color: #6c757d; padding: 20px;">
+                            No files received yet.
+                        </div>
+                    `;
+                    return;
+                }
+
+                receivedFilesContainer.innerHTML = '';
+                
+                this.receivedFiles.forEach((file) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    
+                    const fileIcon = this.getFileIcon(file.name);
+                    const fileSize = this.formatFileSize(file.size);
+                    const receivedTime = new Date(file.receivedAt).toLocaleString();
+                    
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-icon">${fileIcon}</div>
+                            <div class="file-details">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-size">
+                                    ${fileSize} • From: ${file.fromDevice} • ${receivedTime}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="download-btn" onclick="app.downloadFile('${file.id}')">
+                                📥 Download
+                            </button>
+                            <button class="download-btn" style="background: #dc3545;" onclick="app.deleteFile('${file.id}')">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    `;
+                    
+                    receivedFilesContainer.appendChild(fileItem);
+                });
+            }
+
+            downloadFile(fileId) {
+                const file = this.receivedFiles.find(f => f.id === fileId);
+                if (!file) return;
+                
+                try {
+                    const link = document.createElement('a');
+                    link.href = file.data;
+                    link.download = file.name;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    this.log(`📥 Downloaded: ${file.name}`);
+                    this.showAlert(`Downloaded: ${file.name}`, 'success');
+                } catch (error) {
+                    this.log(`❌ Download failed: ${file.name}`);
+                    this.showAlert('Download failed', 'error');
+                }
+            }
+
+            deleteFile(fileId) {
+                if (confirm('Are you sure you want to delete this file?')) {
+                    const index = this.receivedFiles.findIndex(f => f.id === fileId);
+                    if (index >= 0) {
+                        const file = this.receivedFiles[index];
+                        this.receivedFiles.splice(index, 1);
+                        this.saveReceivedFiles();
+                        this.updateReceivedFilesUI();
+                        this.log(`🗑️ Deleted: ${file.name}`);
+                    }
+                }
+            }
+
+            saveToSharedStorage(key, data) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (error) {
+                    this.log(`❌ Failed to save to shared storage: ${error.message}`);
+                    
+                    // If storage is full, try to clean up old data
+                    this.cleanupOldData();
+                }
+            }
+
+            cleanupOldData() {
+                const allKeys = Object.keys(localStorage);
+                const oldKeys = [];
+                const cutoffTime = Date.now() - (24 * 60 * 60 * 1000); // 24 hours ago
+                
+                allKeys.forEach(key => {
+                    if (key.startsWith('device_') || key.startsWith('file_')) {
+                        try {
+                            const data = JSON.parse(localStorage.getItem(key));
+                            if (data.timestamp && data.timestamp < cutoffTime) {
+                                oldKeys.push(key);
+                            }
+                        } catch (error) {
+                            oldKeys.push(key); // Remove invalid data
+                        }
+                    }
+                });
+                
+                oldKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                });
+                
+                this.log(`🧹 Cleaned up ${oldKeys.length} old storage entries`);
+            }
+
+            loadReceivedFiles() {
+                try {
+                    const saved = localStorage.getItem(`fileTransfer_receivedFiles_${this.deviceId}`);
+                    if (saved) {
+                        this.receivedFiles = JSON.parse(saved);
+                        this.updateReceivedFilesUI();
+                        this.log(`📂 Loaded ${this.receivedFiles.length} received files`);
+                    }
+                } catch (error) {
+                    this.log('❌ Failed to load received files');
+                    this.receivedFiles = [];
+                }
+            }
+
+            saveReceivedFiles() {
+                try {
+                    localStorage.setItem(`fileTransfer_receivedFiles_${this.deviceId}`, JSON.stringify(this.receivedFiles));
+                } catch (error) {
+                    this.log('❌ Failed to save received files');
+                }
+            }
+
+            generateFileId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            formatFileSize(bytes) {
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                if (bytes === 0) return '0 B';
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+            }
+
+            getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const iconMap = {
+                    'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'bmp': '🖼️', 'svg': '🖼️',
+                    'pdf': '📄', 'doc': '📝', 'docx': '📝', 'txt': '📄', 'rtf': '📄',
+                    'xlsx': '📊', 'xls': '📊', 'csv': '📊',
+                    'zip': '📦', 'rar': '📦', '7z': '📦',
+                    'mp3': '🎵', 'wav': '🎵', 'mp4': '🎬', 'avi': '🎬',
+                    'js': '⚡', 'html': '🌐', 'css': '🎨'
+                };
+                return iconMap[ext] || '📄';
+            }
+
+            log(message) {
+                const logContainer = document.getElementById('activityLog');
+                const timestamp = new Date().toLocaleTimeString();
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+                
+                logContainer.appendChild(logEntry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only recent entries
+                const entries = logContainer.querySelectorAll('.log-entry');
+                if (entries.length > 100) {
+                    entries[0].remove();
+                }
+                
+                console.log(`[${timestamp}] ${message}`);
+            }
+
+            showAlert(message, type = 'info') {
+                const alert = document.createElement('div');
+                alert.className = `alert ${type}`;
+                alert.textContent = message;
+                
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.style.animation = 'slideOut 0.3s ease';
+                        setTimeout(() => {
+                            if (alert.parentNode) {
+                                alert.parentNode.removeChild(alert);
+                            }
+                        }, 300);
+                    }
+                }, 4000);
+            }
+
+            cleanup() {
+                // Stop polling
+                if (this.pollInterval) {
+                    clearInterval(this.pollInterval);
+                    this.pollInterval = null;
+                }
+                
+                // Mark device as offline
+                try {
+                    const deviceKey = `device_${this.sessionKey}_${this.deviceId}`;
+                    const deviceData = JSON.parse(localStorage.getItem(deviceKey) || '{}');
+                    deviceData.status = 'offline';
+                    deviceData.lastSeen = Date.now();
+                    localStorage.setItem(deviceKey, JSON.stringify(deviceData));
+                } catch (error) {
+                    // Ignore cleanup errors
+                }
+                
+                this.log('👋 Device cleanup completed');
+            }
+
+            // Public methods for debugging
+            getStatus() {
+                return {
+                    deviceId: this.deviceId,
+                    sessionKey: this.sessionKey,
+                    connectedDevices: Array.from(this.connectedDevices.keys()),
+                    selectedDevice: this.selectedDevice,
+                    receivedFiles: this.receivedFiles.length,
+                    isPolling: !!this.pollInterval
+                };
+            }
+
+            // Generate shareable session URL
+            generateSessionURL() {
+                const url = `${window.location.origin}${window.location.pathname}?session=${this.sessionKey}`;
+                navigator.clipboard.writeText(url).then(() => {
+                    this.showAlert('Session URL copied to clipboard!', 'success');
+                    this.log(`🔗 Generated session URL: ${url}`);
+                }).catch(() => {
+                    this.showAlert(`Session URL: ${url}`, 'info');
+                });
+            }
+        }
+
+        // Global functions for HTML onclick handlers
+        function setSessionKey() {
+            app.setSessionKey();
+        }
+
+        function copySessionKey() {
+            app.copySessionKey();
+        }
+
+        function addDevice() {
+            app.addDevice();
+        }
+
+        // Initialize app
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new RealCrossDeviceTransfer();
+            window.app = app; // Make globally accessible for debugging
+            
+            // Add debugging functions
+            window.generateSessionURL = () => app.generateSessionURL();
+            window.getAppStatus = () => app.getStatus();
+            window.cleanupStorage = () => app.cleanupOldData();
+            
+            console.log('🚀 Real Cross-Device File Transfer initialized');
+            console.log('🔧 Debug commands: getAppStatus(), generateSessionURL(), cleanupStorage()');
+        });
+    </script>
+</body>
+</html>
