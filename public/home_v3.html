@@ -50,8 +50,8 @@
 
   <style media="screen">
     body {
-      background: #ECEFF1;
-      color: rgba(0, 0, 0, 0.87);
+      background: #1a1a1a;
+      color: rgba(255, 255, 255, 0.87);
       font-family: "Quicksand", sans-serif;
       margin: 0;
       padding: 0;
@@ -59,7 +59,7 @@
     }
 
     #message {
-      background: white;
+      background: #2d2d2d;
       max-width: 275px;
       margin: 100px auto 16px;
       margin-top: 50px;
@@ -81,7 +81,7 @@
     #message h2 {
       font-size: 12px;
       font-weight: 100;
-      color: rgba(0, 0, 0, 0.6);
+      color: rgba(255, 255, 255, 0.6);
       margin: 0 0 16px;
     }
 
@@ -107,7 +107,7 @@
     }
 
     #load {
-      color: rgba(0, 0, 0, 0.1);
+      color: rgba(255, 255, 255, 0.3);
       text-align: center;
       font-size: 11px;
     }
@@ -117,12 +117,13 @@
       body,
       #message {
         margin-top: 0;
-        background: white;
+        background: #2d2d2d;
         box-shadow: none;
       }
 
       body {
         border-top: 0px solid #ffa100;
+        background: #1a1a1a;
       }
     }
 
@@ -158,7 +159,7 @@
       margin-right: auto;
       text-decoration: none;
       visibility: hidden;
-      color: blue;
+      color: #66b3ff;
       cursor: pointer;
 
 
@@ -204,7 +205,7 @@
     <div id="result_list_date"></div>
     <div>
       <span id="infoButton"
-        style="display: none; color: blue; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px; "
+        style="display: none; color: #66b3ff; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px; cursor: pointer; "
         onclick="viewJsonInNewTab()">More Info</span>
     </div>
 
@@ -605,16 +606,16 @@
       g_app_name_for_url = getSafeDataIosFirst(data, "g_app_name_for_url");
       appid.textContent = getSafeDataIosFirst(data, "name");
       var div = document.createElement('div')
-      div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
       clearElementContent('result_list_packageName')
       document.getElementById('result_list_packageName').appendChild(div)
       document.getElementById("infoButton").style.display = "inline";
       div = document.createElement('div')
-      div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${getSafeDataIosFirst(data, "versionName")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${getSafeDataIosFirst(data, "versionName")}</span>`
       clearElementContent('result_list_versionName')
       document.getElementById('result_list_versionName').appendChild(div)
       div = document.createElement('div')
-      div.innerHTML = `<span style="color: #000; text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${getSafeDateTime(data, "date")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${getSafeDateTime(data, "date")}</span>`
       clearElementContent('result_list_date')
       document.getElementById('result_list_date').appendChild(div)
       div = document.createElement('div')
@@ -662,8 +663,8 @@
           text: window.location.toString(),
           width: 200,
           height: 200,
-          colorDark: '#000',
-          colorLight: '#fff',
+          colorDark: '#fff',
+          colorLight: '#2d2d2d',
           correctLevel: QRCode.CorrectLevel.H
         });
         const qrText = document.querySelector('#qrText');
