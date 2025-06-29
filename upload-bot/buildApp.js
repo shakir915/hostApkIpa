@@ -14,7 +14,6 @@ var commandString = ""
 if(currentDirectory.endsWith("/27jezly-user")||firstArgument=="jezly"){
   if(firstArgument=="jezly")
     currentDirectory="/Users/shakir/PROJECTS/Emstell/27jezly-user";
-var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
 cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly.ipa"  && flutter build ipa  --dart-define=BACKEND=qa  --export-method=ad-hoc
@@ -34,7 +33,6 @@ say completed
 if(currentDirectory.endsWith("/27jezlyBusiness")||firstArgument=="jezlyb"){
   if(firstArgument=="jezlyb")
     currentDirectory="/Users/shakir/PROJECTS/Emstell/27jezlyBusiness";
-var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
 cd "${currentDirectory}" && rm -f "./build/ios/ipa/27Jezly Business.ipa"  && flutter build ipa  --dart-define=BACKEND=qa  --export-method=ad-hoc
@@ -52,7 +50,6 @@ say completed
 if(currentDirectory.endsWith("/salem-apps-mobile")||firstArgument=="salem"){
   if(firstArgument=="salem")
     currentDirectory="/Users/shakir/PROJECTS/Emstell/salem-apps-mobile";
-var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
 cd "${currentDirectory}" && rm -f "./build/ios/ipa/salem.ipa"  && flutter build ipa  --export-method=ad-hoc
@@ -69,7 +66,6 @@ say completed
 if(currentDirectory.endsWith("/yourbillboard-app")||firstArgument=="billboard"){
   if(firstArgument=="billboard")
     currentDirectory="/Users/shakir/PROJECTS/Emstell/yourbillboard-app";
-var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/jezly_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
 cd "${currentDirectory}" && rm -f "./build/ios/ipa/your_billboard.ipa"  && flutter build ipa   --export-method=ad-hoc
@@ -87,7 +83,6 @@ say completed
 if(currentDirectory.endsWith("/Talat")||firstArgument=="talat"){
   if(firstArgument=="talat")
     currentDirectory="/Users/shakir/PROJECTS/Emstell/Talat";
-var plist= "/Users/shakir/PROJECTS/SHAKIR_PROJECTS/hostApkIpa/upload-bot/exportOptionPlists/talat_ExportOptions.plist";
 commandString=`
 cd "${currentDirectory}" && flutter clean
 cd "${currentDirectory}" && rm -f "./build/ios/ipa/talat.ipa"  && flutter build ipa  --dart-define=key=value  --export-method=ad-hoc
