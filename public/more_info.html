@@ -122,6 +122,7 @@
         document.addEventListener('DOMContentLoaded', async function () {
             var user = await getCurrentUser();
             var md = btoa(window.location.search?.split("?")?.[1] ?? "") === "ODEyOTYyNTEyMQ==";
+            var listAllApps = (window.location.search?.split("?")?.[1] ?? "") === "listAllApps";
             var hd = md || ((stored => stored ? parseInt(stored, 10) > Date.now() : false)(localStorage.getItem("hd_time")));
             md = md || hd
             console.log("md", md)
@@ -129,7 +130,7 @@
             console.log("hd_time", localStorage.getItem("hd_time"))
 
             localStorage.removeItem("hd_time")
-            if (!md && !hd) {
+            if (!md && !hd &&!listAllApps) {
                 var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
                 var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
                 displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
@@ -148,9 +149,17 @@
                 showLog("loading 5/5: getHystoryNonMain")
                 var hystoryNonMain = getHystoryNonMain(mainList, hystoryList)
                 showLog(null)
+                if(!listAllApps)
                 displayUnlinkedFiles(unlinkedFiles)
+               if(!listAllApps)
                 displayTableItem(hystoryNonMain, "non_main_hystory_files", 'Hystory Non Main Files', false, true, user, false)
+              if(!listAllApps)
                 displayTableItem(mainList, "main_files", `Main Files  : Don't Delete`, true, md, user, true)
+            else{
+                displayTableItem(mainList , "non_main_hystory_files",`Apps`, true, false, user, true)
+                 displayTableItem(hystoryNonMain, "main_files", 'old hystory', false, false, user, false)
+            }
+                  if(!listAllApps)
                 addExpensivRefreshButtun()
             }
 
