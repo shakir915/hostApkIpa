@@ -317,6 +317,7 @@
             const btn = document.createElement('button');
             btn.textContent = 'Refresh SIZE (Expensive Operation)';
             btn.addEventListener('click', async () => {
+                showLog("refreshing");
                 calculateAllBucketSize();
             });
             refreshExpensiveDiv.appendChild(btn);
@@ -758,6 +759,7 @@
             // 2–4. for each bucket, list objects, sum sizes, then try a dummy upload
             const results = await Promise.all(bucketList.map(async bucket => {
                 // list all items in the bucket
+                  showLog(`refreshing ${bucket}`);
                 const listRes = await fetch(`https://firebasestorage.googleapis.com/v0/b/${bucket}/o`);
                 const listJson = await listRes.json();
                 const items = listJson.items || [];
@@ -808,6 +810,7 @@
 
             More_Info += `DONE\n`
             document.getElementById("More Info").innerText = More_Info;
+              showLog(null);
             return results;
         }
 
