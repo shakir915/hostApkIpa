@@ -119,6 +119,25 @@
 
 
 
+        function formatDateTime(date) {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            const day = date.getDate();
+            const month = months[date.getMonth()];
+            const year = date.getFullYear();
+            const weekday = days[date.getDay()];
+            
+            let hours = date.getHours();
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            
+            return `${day} ${month} ${year}, ${weekday} ${hours}:${minutes} ${ampm}`;
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             var user = await getCurrentUser();
             var md = btoa(window.location.search?.split("?")?.[1] ?? "") === "ODEyOTYyNTEyMQ==";
@@ -287,16 +306,7 @@
 
                 var fullHystorySuffix = item?.g_app_name_for_url + "______" + item?.g_url_id + "__" + item?.readableTime
                 const date = new Date(item?.date);
-                const options = {
-                    weekday: 'long',  // e.g., "Tuesday"
-                    day: 'numeric',
-                    month: 'long',    // e.g., "April"
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: true
-                };
-                const formattedDate = date.toLocaleString('en-US', options);
+                const formattedDate = formatDateTime(date);
 
                 item["platform"] = platform
 

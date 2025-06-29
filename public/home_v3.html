@@ -559,12 +559,25 @@
       return null;
     }
 
+    function formatDate(date) {
+      const months = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      const weekday = days[date.getDay()];
+      
+      return `${day} ${month} ${year}, ${weekday}`;
+    }
+
     function getSafeDateTime(data, name) {
 
       var iosData = null;
       var androidData = null;
-      try { iosData = new Date(data["ios"][name]).toDateString(); } catch (e) { console.error(e); }
-      try { androidData = new Date(data["android"][name]).toDateString(); } catch (e) { console.error(e); }
+      try { iosData = formatDate(new Date(data["ios"][name])); } catch (e) { console.error(e); }
+      try { androidData = formatDate(new Date(data["android"][name])); } catch (e) { console.error(e); }
       if (androidData !== null && deviceType == 1) {
         return androidData;
       }
