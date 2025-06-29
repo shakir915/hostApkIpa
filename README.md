@@ -1,4 +1,4 @@
-# https://install4.web.app/
+# https://install4.web.app
 # host Apk & Ipa
 ### create your own Diawi / apphost alternative
 ### webiste for uploading Apk and  Ipa
