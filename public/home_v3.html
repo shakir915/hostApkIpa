@@ -619,7 +619,7 @@
       clearElementContent('result_list_date')
       document.getElementById('result_list_date').appendChild(div)
       div = document.createElement('div')
-      
+
       var imagedata = getSafeDataIosFirst(data, "icon");
       if (imagedata == null || imagedata === "") {
         if (data && data.ios && data.ios.icon) {
@@ -681,7 +681,35 @@
       }
       lastFetchTime = currentTime;
       appid.textContent = "Loading...";
+
+
+
+      let extractedPageID = null;
+      try {
+        const str = pageID; // assuming pageID contains something like "halha_2______halha_qa__2025_04_25_135430"
+        const parts = str.split('______');
+        if (parts.length > 1) {
+          const secondParts = parts[1].split('__');
+          if (secondParts.length > 0) {
+            const result = secondParts[0];
+            if (result && result.trim() !== '') {
+              extractedPageID = result; // "halha_qa"
+            }
+          }
+        }
+
+      } catch (error) {
+        console.error('Error:', error);
+      }
+
+
+
+
       const paths = ["/app_links/" + pageID, ("/app_links_all/" + pageID).replace("____", "/")];
+
+      if (extractedPageID) {
+        paths.push("/app_links/" + extractedPageID);
+      }
 
       for (const path of paths) {
         //  console.log(path)
