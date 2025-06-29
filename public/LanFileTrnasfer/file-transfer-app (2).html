@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebRTC P2P File Transfer (Fixed)</title>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     
     <style>
         body { 
@@ -195,9 +196,94 @@
         .instructions li {
             margin: 5px 0;
         }
+
+        .qr-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        
+        .qr-container.hidden {
+            display: none;
+        }
+        
+        .qr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .qr-container h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #374151;
+        }
+        
+        .qr-close-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-close-btn:hover {
+            background: #dc2626;
+        }
+        
+        #qr-code {
+            display: block;
+            margin: 0 auto;
+        }
+        
+        #qr-code img {
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .qr-url {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 10px;
+            word-break: break-all;
+            max-width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .qr-container {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px auto;
+                max-width: 250px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="qr-container" id="qr-container">
+        <div class="qr-header">
+            <h4>📱 Share This Page</h4>
+            <button class="qr-close-btn" id="qr-close-btn">×</button>
+        </div>
+        <div id="qr-code"></div>
+        <div class="qr-url" id="qr-url-text"></div>
+    </div>
+
     <div class="container">
         <h1>📡 WebRTC P2P File Transfer</h1>
         <div class="subtitle">Direct device-to-device file sharing</div>
@@ -205,14 +291,15 @@
         <div id="status" class="status status-disconnected">Not Connected</div>
 
         <div class="instructions">
-            <h3>🔧 Setup Instructions:</h3>
+            <h3>🔧 How to Connect:</h3>
             <ol>
-                <li><strong>Device A:</strong> Click "Create Offer" and copy the offer text</li>
-                <li><strong>Device B:</strong> Paste the offer and click "Create Answer", then copy the answer</li>
-                <li><strong>Device A:</strong> Paste the answer and click "Set Answer"</li>
-                <li><strong>Both devices:</strong> Exchange ICE candidates when they appear</li>
-                <li><strong>Connected!</strong> Chat and transfer files</li>
+                <li><strong>🎧 Device A (Host):</strong> Click "Start Listening" button</li>
+                <li><strong>📞 Device B (Client):</strong> Enter Device A's IP address and click "Connect to IP"</li>
+                <li><strong>🎉 Connected!</strong> Chat and transfer files</li>
             </ol>
+            <div style="background: #fffbeb; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #d97706;">
+                <strong>💡 Alternative:</strong> If direct IP connection doesn't work, use the manual WebRTC method below
+            </div>
         </div>
 
         <!-- Connection Setup -->
@@ -220,7 +307,31 @@
             <h2>🔗 Connection Setup</h2>
             
             <div class="step">
-                <div class="step-title">Step 1: Create Offer (Device A)</div>
+                <div class="step-title">🌐 Direct IP Connection (Local Network)</div>
+                <div style="margin: 15px 0;">
+                    <strong>Your Local IP Address:</strong> <span id="local-ip-display">Detecting...</span>
+                    <button id="refresh-ip-btn" class="btn-warning" style="margin-left: 10px;">Refresh IP</button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin: 15px 0;">
+                    <button id="listen-btn" class="btn-success" style="flex: 1;">🎧 Start Listening</button>
+                    <span style="padding: 10px; color: #666;">OR</span>
+                    <button id="stop-listen-btn" class="btn-warning" style="flex: 1; display: none;">🛑 Stop Listening</button>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: center; margin: 15px 0;">
+                    <input type="text" id="target-ip-input" placeholder="Enter other device's IP address" style="flex: 1;">
+                    <input type="number" id="target-port-input" placeholder="Port" value="3000" style="width: 100px;">
+                    <button id="connect-ip-btn" class="btn-success">📞 Connect to IP</button>
+                </div>
+                
+                <div id="listen-status" style="margin: 15px 0; padding: 10px; background: #f9fafb; border-radius: 6px; display: none;">
+                    <strong>Status:</strong> <span id="listen-status-text">Not listening</span>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-title">Step 1: Create Offer (Device A) - WebRTC Method</div>
                 <button id="create-offer-btn">Create Offer</button>
                 <textarea id="offer-output" placeholder="Offer will appear here - copy to Device B" readonly></textarea>
             </div>
@@ -321,8 +432,69 @@
             fileInput: document.getElementById('file-input'),
             sendProgress: document.getElementById('send-progress'),
             receiveProgress: document.getElementById('receive-progress'),
-            downloadArea: document.getElementById('download-area')
+            downloadArea: document.getElementById('download-area'),
+            localIpDisplay: document.getElementById('local-ip-display'),
+            targetIpInput: document.getElementById('target-ip-input'),
+            targetPortInput: document.getElementById('target-port-input'),
+            listenBtn: document.getElementById('listen-btn'),
+            stopListenBtn: document.getElementById('stop-listen-btn'),
+            connectIpBtn: document.getElementById('connect-ip-btn')
         };
+
+        // Local IP detection
+        async function detectLocalIP() {
+            try {
+                // Create a temporary RTCPeerConnection to get local IP
+                const pc = new RTCPeerConnection({
+                    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                });
+                
+                // Create a data channel to trigger ICE candidate generation
+                pc.createDataChannel('');
+                
+                // Create offer to start the process
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                
+                return new Promise((resolve) => {
+                    pc.onicecandidate = (event) => {
+                        if (event.candidate) {
+                            const candidate = event.candidate.candidate;
+                            const ipMatch = candidate.match(/(\d{1,3}\.){3}\d{1,3}/);
+                            if (ipMatch && !ipMatch[0].startsWith('127.') && !ipMatch[0].startsWith('0.')) {
+                                pc.close();
+                                resolve(ipMatch[0]);
+                            }
+                        }
+                    };
+                    
+                    // Fallback timeout
+                    setTimeout(() => {
+                        pc.close();
+                        resolve('Unable to detect');
+                    }, 3000);
+                });
+            } catch (error) {
+                console.error('Error detecting local IP:', error);
+                return 'Unable to detect';
+            }
+        }
+
+        async function updateLocalIP() {
+            elements.localIpDisplay.textContent = 'Detecting...';
+            const localIP = await detectLocalIP();
+            elements.localIpDisplay.textContent = localIP;
+            
+            // Auto-fill a common IP range suggestion if detection fails
+            if (localIP === 'Unable to detect') {
+                elements.targetIpInput.placeholder = 'Enter target device IP (e.g., 192.168.1.100, 192.168.0.100, 10.0.0.100)';
+            } else {
+                // Suggest IP in same subnet
+                const ipParts = localIP.split('.');
+                ipParts[3] = 'XXX';
+                elements.targetIpInput.placeholder = `Enter target device IP (e.g., ${ipParts.join('.')})`;
+            }
+        }
 
         function updateStatus(message, type = 'disconnected') {
             elements.status.textContent = message;
@@ -357,6 +529,23 @@
                 if (event.candidate) {
                     elements.iceOutput.value += JSON.stringify(event.candidate) + '\n';
                     console.log('ICE candidate generated');
+                    
+                    // Auto-send ICE candidates if we have active signaling connections
+                    if (listeningPeer && listeningPeer.readyState === WebSocket.OPEN) {
+                        listeningPeer.send(JSON.stringify({
+                            type: 'webrtc_ice',
+                            candidate: event.candidate,
+                            to: 'connector', // Will be updated by listener
+                            from: 'listener'
+                        }));
+                    } else if (connectingPeer && connectingPeer.readyState === WebSocket.OPEN) {
+                        connectingPeer.send(JSON.stringify({
+                            type: 'webrtc_ice',
+                            candidate: event.candidate,
+                            to: 'listener', // Will be updated by connector
+                            from: 'connector'
+                        }));
+                    }
                 }
             };
 
@@ -549,7 +738,362 @@
             sendChunk();
         }
 
+        // Listen/Connect system
+        let isListening = false;
+        let listeningPeer = null;
+        let connectingPeer = null;
+
+        function updateListenStatus(message, show = true) {
+            const statusDiv = document.getElementById('listen-status');
+            const statusText = document.getElementById('listen-status-text');
+            
+            if (statusDiv && statusText) {
+                statusText.textContent = message;
+                statusDiv.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        async function startListening() {
+            if (isListening) return;
+            
+            isListening = true;
+            
+            // Show UI changes
+            document.getElementById('listen-btn').style.display = 'none';
+            document.getElementById('stop-listen-btn').style.display = 'flex';
+            updateListenStatus('Connecting to signaling server...');
+            updateStatus('Starting listener...', 'connecting');
+            logMessage('System', 'Starting listening mode', 'system');
+            
+            try {
+                // Connect to signaling server
+                const ws = new WebSocket('wss://ws.postman-echo.com/raw');
+                listeningPeer = ws;
+                
+                const localIP = elements.localIpDisplay.textContent;
+                const listenerId = `listener_${localIP}_${Date.now()}`;
+                
+                ws.onopen = () => {
+                    updateListenStatus(`Listening on ${localIP} - Ready for connections!`);
+                    updateStatus('Listening for connections...', 'connecting');
+                    logMessage('System', `Listening on IP: ${localIP}`, 'system');
+                    
+                    // Announce as listener
+                    ws.send(JSON.stringify({
+                        type: 'announce_listener',
+                        id: listenerId,
+                        ip: localIP
+                    }));
+                };
+                
+                ws.onmessage = async (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        await handleListenerMessage(data, ws, listenerId);
+                    } catch (e) {
+                        console.log('Non-JSON message received');
+                    }
+                };
+                
+                ws.onclose = () => {
+                    logMessage('System', 'Signaling connection closed', 'system');
+                    stopListening();
+                };
+                
+                ws.onerror = () => {
+                    updateStatus('Failed to start listening', 'disconnected');
+                    updateListenStatus('Failed to connect to signaling server');
+                    stopListening();
+                };
+                
+            } catch (error) {
+                console.error('Error starting listener:', error);
+                updateStatus('Failed to start listening', 'disconnected');
+                updateListenStatus('Failed to start listening');
+                stopListening();
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            
+            // Show UI changes
+            document.getElementById('listen-btn').style.display = 'flex';
+            document.getElementById('stop-listen-btn').style.display = 'none';
+            updateListenStatus('Not listening', false);
+            updateStatus('Stopped listening', 'disconnected');
+            logMessage('System', 'Stopped listening', 'system');
+            
+            if (listeningPeer) {
+                listeningPeer.close();
+                listeningPeer = null;
+            }
+            
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+        }
+
+        async function handleListenerMessage(data, ws, listenerId) {
+            if (data.type === 'connect_request' && data.targetIP === elements.localIpDisplay.textContent) {
+                logMessage('System', `Connection request from ${data.fromIP}`, 'system');
+                updateStatus('Incoming connection...', 'connecting');
+                
+                // Initialize peer connection as listener (receiver)
+                initializePeerConnection();
+                isInitiator = false;
+                
+                // Wait for offer from connector
+            } else if (data.type === 'webrtc_offer' && data.to === listenerId) {
+                logMessage('System', 'Received connection offer', 'system');
+                
+                try {
+                    // Set remote description (offer)
+                    await peerConnection.setRemoteDescription(data.offer);
+                    
+                    // Create and send answer
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+                    
+                    ws.send(JSON.stringify({
+                        type: 'webrtc_answer',
+                        answer: answer,
+                        to: data.from,
+                        from: listenerId
+                    }));
+                    
+                    logMessage('System', 'Sent connection answer', 'system');
+                } catch (e) {
+                    console.error('Error handling offer:', e);
+                    updateStatus('Connection failed', 'disconnected');
+                }
+            } else if (data.type === 'webrtc_ice' && data.to === listenerId) {
+                try {
+                    await peerConnection.addIceCandidate(data.candidate);
+                } catch (e) {
+                    console.error('Error adding ICE candidate:', e);
+                }
+            }
+        }
+
+        function broadcastPresence() {
+            if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+                const message = {
+                    type: 'presence',
+                    id: localId,
+                    timestamp: Date.now()
+                };
+                signalingSocket.send(JSON.stringify(message));
+            }
+        }
+
+        function startPeerDiscovery() {
+            // Broadcast presence every 5 seconds
+            setInterval(() => {
+                if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+                    broadcastPresence();
+                }
+            }, 5000);
+        }
+
+        function handleSignalingMessage(data) {
+            if (data.type === 'presence' && data.id !== localId) {
+                logMessage('System', `Found peer: ${data.id}`, 'system');
+                updateDiscoveryStatus(`Found device ${data.id.substr(0, 4)}... - connecting!`);
+                // Auto-initiate connection if we have a smaller ID (to avoid duplicate connections)
+                if (localId < data.id && !peerConnection) {
+                    setTimeout(() => createAutoOffer(data.id), 1000);
+                }
+            }
+        }
+
+        async function createAutoOffer(peerId) {
+            logMessage('System', `Auto-connecting to peer: ${peerId}`, 'system');
+            updateStatus('Auto-connecting to peer...', 'connecting');
+            
+            initializePeerConnection();
+            isInitiator = true;
+
+            // Create data channel
+            dataChannel = peerConnection.createDataChannel('fileTransfer', {
+                ordered: true
+            });
+            setupDataChannel();
+
+            try {
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                // Send offer through signaling server
+                if (signalingSocket && signalingSocket.readyState === WebSocket.OPEN) {
+                    const message = {
+                        type: 'offer',
+                        offer: offer,
+                        from: localId,
+                        to: peerId
+                    };
+                    signalingSocket.send(JSON.stringify(message));
+                }
+            } catch (e) {
+                console.error('Error creating auto offer:', e);
+                updateStatus('Auto-connection failed', 'disconnected');
+            }
+        }
+
+        // Connect to IP function
+        async function connectToIP() {
+            const targetIP = elements.targetIpInput.value.trim();
+            const targetPort = elements.targetPortInput.value || '3000';
+            
+            if (!targetIP) {
+                alert('Please enter the IP address of the listening device');
+                return;
+            }
+            
+            // Validate IP format
+            const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+            if (!ipRegex.test(targetIP)) {
+                alert('Please enter a valid IP address (e.g., 192.168.1.100)');
+                return;
+            }
+            
+            updateStatus(`Connecting to ${targetIP}...`, 'connecting');
+            logMessage('System', `Looking for listener on ${targetIP}`, 'system');
+            
+            try {
+                // Connect to signaling server
+                const ws = new WebSocket('wss://ws.postman-echo.com/raw');
+                connectingPeer = ws;
+                
+                const localIP = elements.localIpDisplay.textContent;
+                const connectorId = `connector_${localIP}_${Date.now()}`;
+                
+                ws.onopen = () => {
+                    logMessage('System', 'Connected to signaling server', 'system');
+                    
+                    // Send connection request
+                    ws.send(JSON.stringify({
+                        type: 'connect_request',
+                        targetIP: targetIP,
+                        fromIP: localIP,
+                        from: connectorId
+                    }));
+                    
+                    // Initialize peer connection as connector (initiator)
+                    initializePeerConnection();
+                    isInitiator = true;
+
+                    // Create data channel
+                    dataChannel = peerConnection.createDataChannel('fileTransfer', {
+                        ordered: true
+                    });
+                    setupDataChannel();
+                    
+                    // Create and send offer
+                    setTimeout(async () => {
+                        try {
+                            const offer = await peerConnection.createOffer();
+                            await peerConnection.setLocalDescription(offer);
+                            
+                            ws.send(JSON.stringify({
+                                type: 'webrtc_offer',
+                                offer: offer,
+                                to: `listener_${targetIP}`,
+                                from: connectorId
+                            }));
+                            
+                            logMessage('System', 'Sent connection offer', 'system');
+                        } catch (e) {
+                            console.error('Error creating offer:', e);
+                            updateStatus('Failed to create offer', 'disconnected');
+                        }
+                    }, 1000);
+                };
+                
+                ws.onmessage = async (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        await handleConnectorMessage(data, ws, connectorId);
+                    } catch (e) {
+                        console.log('Non-JSON message received');
+                    }
+                };
+                
+                ws.onclose = () => {
+                    logMessage('System', 'Signaling connection closed', 'system');
+                    if (connectingPeer) {
+                        connectingPeer = null;
+                        updateStatus('Connection failed', 'disconnected');
+                    }
+                };
+                
+                ws.onerror = () => {
+                    updateStatus('Failed to connect to signaling server', 'disconnected');
+                    logMessage('System', 'Could not reach signaling server', 'system');
+                };
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                updateStatus(`Failed to connect to ${targetIP}`, 'disconnected');
+                logMessage('System', `Connection failed: ${error.message}`, 'system');
+            }
+        }
+
+        async function handleConnectorMessage(data, ws, connectorId) {
+            if (data.type === 'webrtc_answer' && data.to === connectorId) {
+                logMessage('System', 'Received connection answer', 'system');
+                
+                try {
+                    await peerConnection.setRemoteDescription(data.answer);
+                    logMessage('System', 'Connection established!', 'system');
+                } catch (e) {
+                    console.error('Error handling answer:', e);
+                    updateStatus('Connection failed', 'disconnected');
+                }
+            } else if (data.type === 'webrtc_ice' && data.to === connectorId) {
+                try {
+                    await peerConnection.addIceCandidate(data.candidate);
+                } catch (e) {
+                    console.error('Error adding ICE candidate:', e);
+                }
+            }
+        }
+
+        // Local storage functions for IP persistence
+        function saveTargetIP() {
+            const targetIP = elements.targetIpInput.value.trim();
+            if (targetIP) {
+                localStorage.setItem('fileTransfer_targetIP', targetIP);
+            }
+        }
+
+        function loadTargetIP() {
+            const savedIP = localStorage.getItem('fileTransfer_targetIP');
+            if (savedIP) {
+                elements.targetIpInput.value = savedIP;
+            }
+        }
+
+        function hideQRCode() {
+            document.getElementById('qr-container').classList.add('hidden');
+        }
+
         // Event Listeners
+        document.getElementById('refresh-ip-btn').onclick = updateLocalIP;
+        document.getElementById('listen-btn').onclick = startListening;
+        document.getElementById('stop-listen-btn').onclick = stopListening;
+        
+        document.getElementById('connect-ip-btn').onclick = () => {
+            saveTargetIP();
+            connectToIP();
+        };
+
+        document.getElementById('qr-close-btn').onclick = hideQRCode;
+        
+        // Save IP when user types
+        elements.targetIpInput.addEventListener('input', saveTargetIP);
+
         document.getElementById('create-offer-btn').onclick = async () => {
             initializePeerConnection();
             isInitiator = true;
@@ -669,8 +1213,50 @@
             elements.fileInput.value = '';
         };
 
+        // Generate QR code for current page URL
+        function generateQRCode() {
+            const qrContainer = document.getElementById('qr-code');
+            const urlText = document.getElementById('qr-url-text');
+            const currentURL = window.location.href;
+            
+            // Display the URL
+            urlText.textContent = currentURL;
+            
+            try {
+                // Clear any existing QR code
+                qrContainer.innerHTML = '';
+                
+                // Generate QR code using QRCode.js
+                const qrcode = new QRCode(qrContainer, {
+                    text: currentURL,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                
+                console.log('QR Code generated successfully');
+            } catch (error) {
+                console.error('QR Code generation error:', error);
+                qrContainer.innerHTML = '<div style="width:200px; height:200px; background:#f0f0f0; display:flex; align-items:center; justify-content:center; border:1px solid #ddd;">QR Code Failed</div>';
+                urlText.textContent = 'QR code generation failed: ' + error.message;
+            }
+        }
+
         // Initialize
         updateStatus('Ready to connect', 'disconnected');
+        
+        // Auto-detect local IP on page load
+        updateLocalIP();
+        
+        // Load saved target IP
+        loadTargetIP();
+        
+        // Generate QR code on page load with delay to ensure DOM is ready
+        setTimeout(() => {
+            generateQRCode();
+        }, 1000);
     </script>
 </body>
 </html>
