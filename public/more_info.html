@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>More Info</title>
 
 
@@ -25,7 +27,9 @@
 
 
         #jsonStore_1,
-        #jsonStore_2 {
+        #jsonStore_2,
+        #textStore_1,
+        #textStore_2 {
             background-color: #2d2d2d;
             /* Dark container */
             padding: 20px;
@@ -33,6 +37,7 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             overflow-x: auto;
             /* Allow horizontal scrolling if JSON is wide */
+            margin-bottom: 20px;
         }
 
         .string {
@@ -100,6 +105,56 @@
             z-index: 1000;
             /* make sure it's on top */
         }
+
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block !important;
+            }
+            
+            table {
+                width: 100% !important;
+                border-collapse: separate !important;
+            }
+            
+            tr {
+                border: 1px solid #3d3d3d !important;
+                margin-bottom: 10px !important;
+                padding: 10px !important;
+                border-radius: 5px !important;
+                background-color: rgba(255, 255, 255, 0.02) !important;
+            }
+            
+            td {
+                border: none !important;
+                padding: 2px 0 !important;
+                text-align: left !important;
+                position: relative !important;
+                padding-left: 50% !important;
+            }
+            
+            td:before {
+                content: attr(data-label) ": ";
+                font-weight: bold;
+                color: #ffcc66;
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+            }
+            
+            td[data-label="Action"]:before {
+                content: "";
+            }
+            
+            thead {
+                display: none !important;
+            }
+            
+            th {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 
@@ -107,7 +162,9 @@
 
     <div class="sticky-component" id="More Info" onclick="showLog(null)">Loading...</div>
     <div id="app_hystory_list_div"></div>
+        <div id="textStore_1" style="display: none;"></div>
     <div id="jsonStore_1" style="display: none;"></div>
+    <div id="textStore_2" style="display: none;"></div>
     <div id="jsonStore_2" style="display: none;"></div>
     <div id="unlinked"></div>
     <div id="non_main_hystory_files"></div>
@@ -153,8 +210,11 @@
                 var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
                 var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
                 displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
+                showTextDisplay("textStore_1", "iOS Plist Details")
                 showJsonDiaplay("jsonStore_1")
+                showTextDisplay("textStore_2", "Android Manifest Details")
                 showJsonDiaplay("jsonStore_2")
+            
 
             } else {
                 showLog("loading 1/5 : listAllFilesInAllBuckets")
@@ -213,6 +273,75 @@
 
         }
 
+        function showTextDisplay(id, title) {
+   
+                    document.getElementById(id).textContent = title;
+                    document.getElementById(id).style.display = "block";
+                    return
+
+            const jsonString = localStorage.getItem(id.replace("textStore_", "jsonStore_"));
+            if (jsonString) {
+                try {
+                    const jsonObj = JSON.parse(decodeURIComponent(jsonString));
+                    let textContent = `${title}\n\n`;
+                    
+                    if (id === "textStore_1") {
+                        // iOS Plist Details
+                        if (jsonObj?.ios?.mobileProvision) {
+                            const plist = jsonObj.ios.mobileProvision;
+                            textContent += `App Name: ${plist.AppIDName || 'N/A'}\n`;
+                            textContent += `Team Name: ${plist.TeamName || 'N/A'}\n`;
+                            textContent += `Bundle ID: ${plist.Entitlements?.['application-identifier'] || 'N/A'}\n`;
+                            textContent += `Creation Date: ${plist.CreationDate || 'N/A'}\n`;
+                            textContent += `Expiration Date: ${plist.ExpirationDate || 'N/A'}\n`;
+                            textContent += `Provisioning Profile Name: ${plist.Name || 'N/A'}\n`;
+                            textContent += `Team ID: ${plist.TeamIdentifier?.[0] || 'N/A'}\n`;
+                            textContent += `UUID: ${plist.UUID || 'N/A'}\n`;
+                            if (plist.ProvisionedDevices) {
+                                textContent += `Provisioned Devices: ${plist.ProvisionedDevices.length}\n`;
+                            }
+                        } else {
+                            textContent += "No iOS plist data found.";
+                        }
+                    } else if (id === "textStore_2") {
+                        // Android Manifest Details
+                        if (jsonObj?.android) {
+                            const android = jsonObj.android;
+                            textContent += `Package Name: ${android.packageName || 'N/A'}\n`;
+                            textContent += `Version Name: ${android.versionName || 'N/A'}\n`;
+                            textContent += `Version Code: ${android.versionCode || 'N/A'}\n`;
+                            textContent += `Min SDK Version: ${android.minSdkVersion || 'N/A'}\n`;
+                            textContent += `Target SDK Version: ${android.targetSdkVersion || 'N/A'}\n`;
+                            textContent += `App Name: ${android.name || 'N/A'}\n`;
+                            if (android.permissions) {
+                                textContent += `Permissions: ${android.permissions.length || 0}\n`;
+                                if (android.permissions.length > 0) {
+                                    textContent += `Main Permissions:\n`;
+                                    android.permissions.slice(0, 10).forEach(perm => {
+                                        textContent += `  - ${perm}\n`;
+                                    });
+                                    if (android.permissions.length > 10) {
+                                        textContent += `  ... and ${android.permissions.length - 10} more\n`;
+                                    }
+                                }
+                            }
+                        } else {
+                            textContent += "No Android manifest data found.";
+                        }
+                    }
+                    
+                    document.getElementById(id).textContent = textContent;
+                    document.getElementById(id).style.display = "block";
+                } catch (error) {
+                    document.getElementById(id).textContent = `${title}\n\nError parsing data.`;
+                    document.getElementById(id).style.display = "block";
+                }
+            } else {
+                document.getElementById(id).textContent = `${title}\n\nNo data provided.`;
+                document.getElementById(id).style.display = "block";
+            }
+        }
+
         function processMobileProvision(mobileProvision) {
             if (mobileProvision) {
                 if (mobileProvision.DeveloperCertificates) {
@@ -258,8 +387,8 @@
             const tbody = table.querySelector('tbody')
             list.forEach(file => {
                 const row = document.createElement('tr');
-                var ihtml = `<td>${decodeURIComponent(file)}</td>`
-                ihtml += `  <td><button data-key="${file}" style="background:#ff4d4f;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button></td>`
+                var ihtml = `<td data-label="File">${decodeURIComponent(file)}</td>`
+                ihtml += `  <td data-label="Action"><button data-key="${file}" style="background:#ff4d4f;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button></td>`
                 row.innerHTML = ihtml
                 const button = row.querySelector('button');
                 button.addEventListener('click', () => {
@@ -312,18 +441,18 @@
 
 
                 const row = document.createElement('tr');
-                var ihtml = `<td><img src="${item?.icon || ''}" alt="icon" style="width:30px;height:30px;"></td>
-                                        <td>${item?.name || ''}</td>
-                                        <td>${platform || ''}</td>
-                                        <td>${item?.versionName || ''}</td>
-                                        <td>${item?.packageName || ''}</td>
-                                        <td>${formattedDate || ''}</td>
-                                        <td><a href="${window.location.origin}/${fullHystorySuffix}" target="_blank">${item?.g_url_id}</a></td>
+                var ihtml = `<td data-label="Icon"><img src="${item?.icon || ''}" alt="icon" style="width:30px;height:30px;"></td>
+                                        <td data-label="Name">${item?.name || ''}</td>
+                                        <td data-label="Platform">${platform || ''}</td>
+                                        <td data-label="Version">${item?.versionName || ''}</td>
+                                        <td data-label="Package">${item?.packageName || ''}</td>
+                                        <td data-label="Date">${formattedDate || ''}</td>
+                                        <td data-label="Link"><a href="${window.location.origin}/${fullHystorySuffix}" target="_blank">${item?.g_url_id}</a></td>
                                     `;
                 if (isFileExist) {
-                    ihtml += `  <td><button data-key="${item?.g_url_id}" style="background:#ff4d4f;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button></td>`
+                    ihtml += `  <td data-label="Action"><button data-key="${item?.g_url_id}" style="background:#ff4d4f;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button></td>`
                 } else {
-                    ihtml += `  <td><button data-key="${item?.g_url_id}" style="background:transparent;color:#ff4d4f;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Deleted</button></td>`
+                    ihtml += `  <td data-label="Action"><button data-key="${item?.g_url_id}" style="background:transparent;color:#ff4d4f;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Deleted</button></td>`
                 }
                 row.innerHTML = ihtml
                 const button = row.querySelector('button');
