@@ -441,13 +441,17 @@
 
 
                 const row = document.createElement('tr');
+                var linkContent = isFileExist 
+                    ? `<a href="${window.location.origin}/${fullHystorySuffix}" target="_blank">${item?.g_url_id}</a>`
+                    : `<span style="color: #666; cursor: default;">${item?.g_url_id}</span>`;
+                
                 var ihtml = `<td data-label="Icon"><img src="${item?.icon || ''}" alt="icon" style="width:30px;height:30px;"></td>
                                         <td data-label="Name">${item?.name || ''}</td>
                                         <td data-label="Platform">${platform || ''}</td>
                                         <td data-label="Version">${item?.versionName || ''}</td>
                                         <td data-label="Package">${item?.packageName || ''}</td>
                                         <td data-label="Date">${formattedDate || ''}</td>
-                                        <td data-label="Link"><a href="${window.location.origin}/${fullHystorySuffix}" target="_blank">${item?.g_url_id}</a></td>
+                                        <td data-label="Link">${linkContent}</td>
                                     `;
                 if (isFileExist) {
                     ihtml += `  <td data-label="Action"><button data-key="${item?.g_url_id}" style="background:#ff4d4f;color:white;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;">Delete</button></td>`
