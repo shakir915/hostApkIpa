@@ -270,7 +270,7 @@
 
     document.getElementById("upload").onclick = function () {
       var redirection = localStorage.getItem('redirection');
-      window.open(redirection, '_blank');
+      window.location.href = redirection;
     };
   </script>
 
@@ -525,18 +525,8 @@
       if (ios != null)
         localStorage.setItem("jsonStore_1", encodeURIComponent(JSON.stringify(ios, null, 2)));
       localStorage.setItem("g_app_name_for_url", g_app_name_for_url);
-      try {
-        const newTab = window.open(`more_info.html`, '_blank');
-        if (newTab) {
-          newTab.focus();
-        } else {
-          // If popup blocked, open in same tab instead of showing alert
-          window.location.href = `more_info.html`;
-        }
-      } catch (e) {
-        // Fallback for any errors
-        window.location.href = `more_info.html`;
-      }
+      // Open in same tab
+      window.location.href = `more_info.html`;
 
     }
 
