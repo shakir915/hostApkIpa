@@ -629,6 +629,9 @@
 
 
     function setData(data) {
+      // Change background from transparent to solid after loading
+      document.getElementById('message').style.background = '#2d2d2d';
+      
       g_app_name_for_url = getSafeDataIosFirst(data, "g_app_name_for_url");
       appid.textContent = getSafeDataIosFirst(data, "name");
       var div = document.createElement('div')
@@ -731,6 +734,8 @@
       }
       lastFetchTime = currentTime;
       appid.textContent = "Loading...";
+      // Make background transparent during loading
+      document.getElementById('message').style.background = 'transparent';
 
 
 
@@ -786,6 +791,8 @@
       }
 
       appid.textContent = "404 Not Found";
+      // Keep background transparent for 404
+      document.getElementById('message').style.background = 'transparent';
 
     }
 
