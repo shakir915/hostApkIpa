@@ -20,6 +20,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 
   <title id="pafeTile">Welcome</title>
@@ -52,10 +55,13 @@
     body {
       background: #1a1a1a;
       color: rgba(255, 255, 255, 0.87);
-      font-family: "Quicksand", sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
       margin: 0;
       padding: 0;
-
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-weight: 400;
     }
 
     #message {
@@ -74,7 +80,7 @@
     #message h1 {
       color: #ffa100;
       font-weight: 300;
-      font-size: 22px;
+      font-size: 33px;
       margin: 0 0 8px;
     }
 
@@ -119,24 +125,124 @@
         flex-direction: column;
         align-items: center;
         margin: 0;
-        padding: 30px 0 0 0;
+        padding: 20px 16px 0 16px;
         border-top: 0px solid #ffa100;
         background: #1a1a1a;
         overflow-x: hidden;
         box-sizing: border-box;
+        min-height: 100vh;
       }
 
       #message {
         margin: 0;
-        width: calc(100vw - 32px);
+        width: 100%;
         max-width: none;
         background: #2d2d2d;
         box-shadow: none;
         box-sizing: border-box;
+        padding: 24px 20px;
+        border-radius: 8px;
       }
 
       .upload {
-        margin-top: 20px;
+        margin-top: 24px;
+        width: 100%;
+        max-width: 280px;
+        padding: 12px 16px;
+        font-size: 16px;
+        border-radius: 8px;
+        text-align: center;
+        box-sizing: border-box;
+      }
+
+      #qrcode {
+        padding: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #qrText {
+        margin-top: 12px;
+        font-size: 12px;
+        line-height: 1.4;
+        padding: 0 10px;
+        text-align: center;
+      }
+
+      .centerIMG {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        object-fit: cover;
+        aspect-ratio: 1 / 1;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 16px 20px;
+        font-size: 18px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+
+      #result_list_packageName,
+      #result_list_versionName,
+      #result_list_date {
+        margin-bottom: 6px;
+      }
+
+      #result_list_packageName span,
+      #result_list_versionName span,
+      #result_list_date span {
+        font-size: 14px;
+        padding: 0;
+        text-align: left;
+        display: block;
+        width: 100%;
+        word-break: break-word;
+        padding-right: 0;
+      }
+
+      #infoButton {
+        width: 100%;
+        text-align: center;
+        padding: 12px 0;
+        font-size: 16px;
+        display: block;
+        margin-top: 12px;
+      }
+
+      #load {
+        padding: 20px 0;
+        font-size: 12px;
+      }
+
+      #appid {
+        font-size: 36px;
+        margin-bottom: 16px;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      #result_div_icon {
+        text-align: center;
+        padding: 20px 0;
+      }
+
+      #result_list_packageName {
+        margin-top: 16px;
       }
     }
 
@@ -145,9 +251,15 @@
       background-color: DodgerBlue;
       border: none;
       color: white;
-
       font-size: 16px;
       cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+      min-height: 44px;
+      box-sizing: border-box;
     }
 
     /* Darker background on mouse-over */
@@ -160,7 +272,11 @@
       display: block;
       margin-left: auto;
       margin-right: auto;
-      width: 30%;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
     }
 
     a.upload {
@@ -179,13 +295,12 @@
     }
 
     #qrcode {
-
+      display: flex;
       align-items: center;
+      justify-content: center;
       text-align: center;
       margin-left: auto;
       margin-right: auto;
-
-      padding-left: 30px;
       padding-top: 10px;
       padding-bottom: 10px;
     }
@@ -625,16 +740,16 @@
       g_app_name_for_url = getSafeDataIosFirst(data, "g_app_name_for_url");
       appid.textContent = getSafeDataIosFirst(data, "name");
       var div = document.createElement('div')
-      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: left; width: 100%; font-weight: 100; font-size: 14px;">${getSafeDataIosFirst(data, "packageName")}</span>`
       clearElementContent('result_list_packageName')
       document.getElementById('result_list_packageName').appendChild(div)
       document.getElementById("infoButton").style.display = "inline";
       div = document.createElement('div')
-      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 400; padding-right: 20px;font-size: 14px;">Version: ${getSafeDataIosFirst(data, "versionName")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: left; width: 100%; font-weight: 400; font-size: 14px;">Version: ${getSafeDataIosFirst(data, "versionName")}</span>`
       clearElementContent('result_list_versionName')
       document.getElementById('result_list_versionName').appendChild(div)
       div = document.createElement('div')
-      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: right; width: 100px; font-weight: 100; padding-right: 20px;font-size: 14px;">Uploaded: ${getSafeDateTime(data, "date")}</span>`
+      div.innerHTML = `<span style="color: rgba(255, 255, 255, 0.87); text-align: left; width: 100%; font-weight: 100; font-size: 14px;">Uploaded: ${getSafeDateTime(data, "date")}</span>`
       clearElementContent('result_list_date')
       document.getElementById('result_list_date').appendChild(div)
       div = document.createElement('div')
@@ -702,16 +817,22 @@
       }
       if (deviceType == 0 || true) {
         clearElementContent('qrcode');
+        const isMobile = window.innerWidth <= 600;
+        const qrSize = isMobile ? 150 : 200;
         const qrcode = new QRCode(document.getElementById('qrcode'), {
           text: window.location.toString(),
-          width: 200,
-          height: 200,
+          width: qrSize,
+          height: qrSize,
           colorDark: '#fff',
           colorLight: '#2d2d2d',
           correctLevel: QRCode.CorrectLevel.H
         });
         const qrText = document.querySelector('#qrText');
-        qrText.textContent = "scan QR code to install in your phone";
+        if (deviceType == 0) {
+          qrText.textContent = "scan QR code to install in your phone";
+        } else {
+          qrText.textContent = "";
+        }
       }
     }
 

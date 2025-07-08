@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFMpeg AI Assistant Support</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: "Supportive Sky" - A calming palette with a light sky-blue/gray background, deep blue-gray text, and a trustworthy blue for accents and links. -->
+    <!-- Application Structure Plan: The SPA transforms the linear support document into an interactive FAQ/Help Center. The core structure is a series of accordions, allowing users to see all support topics at a glance (e.g., Common Queries, Privacy) and expand only the content relevant to them. This structure was chosen because support page users typically have specific questions; an accordion interface is more efficient and user-friendly than forcing them to scroll through a long text document. The flow is non-linear, user-driven, and designed for quick problem resolution. -->
+    <!-- Visualization & Content Choices: Report Info: The entire Support text document. Goal: Inform, Solve Problems, Reassure. Viz/Presentation Method: The text is logically chunked and presented within an accordion structure built with HTML/CSS/Tailwind. Unicode characters (❓, 🛡️, ✉️) serve as lightweight, visually intuitive icons for each section. Interaction: Users click on a topic header to expand or collapse the detailed answer. This interaction is powered by a simple Vanilla JavaScript toggle. Justification: This interactive format makes the information scannable and digestible, significantly improving the user experience over a static text page. It directly addresses the user's need to find answers quickly. Library/Method: Vanilla JavaScript for interactions, Tailwind CSS for styling. No charts (Chart.js/Plotly.js) were used as the source material is purely textual. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .accordion-item.active .accordion-content {
+            max-height: 500px; /* Adjust as needed for content */
+        }
+        .accordion-item.active .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto max-w-4xl px-4 py-8 md:py-16">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-3">Support Center</h1>
+            <p class="text-lg text-slate-600">
+                Welcome to the support page for <strong class="font-semibold text-blue-700">FFMpeg AI Assistant</strong>. We're here to help.
+            </p>
+        </header>
+
+        <!-- Introduction -->
+        <div class="bg-white p-6 rounded-lg shadow-sm text-center mb-12">
+             <p class="text-slate-700 text-lg">Transform your video and audio files effortlessly with the power of FFmpeg and AI intelligence. Simply describe what you want to do with your media, and our smart assistant generates the perfect conversion command for you.</p>
+        </div>
+
+
+        <!-- Accordion Sections -->
+        <main class="space-y-4">
+            <div id="accordion-container">
+                <!-- Accordion items will be injected here by JavaScript -->
+            </div>
+        </main>
+        
+        <!-- Contact Section -->
+        <section class="mt-16 text-center bg-blue-600/10 p-8 rounded-lg">
+            <h2 class="text-3xl font-bold text-blue-800 mb-4">Still Have Questions?</h2>
+            <p class="text-slate-700 mb-6 max-w-xl mx-auto">If you can't find the answer you're looking for, our support team is ready to assist. We aim to respond to all inquiries within 24-48 hours.</p>
+            <div class="inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                <a href="mailto:support@example.com" id="contact-email-link">✉️ Email Support</a>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const supportContent = [
+            {
+                id: 'common-queries',
+                icon: '❓',
+                title: 'Common Queries',
+                content: `
+                    <ul class="space-y-4 list-inside">
+                        <li>
+                            <strong class="font-semibold text-slate-700">How do I convert a video to MP3?</strong>
+                            <p class="pl-4 text-slate-600">Our AI assistant can generate commands for this and many other popular conversions. Just type your request naturally!</p>
+                        </li>
+                        <li>
+                            <strong class="font-semibold text-slate-700">Where are my converted files saved?</strong>
+                            <p class="pl-4 text-slate-600">Files are typically saved to a designated output folder on your device, which you can usually find within the app's interface or your device's default file system.</p>
+                        </li>
+                        <li>
+                            <strong class="font-semibold text-slate-700">The command didn't work as expected.</strong>
+                            <p class="pl-4 text-slate-600">Please double-check that the input file is not corrupted and that your request to the AI assistant is clear and specific. For example, instead of "make audio," try "convert video to MP3 audio".</p>
+                        </li>
+                    </ul>
+                `
+            },
+            {
+                id: 'troubleshooting',
+                icon: '⚙️',
+                title: 'Troubleshooting',
+                content: `<p>For issues with FFmpeg commands, please ensure you have sufficient storage space available on your device. Also, verify that the input file is a valid, non-corrupted media file. Restarting the app can sometimes resolve temporary issues.</p>`
+            },
+            {
+                id: 'privacy',
+                icon: '🛡️',
+                title: 'Our Commitment to Your Privacy',
+                content: `<p>As stated in our Privacy Policy, <strong>FFMpeg AI Assistant does not collect, store, transmit, or share any personal data or user information.</strong> All media processing and AI assistance occur entirely on your device, ensuring your files and data remain private and secure.</p>`
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const accordionContainer = document.getElementById('accordion-container');
+            const contactEmail = '[Your Support Email Address Here]';
+            
+            // Set contact email
+            const contactLink = document.getElementById('contact-email-link');
+            if (contactEmail.includes('@')) {
+                contactLink.href = `mailto:${contactEmail}`;
+                contactLink.innerHTML = `✉️ Email us at ${contactEmail}`;
+            } else {
+                 contactLink.innerHTML = `✉️ Email Support (Email not yet configured)`;
+            }
+
+            // Create and inject accordion items
+            supportContent.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'accordion-item bg-white rounded-lg shadow-sm overflow-hidden';
+                itemEl.innerHTML = `
+                    <div class="accordion-header flex justify-between items-center p-5 transition-colors hover:bg-slate-50">
+                        <h3 class="text-xl font-semibold text-slate-800 flex items-center">
+                            <span class="text-2xl mr-3">${item.icon}</span>
+                            <span>${item.title}</span>
+                        </h3>
+                        <span class="accordion-arrow text-2xl text-slate-400 transform transition-transform duration-300">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="p-5 pt-0 text-slate-700">
+                            ${item.content}
+                        </div>
+                    </div>
+                `;
+                accordionContainer.appendChild(itemEl);
+            });
+
+            // Add click listeners to accordion headers
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const activeItem = document.querySelector('.accordion-item.active');
+                    const clickedItem = header.parentElement;
+
+                    if (activeItem && activeItem !== clickedItem) {
+                        activeItem.classList.remove('active');
+                    }
+                    
+                    clickedItem.classList.toggle('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

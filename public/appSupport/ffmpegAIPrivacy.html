@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - FFMpeg AI Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chosen Palette: Trustworthy Teal & Neutral -->
+    <!-- Application Structure Plan: The SPA transforms the linear privacy policy into an interactive, user-friendly experience. It uses a single-page, vertical scroll layout with a fixed side navigation for quick access to key topics. The core of the design is an interactive card-based system, particularly for the 'Our Core Promise' section. This structure was chosen to make dense legal text scannable, digestible, and more engaging, helping users quickly understand the app's commitment to privacy rather than being intimidated by a wall of text. The flow guides the user from the main promise to specific details on demand. -->
+    <!-- Visualization & Content Choices: Report Info: The entire Privacy Policy text. Goal: Inform, Reassure, Build Trust. Viz/Presentation Method: The text is broken down into thematic sections presented as interactive cards and accordions using HTML/CSS/Tailwind. Unicode characters (e.g., 🛡️, 📱) are used as icons to provide quick visual cues for each section's topic. Interaction: Users can click on cards or section headers to expand and read the detailed text, which is dynamically displayed using JavaScript. This makes the information discoverable without overwhelming the user upfront. Justification: This interactive, chunked presentation is more user-friendly and accessible than a static text document. It encourages exploration and improves comprehension of the key privacy points. Library/Method: Vanilla JavaScript for interactions, Tailwind CSS for styling. No charts (Chart.js/Plotly.js) were used as the source material is purely textual and contains no quantitative data to visualize. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        
+        .section-card {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .details-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .details-content.open {
+            max-height: 1000px; /* Adjust as needed */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        .nav-link.active {
+            background-color: #0d9488;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="relative flex min-h-screen">
+        
+        <!-- Sticky Navigation -->
+        <nav class="sticky top-0 h-screen w-16 md:w-64 bg-white/80 backdrop-blur-md shadow-lg hidden lg:flex flex-col items-center md:items-start py-8 space-y-2">
+            <h2 class="text-xl font-bold text-teal-700 px-4 mb-4 hidden md:block">Navigation</h2>
+            <a href="#promise" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">🛡️</span>
+                <span class="hidden md:inline">Our Core Promise</span>
+            </a>
+            <a href="#tools" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">🛠️</span>
+                <span class="hidden md:inline">Third-Party Tools</span>
+            </a>
+            <a href="#security" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">🔒</span>
+                <span class="hidden md:inline">Data Security</span>
+            </a>
+            <a href="#children" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">👶</span>
+                <span class="hidden md:inline">Children's Privacy</span>
+            </a>
+            <a href="#updates" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">🔄</span>
+                <span class="hidden md:inline">Policy Updates</span>
+            </a>
+            <a href="#contact" class="nav-link w-full text-left flex items-center space-x-3 py-2.5 px-4 rounded-r-lg transition-all duration-200 text-slate-600 hover:bg-teal-100">
+                <span class="text-xl">✉️</span>
+                <span class="hidden md:inline">Contact Us</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-4 sm:p-6 md:p-10">
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Header -->
+                <header class="text-center mb-16">
+                    <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2">Privacy at a Glance</h1>
+                    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                        For <strong class="font-semibold text-teal-700">FFMpeg AI Assistant</strong>, your privacy isn't an afterthought. It's our foundation. Here’s our promise to you in simple terms.
+                    </p>
+                </header>
+
+                <!-- Section: Our Core Promise -->
+                <section id="promise" class="mb-16 scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-center mb-8 text-slate-700">Our Core Promise: No Data Collection</h2>
+                     <div class="text-center mb-8 text-slate-600">
+                        <p>This is the most important section of our policy. We want to be absolutely clear: we do not collect, store, transmit, or share any of your personal data or files. The interactive cards below explain the key aspects of our commitment to your privacy.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="section-card bg-white p-6 rounded-xl shadow-md" data-target="details-local">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-4xl">📱</span>
+                                <h3 class="text-xl font-semibold text-teal-800">Local Processing</h3>
+                            </div>
+                            <div id="details-local" class="details-content text-slate-600"></div>
+                        </div>
+                        <div class="section-card bg-white p-6 rounded-xl shadow-md" data-target="details-personal">
+                            <div class="flex items-center space-x-4">
+                                <span class="text-4xl">🚫</span>
+                                <h3 class="text-xl font-semibold text-teal-800">No Personal Info</h3>
+                            </div>
+                            <div id="details-personal" class="details-content text-slate-600"></div>
+                        </div>
+                        <div class="section-card bg-white p-6 rounded-xl shadow-md" data-target="details-usage">
+                           <div class="flex items-center space-x-4">
+                                <span class="text-4xl">📊</span>
+                                <h3 class="text-xl font-semibold text-teal-800">No Usage Data</h3>
+                            </div>
+                            <div id="details-usage" class="details-content text-slate-600"></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Other Sections -->
+                <div class="space-y-6">
+                    <section id="tools" class="scroll-mt-20">
+                         <div class="bg-white p-6 rounded-xl shadow-md accordion-header">
+                            <h2 class="text-2xl font-bold text-slate-700 flex justify-between items-center">
+                                <span>🛠️ Third-Party Tools</span>
+                                <span class="transform transition-transform duration-300">▼</span>
+                            </h2>
+                            <div class="details-content text-slate-600"></div>
+                        </div>
+                    </section>
+                    
+                    <section id="security" class="scroll-mt-20">
+                         <div class="bg-white p-6 rounded-xl shadow-md accordion-header">
+                             <h2 class="text-2xl font-bold text-slate-700 flex justify-between items-center">
+                                 <span>🔒 Data Security</span>
+                                 <span class="transform transition-transform duration-300">▼</span>
+                            </h2>
+                            <div class="details-content text-slate-600"></div>
+                        </div>
+                    </section>
+                    
+                     <section id="children" class="scroll-mt-20">
+                         <div class="bg-white p-6 rounded-xl shadow-md accordion-header">
+                             <h2 class="text-2xl font-bold text-slate-700 flex justify-between items-center">
+                                <span>👶 Children's Privacy</span>
+                                 <span class="transform transition-transform duration-300">▼</span>
+                            </h2>
+                            <div class="details-content text-slate-600"></div>
+                        </div>
+                    </section>
+
+                    <section id="updates" class="scroll-mt-20">
+                         <div class="bg-white p-6 rounded-xl shadow-md accordion-header">
+                             <h2 class="text-2xl font-bold text-slate-700 flex justify-between items-center">
+                                <span>🔄 Policy Updates</span>
+                                 <span class="transform transition-transform duration-300">▼</span>
+                            </h2>
+                            <div class="details-content text-slate-600"></div>
+                        </div>
+                    </section>
+                </div>
+                
+                 <!-- Contact Section -->
+                <section id="contact" class="mt-16 text-center bg-teal-600/10 p-8 rounded-xl scroll-mt-20">
+                    <h2 class="text-3xl font-bold text-teal-800 mb-4">Questions?</h2>
+                    <p class="text-slate-600 mb-6 max-w-xl mx-auto">If you have any questions about this Privacy Policy, please don't hesitate to reach out. We believe in transparency and are happy to provide clarity.</p>
+                    <div class="space-y-2">
+                        <p class="text-slate-700"><strong>By email:</strong> <a href="mailto:[Your Support Email Address Here]" class="text-teal-600 hover:underline">[Your Support Email Address Here]</a></p>
+                        <p class="text-slate-700"><strong>By website:</strong> <a href="[Your Website Contact Page URL Here]" target="_blank" class="text-teal-600 hover:underline">[Your Website Contact Page URL Here]</a></p>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-8">Last Updated: July 1, 2025</p>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const policyContent = {
+            localProcessing: `All media conversion tasks, AI-assisted suggestions, and FFmpeg operations are performed <strong>entirely on your device</strong>. Your videos, audio files, images, or any other media you process with the App never leave your device and are not uploaded to any server.`,
+            personalInfo: `We do not collect any personally identifiable information, such as your name, email address, location, or device identifiers.`,
+            usageData: `We do not collect analytics, crash logs, or any other usage data that could be linked to you or your device.`,
+            thirdParty: `The App utilizes the powerful <strong>FFmpeg</strong> library for media processing. FFmpeg is an open-source software project that provides libraries and programs for handling multimedia data. When integrated into FFMpeg AI Assistant, FFmpeg operates locally on your device and does not send any data to external servers.<br><br>The AI assistant functionality is also designed for <strong>on-device processing</strong>, ensuring that your queries and the AI's responses remain private to your device.`,
+            dataSecurity: `Since FFMpeg AI Assistant does not collect or transmit any user data, the traditional security concerns associated with data breaches or unauthorized access to user information are not applicable. Your data remains on your device, under your control.`,
+            childrensPrivacy: `Given that FFMpeg AI Assistant does not collect any personal information from anyone, it inherently complies with regulations regarding children's privacy. The App is not directed at children under the age of 13, and we do not knowingly collect information from them.`,
+            policyUpdates: `We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy within the App or on our website. You are advised to review this Privacy Policy periodically for any changes.`
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate content
+            document.getElementById('details-local').innerHTML = `<p>${policyContent.localProcessing}</p>`;
+            document.getElementById('details-personal').innerHTML = `<p>${policyContent.personalInfo}</p>`;
+            document.getElementById('details-usage').innerHTML = `<p>${policyContent.usageData}</p>`;
+            
+            const toolsSection = document.querySelector('#tools .details-content');
+            toolsSection.innerHTML = `<p class="mt-4">${policyContent.thirdParty}</p>`;
+
+            const securitySection = document.querySelector('#security .details-content');
+            securitySection.innerHTML = `<p class="mt-4">${policyContent.dataSecurity}</p>`;
+            
+            const childrenSection = document.querySelector('#children .details-content');
+            childrenSection.innerHTML = `<p class="mt-4">${policyContent.childrensPrivacy}</p>`;
+
+            const updatesSection = document.querySelector('#updates .details-content');
+            updatesSection.innerHTML = `<p class="mt-4">${policyContent.policyUpdates}</p>`;
+
+
+            // Card click logic
+            const cards = document.querySelectorAll('.section-card');
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Close other open cards
+                    cards.forEach(otherCard => {
+                        if (otherCard !== card) {
+                           document.getElementById(otherCard.dataset.target).classList.remove('open');
+                        }
+                    });
+                    // Toggle current card
+                    const target = document.getElementById(card.dataset.target);
+                    target.classList.toggle('open');
+                });
+            });
+
+            // Accordion logic
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const details = header.querySelector('.details-content');
+                    const icon = header.querySelector('h2 span:last-child');
+                    
+                    if (details.classList.contains('open')) {
+                        details.classList.remove('open');
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        details.classList.add('open');
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+
+            // Active nav link scrolling
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

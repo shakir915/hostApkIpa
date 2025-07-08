@@ -96,6 +96,21 @@ say completed
 }
 
 
+if(currentDirectory.endsWith("/ffuiFlutter")||firstArgument=="ffai"){
+  if(firstArgument=="ffai")
+    currentDirectory="/Users/shakir/PROJECTS/SHAKIR_PROJECTS/ffuiFlutter";
+commandString=`
+cd "${currentDirectory}" && flutter clean
+cd "${currentDirectory}" && rm -f "./build/ios/ipa/FFMpeg AI Assistant.ipa"  && flutter build ipa  --dart-define=key=value  --export-method=ad-hoc
+cd "${currentDirectory}" && ${UPLD} ffuiflutter "./build/ios/ipa/FFMpeg AI Assistant.ipa"
+
+cd "${currentDirectory}" && rm -f "./build/app/outputs/flutter-apk/app-release.apk"  && flutter build apk  --dart-define=key=value --target-platform=android-arm64
+cd "${currentDirectory}" && ${UPLD} ffuiflutter "./build/app/outputs/flutter-apk/app-release.apk"
+
+say completed
+`;
+}
+
 
 
 
