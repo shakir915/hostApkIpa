@@ -53,6 +53,65 @@
             white-space: pre-wrap;
             word-break: break-all;
         }
+        .drop-zone {
+            border: 2px dashed #666;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #333;
+            margin-bottom: 15px;
+        }
+        .drop-zone.dragover {
+            border-color: #80cbc4;
+            background-color: #2a3f3d;
+        }
+        .drop-zone:hover {
+            border-color: #80cbc4;
+        }
+        .file-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .hash-results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hash-result {
+            background-color: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .hash-label {
+            font-weight: bold;
+            color: #f0c808;
+            margin-bottom: 5px;
+        }
+        .hash-value {
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            background-color: #1a1a1a;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        .progress {
+            width: 100%;
+            height: 6px;
+            background-color: #444;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #80cbc4;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
         a {
             color: #80cbc4; /* Teal-like color for links */
             text-decoration: none;
@@ -110,6 +169,20 @@
         <div class="output" id="md5Output"></div>
         <div class="output" id="sha1Output"></div>
         <div class="output" id="sha256Output"></div>
+    </div>
+
+    <div class="section">
+        <h2><span style="color: #ff8a65;">File Hashing</span> - Drag & Drop or Select Files</h2>
+        <div class="drop-zone" id="fileDropZone" onclick="document.getElementById('fileInput').click()">
+            <p>📁 Drag and drop files here or click to select</p>
+            <p style="font-size: 12px; color: #888;">Supports any file type for hash calculation</p>
+        </div>
+        <input type="file" id="fileInput" style="display: none;" multiple>
+        <div class="file-info" id="fileInfo"></div>
+        <div class="progress" id="progressContainer" style="display: none;">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="hash-results" id="fileHashResults"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
@@ -231,6 +304,117 @@
             const text = document.getElementById('hashInput').value;
             document.getElementById('sha256Output').textContent = sha256(text);
         }
+
+        function setupFileHandling() {
+            const dropZone = document.getElementById('fileDropZone');
+            const fileInput = document.getElementById('fileInput');
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        }
+
+        function handleFiles(files) {
+            const fileInfo = document.getElementById('fileInfo');
+            const hashResults = document.getElementById('fileHashResults');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+
+            fileInfo.innerHTML = '';
+            hashResults.innerHTML = '';
+            
+            if (files.length === 0) return;
+
+            fileInfo.innerHTML = `Processing ${files.length} file(s)...`;
+            progressContainer.style.display = 'block';
+
+            let processedCount = 0;
+
+            Array.from(files).forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    
+                    const md5Hash = md5(uint8Array);
+                    const sha1Hash = sha1(uint8Array);
+                    const sha256Hash = sha256(uint8Array);
+
+                    const fileResult = document.createElement('div');
+                    fileResult.innerHTML = `
+                        <h3 style="color: #f0c808; margin-bottom: 10px;">${file.name}</h3>
+                        <p style="color: #aaa; font-size: 12px; margin-bottom: 15px;">
+                            Size: ${formatFileSize(file.size)} | Type: ${file.type || 'Unknown'}
+                        </p>
+                        <div class="hash-result">
+                            <div class="hash-label">MD5</div>
+                            <div class="hash-value">${md5Hash}</div>
+                        </div>
+                        <div class="hash-result">
+                            <div class="hash-label">SHA1</div>
+                            <div class="hash-value">${sha1Hash}</div>
+                        </div>
+                        <div class="hash-result">
+                            <div class="hash-label">SHA256</div>
+                            <div class="hash-value">${sha256Hash}</div>
+                        </div>
+                    `;
+
+                    hashResults.appendChild(fileResult);
+
+                    processedCount++;
+                    const progress = (processedCount / files.length) * 100;
+                    progressBar.style.width = progress + '%';
+
+                    if (processedCount === files.length) {
+                        fileInfo.innerHTML = `✅ Successfully processed ${files.length} file(s)`;
+                        setTimeout(() => {
+                            progressContainer.style.display = 'none';
+                        }, 1000);
+                    }
+                };
+
+                reader.onerror = function() {
+                    processedCount++;
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.color = '#ff6d00';
+                    errorDiv.innerHTML = `❌ Error processing ${file.name}`;
+                    hashResults.appendChild(errorDiv);
+                    
+                    const progress = (processedCount / files.length) * 100;
+                    progressBar.style.width = progress + '%';
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        document.addEventListener('DOMContentLoaded', setupFileHandling);
     </script>
 
 </body>
