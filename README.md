@@ -31,10 +31,10 @@ A web application for hosting and sharing Android APK and iOS IPA files.
 ### Installation
 1. Clone this repository
 2. Install dependencies:
-   ```bash
-   cd upload-bot
-   npm install
-   ```
+   <!-- ```bash -->
+   <!-- cd upload-bot -->
+   <!-- npm install -->
+   <!-- ``` -->
 3. Configure Firebase:
    - Update `.firebaserc` with your Firebase project details
    - Review `firebase.json` and `database.rules.json` for configuration
