@@ -848,11 +848,19 @@
       var platfromName = isIos ? "ios" : "android";
 
 
-      const deleteUrls = [
-        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "ipa"),
-        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "apk"),
-        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "plist")
-      ].filter(url => url && url.toString().trim() !== '');
+      const deleteUrls = [];
+
+      try {
+        const ipaValue = (await firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "ipa").once('value')).val();
+        const apkValue = (await firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "apk").once('value')).val();
+        const plistValue = (await firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "plist").once('value')).val();
+
+        if (ipaValue) deleteUrls.push(ipaValue);
+        if (apkValue) deleteUrls.push(apkValue);
+        if (plistValue) deleteUrls.push(plistValue);
+      } catch (error) {
+        console.error("Error getting values from database:", error);
+      }
 
 
 
@@ -932,12 +940,14 @@
 
       for (const url of deleteUrls) {
         try {
+          console.log("DELETE URL : ", url)
           const response = await fetch(url, {
             method: 'DELETE',
             headers: {}
           });
         } catch (error) {
-          //console.error("Error deleting:", url, error);
+
+          console.error("Error deleting:", url, error);
         }
       }
 
