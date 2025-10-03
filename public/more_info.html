@@ -207,13 +207,11 @@
 
             localStorage.removeItem("hd_time")
             if (!md && !hd &&!listAllApps) {
-                var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
-                var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
-                displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
-                showTextDisplay("textStore_1", "iOS Plist Details")
-                showJsonDiaplay("jsonStore_1")
-                showTextDisplay("textStore_2", "Android Manifest Details")
-                showJsonDiaplay("jsonStore_2")
+                //var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
+                //var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
+                //displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
+                showDetailsDisplay("textStore_1", "jsonStore_1", "iOS Plist Details")
+                showDetailsDisplay("textStore_2", "jsonStore_2", "Android Manifest Details")
             
 
             } else {
@@ -245,101 +243,42 @@
         })
 
 
-        function showJsonDiaplay(id) {
-            const jsonString = localStorage.getItem(id);
-            if (jsonString) {
-                try {
-                    const jsonObj = JSON.parse(decodeURIComponent(jsonString));
+        function showDetailsDisplay(textId, jsonId, title) {
+            const jsonString = localStorage.getItem(jsonId);
 
+            if (!jsonString || jsonString.trim() === "") {
+                // Hide both elements if no JSON data
+                document.getElementById(textId).style.display = "none";
+                document.getElementById(jsonId).style.display = "none";
+                return;
+            }
 
-                    if (jsonObj?.ios?.mobileProvision) {
-                        processMobileProvision(jsonObj.ios.mobileProvision);
-                    }
+            try {
+                const jsonObj = JSON.parse(decodeURIComponent(jsonString));
 
-                    if (jsonObj?.mobileProvision) {
-                        processMobileProvision(jsonObj.mobileProvision);
-                    }
-
-                    document.getElementById(id).innerHTML = syntaxHighlight(JSON.stringify(jsonObj, null, 2));
-                    document.getElementById(id).style.display = "block";
-                } catch (error) {
-
+                // Process mobile provision if present
+                if (jsonObj?.ios?.mobileProvision) {
+                    processMobileProvision(jsonObj.ios.mobileProvision);
+                }
+                if (jsonObj?.mobileProvision) {
+                    processMobileProvision(jsonObj.mobileProvision);
                 }
 
-            } else {
-                document.getElementById(id).textContent = "No JSON data provided.";
+                // Show heading only if JSON is not empty
+                document.getElementById(textId).textContent = title;
+                document.getElementById(textId).style.display = "block";
+
+                // Show JSON display
+                document.getElementById(jsonId).innerHTML = syntaxHighlight(JSON.stringify(jsonObj, null, 2));
+                document.getElementById(jsonId).style.display = "block";
+
+            } catch (error) {
+                // Hide both elements if JSON parsing fails
+                document.getElementById(textId).style.display = "none";
+                document.getElementById(jsonId).style.display = "none";
             }
-            showLog(null)
 
-        }
-
-        function showTextDisplay(id, title) {
-   
-                    document.getElementById(id).textContent = title;
-                    document.getElementById(id).style.display = "block";
-                    return
-
-            const jsonString = localStorage.getItem(id.replace("textStore_", "jsonStore_"));
-            if (jsonString) {
-                try {
-                    const jsonObj = JSON.parse(decodeURIComponent(jsonString));
-                    let textContent = `${title}\n\n`;
-                    
-                    if (id === "textStore_1") {
-                        // iOS Plist Details
-                        if (jsonObj?.ios?.mobileProvision) {
-                            const plist = jsonObj.ios.mobileProvision;
-                            textContent += `App Name: ${plist.AppIDName || 'N/A'}\n`;
-                            textContent += `Team Name: ${plist.TeamName || 'N/A'}\n`;
-                            textContent += `Bundle ID: ${plist.Entitlements?.['application-identifier'] || 'N/A'}\n`;
-                            textContent += `Creation Date: ${plist.CreationDate || 'N/A'}\n`;
-                            textContent += `Expiration Date: ${plist.ExpirationDate || 'N/A'}\n`;
-                            textContent += `Provisioning Profile Name: ${plist.Name || 'N/A'}\n`;
-                            textContent += `Team ID: ${plist.TeamIdentifier?.[0] || 'N/A'}\n`;
-                            textContent += `UUID: ${plist.UUID || 'N/A'}\n`;
-                            if (plist.ProvisionedDevices) {
-                                textContent += `Provisioned Devices: ${plist.ProvisionedDevices.length}\n`;
-                            }
-                        } else {
-                            textContent += "No iOS plist data found.";
-                        }
-                    } else if (id === "textStore_2") {
-                        // Android Manifest Details
-                        if (jsonObj?.android) {
-                            const android = jsonObj.android;
-                            textContent += `Package Name: ${android.packageName || 'N/A'}\n`;
-                            textContent += `Version Name: ${android.versionName || 'N/A'}\n`;
-                            textContent += `Version Code: ${android.versionCode || 'N/A'}\n`;
-                            textContent += `Min SDK Version: ${android.minSdkVersion || 'N/A'}\n`;
-                            textContent += `Target SDK Version: ${android.targetSdkVersion || 'N/A'}\n`;
-                            textContent += `App Name: ${android.name || 'N/A'}\n`;
-                            if (android.permissions) {
-                                textContent += `Permissions: ${android.permissions.length || 0}\n`;
-                                if (android.permissions.length > 0) {
-                                    textContent += `Main Permissions:\n`;
-                                    android.permissions.slice(0, 10).forEach(perm => {
-                                        textContent += `  - ${perm}\n`;
-                                    });
-                                    if (android.permissions.length > 10) {
-                                        textContent += `  ... and ${android.permissions.length - 10} more\n`;
-                                    }
-                                }
-                            }
-                        } else {
-                            textContent += "No Android manifest data found.";
-                        }
-                    }
-                    
-                    document.getElementById(id).textContent = textContent;
-                    document.getElementById(id).style.display = "block";
-                } catch (error) {
-                    document.getElementById(id).textContent = `${title}\n\nError parsing data.`;
-                    document.getElementById(id).style.display = "block";
-                }
-            } else {
-                document.getElementById(id).textContent = `${title}\n\nNo data provided.`;
-                document.getElementById(id).style.display = "block";
-            }
+            showLog(null);
         }
 
         function processMobileProvision(mobileProvision) {

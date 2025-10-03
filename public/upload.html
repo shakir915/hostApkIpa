@@ -87,7 +87,7 @@
       text-align: center;
       margin: auto;
       padding-bottom: 20px;
-      font-family:  serif;
+      font-family: serif;
       color: #fff;
     }
 
@@ -848,6 +848,16 @@
       var platfromName = isIos ? "ios" : "android";
 
 
+      const deleteUrls = [
+        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "ipa"),
+        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "apk"),
+        firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName + "/" + "plist")
+      ].filter(url => url && url.toString().trim() !== '');
+
+
+
+
+
 
       var nexwSet = {
         "local_fileName": g_file.name.toString(),
@@ -866,12 +876,18 @@
         "user_id": getUserId(),
       }
 
+
+    
+
       try {
-        const dbRef = firebase.database().ref("/app_links_all/" + g_app_name_for_url + "/" + "__" + g_url_id + "__" + readableTime + "/" + platfromName);
-        await dbRef.set(nexwSet);
+        //const dbRef = firebase.database().ref("/app_links_all/" + g_app_name_for_url + "/" + "__" + g_url_id + "__" + readableTime + "/" + platfromName);
+        //await dbRef.set(nexwSet);
       } catch (error) {
         console.error("Error setting data:", error)
       }
+
+
+
 
       try {
         const dbRef = firebase.database().ref("/app_links/" + g_url_id + "/" + platfromName);
@@ -913,6 +929,17 @@
 
 
 
+
+      for (const url of deleteUrls) {
+        try {
+          const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {}
+          });
+        } catch (error) {
+          //console.error("Error deleting:", url, error);
+        }
+      }
 
 
 
@@ -1356,24 +1383,24 @@
 
       let bestKey = null;
       let leastUsed = Infinity;
-      var totalSpace=Object.entries(data).length*MAX_BYTES
-      var usedSpace=0.0
+      var totalSpace = Object.entries(data).length * MAX_BYTES
+      var usedSpace = 0.0
 
       for (const [key, value] of Object.entries(data)) {
         if (typeof value === "number" && value !== -1 && value < MAX_BYTES) {
-          usedSpace+=value
+          usedSpace += value
           if (value < leastUsed) {
             leastUsed = value;
             bestKey = key;
           }
         }
       }
-      var availableSpace=totalSpace-usedSpace
+      var availableSpace = totalSpace - usedSpace
       const availableSpacePercentage = ((usedSpace / totalSpace) * 100).toFixed(0);
-     var text= "Available Space : " +  (availableSpace / (1024 * 1024 * 1024)).toFixed(2)+" Gb / "+(totalSpace / (1024 * 1024 * 1024)).toFixed(2) +" Gb ("+availableSpacePercentage+"% Used)";
-     document.getElementById('availableSpace').innerText=text;
-     //console.log(text)
-     if (bestKey) {
+      var text = "Available Space : " + (availableSpace / (1024 * 1024 * 1024)).toFixed(2) + " Gb / " + (totalSpace / (1024 * 1024 * 1024)).toFixed(2) + " Gb (" + availableSpacePercentage + "% Used)";
+      document.getElementById('availableSpace').innerText = text;
+      //console.log(text)
+      if (bestKey) {
         return bestKey.replace(/_/g, ".");
       }
 
@@ -1395,7 +1422,7 @@
 
 
 
- //window.location = "https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024#:~:text=Starting%20October%201%2C%202025%2C%20your%20Firebase%20project%20must%20be%20on%20the%20pay%2Das%2Dyou%2Dgo%20Blaze%20pricing%20plan%20to%20maintain%20access%20to%20your%20default%20bucket%20and%20all%20other%20Cloud%20Storage%20resources.%20Any%20*.appspot.com%20default%20bucket%20will%20maintain%20its%20current%20no%2Dcost%20level%20of%20usage%20even%20on%20the%20Blaze%20pricing%20plan.";
+    //window.location = "https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024#:~:text=Starting%20October%201%2C%202025%2C%20your%20Firebase%20project%20must%20be%20on%20the%20pay%2Das%2Dyou%2Dgo%20Blaze%20pricing%20plan%20to%20maintain%20access%20to%20your%20default%20bucket%20and%20all%20other%20Cloud%20Storage%20resources.%20Any%20*.appspot.com%20default%20bucket%20will%20maintain%20its%20current%20no%2Dcost%20level%20of%20usage%20even%20on%20the%20Blaze%20pricing%20plan.";
 
   </script>
 </body>
