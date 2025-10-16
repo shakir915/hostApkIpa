@@ -233,8 +233,8 @@
               if(!listAllApps)
                 displayTableItem(mainList, "main_files", `Main Files  : Don't Delete`, true, md, user, true)
             else{
-                displayTableItem(mainList , "non_main_hystory_files",`Apps`, true, false, user, true)
-                 displayTableItem(hystoryNonMain, "main_files", 'old hystory', false, false, user, false)
+                displayTableItem(mainList.sort((a, b) => new Date(b.date) - new Date(a.date)), "non_main_hystory_files",`Apps`, true, false, user, true)
+                 displayTableItem(hystoryNonMain, "main_files", 'old hystory (disabled)', false, false, user, false)
             }
                   if(!listAllApps)
                 addExpensivRefreshButtun()
@@ -381,7 +381,7 @@
 
                 const row = document.createElement('tr');
                 var linkContent = isFileExist 
-                    ? `<a href="${window.location.origin}/${fullHystorySuffix}" target="_blank">${item?.g_url_id}</a>`
+                    ? `<a href="${window.location.origin}/${div_id=="non_main_hystory_files"? item?.g_url_id: fullHystorySuffix}" target="_blank">${item?.g_url_id}</a>`
                     : `<span style="color: #666; cursor: default;">${item?.g_url_id}</span>`;
                 
                 var ihtml = `<td data-label="Icon"><img src="${item?.icon || ''}" alt="icon" style="width:30px;height:30px;"></td>
