@@ -207,9 +207,9 @@
 
             localStorage.removeItem("hd_time")
             if (!md && !hd &&!listAllApps) {
-                //var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
-                //var app_hystory_list = await listHystoryFileList_app(g_app_name_for_url)
-                //displayTableItem(app_hystory_list, "app_hystory_list_div", `${g_app_name_for_url} Upload Hystory`, false, false, user, true)
+                var mainList = await listMainFileList();
+                var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
+                displayTableItem(mainList.filter(it => it.g_app_name_for_url==g_app_name_for_url).sort((a, b) => new Date(b.date) - new Date(a.date)), "app_hystory_list_div", `${g_app_name_for_url} all links`, false, false, user, true)
                 showDetailsDisplay("textStore_1", "jsonStore_1", "iOS Plist Details")
                 showDetailsDisplay("textStore_2", "jsonStore_2", "Android Manifest Details")
             
