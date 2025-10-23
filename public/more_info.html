@@ -360,6 +360,18 @@
             `;
 
             const tbody = table.querySelector('tbody')
+
+            // Create user_id mapping
+            const userIdMap = new Map();
+            let userCounter = 1;
+
+            list.forEach(item => {
+                if (item?.user_id && !userIdMap.has(item.user_id)) {
+                    userIdMap.set(item.user_id, `dev${userCounter}`);
+                    userCounter++;
+                }
+            });
+
             list.forEach(item => {
                 let platform = "platform_unknown";
                 if (item?.apk) {
@@ -384,12 +396,15 @@
                     ? `<a href="${window.location.origin}/${div_id=="non_main_hystory_files"? item?.g_url_id: fullHystorySuffix}" target="_blank">${item?.g_url_id}</a>`
                     : `<span style="color: #666; cursor: default;">${item?.g_url_id}</span>`;
                 
+                var userLabel = item?.user_id ? userIdMap.get(item.user_id) || '' : '';
+
                 var ihtml = `<td data-label="Icon"><img src="${item?.icon || ''}" alt="icon" style="width:30px;height:30px;"></td>
                                         <td data-label="Name">${item?.name || ''}</td>
                                         <td data-label="Platform">${platform || ''}</td>
                                         <td data-label="Version">${item?.versionName || ''}</td>
                                         <td data-label="Package">${item?.packageName || ''}</td>
                                         <td data-label="Date">${formattedDate || ''}</td>
+                                        <td data-label="User">${userLabel}</td>
                                         <td data-label="Link">${linkContent}</td>
                                     `;
                 if (isFileExist) {
