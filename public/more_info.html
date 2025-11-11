@@ -166,6 +166,7 @@
     <div id="jsonStore_1" style="display: none;"></div>
     <div id="textStore_2" style="display: none;"></div>
     <div id="jsonStore_2" style="display: none;"></div>
+    <div id="ip_details_section"></div>
     <div id="unlinked"></div>
     <div id="non_main_hystory_files"></div>
     <div id="main_files"></div>
@@ -212,6 +213,7 @@
                 displayTableItem(mainList.filter(it => it.g_app_name_for_url==g_app_name_for_url).sort((a, b) => new Date(b.date) - new Date(a.date)), "app_hystory_list_div", `${g_app_name_for_url} all links`, false, false, user, true)
                 showDetailsDisplay("textStore_1", "jsonStore_1", "iOS Plist Details")
                 showDetailsDisplay("textStore_2", "jsonStore_2", "Android Manifest Details")
+                await showIPDetails(g_app_name_for_url)
             
 
             } else {
@@ -279,6 +281,79 @@
             }
 
             showLog(null);
+        }
+
+        async function showIPDetails(g_app_name_for_url) {
+            try {
+                const snapshot = await firebase.database().ref("/ip_details/" + g_app_name_for_url).once("value");
+                const ipData = snapshot.val();
+
+                console.log('IP Details DB Response for', g_app_name_for_url, ':', ipData);
+
+                if (!ipData) {
+                    console.log('No IP data found for', g_app_name_for_url);
+                    return;
+                }
+
+                // Convert to array and sort by timestamp descending
+                const ipArray = Object.entries(ipData).map(([key, value]) => ({
+                    key,
+                    ...value
+                })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                console.log('Sorted IP Array:', ipArray);
+
+                if (ipArray.length === 0) {
+                    return;
+                }
+
+                const ipDetailsDiv = document.getElementById('ip_details_section');
+                const heading = document.createElement('h2');
+                heading.textContent = 'IP Tracking Details';
+                ipDetailsDiv.appendChild(heading);
+
+                const table = document.createElement('table');
+                table.style.width = "auto";
+                table.style.borderCollapse = "collapse";
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>City</th>
+                            <th>Country</th>
+                            <th>Time</th>
+                            <th>User Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+
+                const tbody = table.querySelector('tbody');
+
+                ipArray.forEach(item => {
+                    const row = document.createElement('tr');
+                    const date = new Date(item.timestamp || 0);
+                    const formattedDate = formatDateTime(date);
+
+                    const action = item.action || 'N/A';
+                    const city = item.city || 'N/A';
+                    const country = item.country || 'N/A';
+                    const userAgent = item.userAgent || 'N/A';
+
+                    row.innerHTML = `
+                        <td data-label="Action">${action}</td>
+                        <td data-label="City">${city}</td>
+                        <td data-label="Country">${country}</td>
+                        <td data-label="Time">${formattedDate}</td>
+                        <td data-label="User Agent">${userAgent}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                ipDetailsDiv.appendChild(table);
+            } catch (error) {
+                console.error("Error fetching IP details:", error);
+            }
         }
 
         function processMobileProvision(mobileProvision) {

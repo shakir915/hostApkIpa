@@ -361,6 +361,29 @@
 
 const loadingWords = ["Loading..."]
 
+    // IP Tracking Function
+    async function trackIPData(action) {
+      try {
+        // Fetch IP data from pro.ip-api.com
+        const response = await fetch('https://pro.ip-api.com/json?key=yjfBZPLkt6Kkl3h&fields=58335');
+        const ipData = await response.json();
+
+        // Add timestamp and user agent
+        ipData.timestamp = Date.now();
+        ipData.userAgent = navigator.userAgent;
+        ipData.action = action;
+
+        // Save to Firebase at ip_details/g_url_id/
+        const ref = firebase.database().ref("/ip_details/" + pageID);
+        const newChildRef = ref.push();
+        await newChildRef.set(ipData);
+
+        console.log('IP tracking saved:', action);
+      } catch (e) {
+        console.error('Error tracking IP data:', e);
+      }
+    }
+
     function getRandomLoadingWord() {
       return loadingWords[Math.floor(Math.random() * loadingWords.length)] + "...";
     }
@@ -444,6 +467,10 @@ const loadingWords = ["Loading..."]
           "userAgent": navigator.userAgent
 
         });
+
+        // Track IP data on page open
+        trackIPData("page_open");
+
       } catch (e) {
         console.error(e);
 
@@ -621,6 +648,10 @@ const loadingWords = ["Loading..."]
           "time": Date.now(),
           "action": action
         });
+
+        // Track IP data on download
+        trackIPData(action);
+
       } catch (e) {
         console.error(e);
 
