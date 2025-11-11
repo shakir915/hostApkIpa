@@ -318,6 +318,7 @@
                 table.innerHTML = `
                     <thead>
                         <tr>
+                            <th>Page ID</th>
                             <th>Action</th>
                             <th>City</th>
                             <th>Country</th>
@@ -335,12 +336,14 @@
                     const date = new Date(item.timestamp || 0);
                     const formattedDate = formatDateTime(date);
 
+                    const pageID = item.pageID || 'N/A';
                     const action = item.action || 'N/A';
                     const city = item.city || 'N/A';
                     const country = item.country || 'N/A';
                     const userAgent = item.userAgent || 'N/A';
 
                     row.innerHTML = `
+                        <td data-label="Page ID">${pageID}</td>
                         <td data-label="Action">${action}</td>
                         <td data-label="City">${city}</td>
                         <td data-label="Country">${country}</td>

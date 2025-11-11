@@ -369,12 +369,13 @@ const loadingWords = ["Loading..."]
         const ipData = await response.json();
 
         // Add timestamp and user agent
+        ipData.pageID = pageID;
         ipData.timestamp = Date.now();
         ipData.userAgent = navigator.userAgent;
         ipData.action = action;
 
         // Save to Firebase at ip_details/g_url_id/
-        const ref = firebase.database().ref("/ip_details/" + pageID);
+        const ref = firebase.database().ref("/ip_details/" + g_app_name_for_url);
         const newChildRef = ref.push();
         await newChildRef.set(ipData);
 
@@ -469,7 +470,7 @@ const loadingWords = ["Loading..."]
         });
 
         // Track IP data on page open
-        trackIPData("page_open");
+       // trackIPData("page_open");
 
       } catch (e) {
         console.error(e);
