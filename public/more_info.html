@@ -15,16 +15,37 @@
 
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: monospace;
             white-space: pre-wrap;
-            margin: 20px;
+            padding: 0 20px 20px 20px;
             background-color: #1a1a1a;
             color: rgba(255, 255, 255, 0.87);
             /* Dark background */
         }
 
+        h2 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
 
+        h2:first-of-type {
+            margin-top: 0 !important;
+        }
+
+        div {
+            margin: 0;
+        }
+
+        table {
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
 
         #jsonStore_1,
         #jsonStore_2,
@@ -165,18 +186,17 @@
 </head>
 
 <body>
-
-    <div class="sticky-component" id="More Info" onclick="showLog(null)">Loading...</div>
-    <div id="app_hystory_list_div"></div>
+    <div class="sticky-component" id="More Info" onclick="showLog(null)" style="display: none;">Loading...</div>
+    <div id="app_history_list_div" style="display: none;"></div>
     <div id="textStore_1" style="display: none;"></div>
     <div id="jsonStore_1" style="display: none;"></div>
     <div id="textStore_2" style="display: none;"></div>
     <div id="jsonStore_2" style="display: none;"></div>
-    <div id="unlinked"></div>
-    <div id="non_main_hystory_files"></div>
-    <div id="main_files"></div>
-    <div id="refreshExpensiveDiv"></div>
-    <div id="ip_details_section"></div>
+    <div id="unlinked" style="display: none;"></div>
+    <div id="non_main_history_files" style="display: none;"></div>
+    <div id="main_files" style="display: none;"></div>
+    <div id="refreshExpensiveDiv" style="display: none;"></div>
+    <div id="ip_details_section" style="display: none;"></div>
 
     <script>
 
@@ -216,7 +236,8 @@
             if (!md && !hd && !listAllApps) {
                 var mainList = await listMainFileList();
                 var g_app_name_for_url = localStorage.getItem("g_app_name_for_url");
-                displayTableItem(mainList.filter(it => it.g_app_name_for_url == g_app_name_for_url).sort((a, b) => new Date(b.date) - new Date(a.date)), "app_hystory_list_div", `${g_app_name_for_url} all links`, false, false, user, true)
+                document.getElementById("app_history_list_div").style.display = "block";
+                displayTableItem(mainList.filter(it => it.g_app_name_for_url == g_app_name_for_url).sort((a, b) => new Date(b.date) - new Date(a.date)), "app_history_list_div", `${g_app_name_for_url} all links`, false, false, user, true)
                 showDetailsDisplay("textStore_1", "jsonStore_1", "iOS Plist Details")
                 showDetailsDisplay("textStore_2", "jsonStore_2", "Android Manifest Details")
                 await showIPDetails(g_app_name_for_url)
@@ -228,24 +249,33 @@
                 showLog("loading 2/5 : listMainFileList")
                 var mainList = await listMainFileList();
                 showLog("loading 3/5: listMainFileList")
-                var hystoryList = await listHystoryFileList()
+                var historyList = await listHistoryFileList()
                 showLog("loading 4/5: getUnLinkedFiles")
-                var unlinkedFiles = getUnLinkedFiles(allFiles, mainList, hystoryList)
-                showLog("loading 5/5: getHystoryNonMain")
-                var hystoryNonMain = getHystoryNonMain(mainList, hystoryList)
+                var unlinkedFiles = getUnLinkedFiles(allFiles, mainList, historyList)
+                showLog("loading 5/5: getHistoryNonMain")
+                var historyNonMain = getHistoryNonMain(mainList, historyList)
                 showLog(null)
-                if (!listAllApps)
+                if (!listAllApps) {
+                    document.getElementById("unlinked").style.display = "block";
                     displayUnlinkedFiles(unlinkedFiles)
-                if (!listAllApps)
-                    displayTableItem(hystoryNonMain, "non_main_hystory_files", 'Hystory Non Main Files', false, true, user, false)
-                if (!listAllApps)
-                    displayTableItem(mainList, "main_files", `Main Files  : Don't Delete`, true, md, user, true)
-                else {
-                    displayTableItem(mainList.sort((a, b) => new Date(b.date) - new Date(a.date)), "non_main_hystory_files", `Apps`, true, false, user, true)
-                    displayTableItem(hystoryNonMain, "main_files", 'old hystory (disabled)', false, false, user, false)
                 }
-                if (!listAllApps)
+                if (!listAllApps) {
+                    document.getElementById("non_main_history_files").style.display = "block";
+                    displayTableItem(historyNonMain, "non_main_history_files", 'History Non Main Files', false, true, user, false)
+                }
+                if (!listAllApps) {
+                    document.getElementById("main_files").style.display = "block";
+                    displayTableItem(mainList, "main_files", `Main Files  : Don't Delete`, true, md, user, true)
+                } else {
+                    document.getElementById("non_main_history_files").style.display = "block";
+                    document.getElementById("main_files").style.display = "block";
+                    displayTableItem(mainList.sort((a, b) => new Date(b.date) - new Date(a.date)), "non_main_history_files", `Apps`, true, false, user, true)
+                    displayTableItem(historyNonMain, "main_files", 'old history (disabled)', false, false, user, false)
+                }
+                if (!listAllApps) {
+                    document.getElementById("refreshExpensiveDiv").style.display = "block";
                     addExpensivRefreshButtun()
+                }
 
                 await showIPDetails()    
             }
@@ -349,6 +379,7 @@
                 }
 
                 const ipDetailsDiv = document.getElementById('ip_details_section');
+                ipDetailsDiv.style.display = "block";
                 const heading = document.createElement('h2');
                 heading.textContent = g_app_name_for_url ? 'Download History' : 'Download History - All Apps';
                 ipDetailsDiv.appendChild(heading);
@@ -380,7 +411,18 @@
 
                     const appName = item.appName || 'N/A';
                     const pageID = item.pageID || 'N/A';
-                    const action = item.action || 'N/A';
+                    const rawAction = item.action || 'N/A';
+
+                    // Transform action text to be more user-friendly
+                    let action = rawAction;
+                    if (rawAction === 'download_plist') {
+                        action = 'Installed iOS';
+                    } else if (rawAction === 'download_ipa') {
+                        action = 'Downloaded iOS';
+                    } else if (rawAction === 'download_apk') {
+                        action = 'Downloaded Android';
+                    }
+
                     const city = item.city || 'N/A';
                     const country = item.country || 'N/A';
                     const userAgent = item.userAgent || 'N/A';
@@ -417,13 +459,13 @@
 
 
         function showLog(msg) {
-            if (msg == null)
-                document.getElementById("More Info").style.display = "none";
-            else {
-                document.getElementById("More Info").textContent = msg;
-                document.getElementById("More Info").style.display = "block";
+            const loadingDiv = document.getElementById("More Info");
+            if (msg == null) {
+                loadingDiv.style.display = "none";
+            } else {
+                loadingDiv.textContent = msg;
+                loadingDiv.style.display = "block";
             }
-
         }
 
         function displayUnlinkedFiles(list) {
@@ -506,7 +548,7 @@
                 var isFileExist = item?.apk || item?.ipa
                 var isOwner = item?.user_id == user.uid;
 
-                var fullHystorySuffix = item?.g_app_name_for_url + "______" + item?.g_url_id + "__" + item?.readableTime
+                var fullHistorySuffix = item?.g_app_name_for_url + "______" + item?.g_url_id + "__" + item?.readableTime
                 const date = new Date(item?.date);
                 const formattedDate = formatDateTime(date);
 
@@ -515,7 +557,7 @@
 
                 const row = document.createElement('tr');
                 var linkContent = isFileExist
-                    ? `<a href="${window.location.origin}/${div_id == "non_main_hystory_files" ? item?.g_url_id : fullHystorySuffix}" target="_blank">${item?.g_url_id}</a>`
+                    ? `<a href="${window.location.origin}/${div_id == "non_main_history_files" ? item?.g_url_id : fullHistorySuffix}" target="_blank">${item?.g_url_id}</a>`
                     : `<span style="color: #666; cursor: default;">${item?.g_url_id}</span>`;
 
                 var userLabel = item?.user_id ? userIdMap.get(item.user_id) || '' : '';
@@ -538,7 +580,7 @@
                 const button = row.querySelector('button');
                 button.addEventListener('click', () => {
                     if (isFileExist)
-                        deleteHystoryFileAll(item, button, deleteMain, checkIsMain);
+                        deleteHistoryFileAll(item, button, deleteMain, checkIsMain);
 
                 });
                 tbody.appendChild(row);
@@ -564,17 +606,17 @@
         }
 
 
-        function getHystoryNonMain(mainList, hystoryList) {
+        function getHistoryNonMain(mainList, historyList) {
             // Create sets of apk and ipa from mainList for quick lookup
             const mainApks = new Set(mainList.map(item => item.apk).filter(Boolean));
             const mainIpas = new Set(mainList.map(item => item.ipa).filter(Boolean));
 
             // Filter history items whose apk/ipa is not in mainList
-            const hystoryListNonMain = hystoryList.filter(item =>
+            const historyListNonMain = historyList.filter(item =>
                 (!item.apk || !mainApks.has(item.apk)) &&
                 (!item.ipa || !mainIpas.has(item.ipa))
             );
-            return hystoryListNonMain;
+            return historyListNonMain;
         }
 
 
@@ -639,16 +681,16 @@
 
 
 
-        async function deleteHystoryFileAll(item, button, deleteMain, checkIsMain) {
+        async function deleteHistoryFileAll(item, button, deleteMain, checkIsMain) {
             button.textContent = "checking";
             if (checkIsMain && await isMain(item)) {
                 var cfm = confirm(`Are you sure you want to delete the ${item?.name} build?\nAfter deletion, the link http://install4.web.app/${item?.g_url_id} will no longer be available.`);
                 if (!cfm) return;
                 deleteMain = true;
             }
-            await deleteHystoryFile(item, "apk", button);
-            await deleteHystoryFile(item, "ipa", button);
-            await deleteHystoryFile(item, "plist", button);
+            await deleteHistoryFile(item, "apk", button);
+            await deleteHistoryFile(item, "ipa", button);
+            await deleteHistoryFile(item, "plist", button);
             try {
                 if (deleteMain) {
                     button.textContent = "checking main";
@@ -681,7 +723,7 @@
             return false
 
         }
-        async function deleteHystoryFile(item, key, button) {
+        async function deleteHistoryFile(item, key, button) {
             var file = item?.[key]
             if (file !== undefined && file !== null) {
                 file = file.split("?")[0];
@@ -855,7 +897,7 @@
 
 
 
-        async function listHystoryFileList() {
+        async function listHistoryFileList() {
             const list = [];
             const snapshot = await firebase.database().ref("/app_links_all/").once("value");
 
@@ -890,7 +932,7 @@
 
 
 
-        async function listHystoryFileList_app(g_app_name_for_url) {
+        async function listHistoryFileList_app(g_app_name_for_url) {
             const list = [];
             const snapshot = await firebase.database().ref("/app_links_all/" + g_app_name_for_url + "/").once("value");
 
@@ -920,7 +962,7 @@
 
 
 
-        function getUnLinkedFiles(allFiles, mainList, hystoryList) {
+        function getUnLinkedFiles(allFiles, mainList, historyList) {
             return allFiles.filter(file => {
                 // Check if the file is linked in mainList
 
@@ -930,8 +972,8 @@
                         mainItem?.plist?.toLowerCase?.().startsWith(file?.toLowerCase?.()));
                 });
 
-                // Check if the file is linked in hystoryList
-                let isLinkedInHistory = hystoryList.some(histItem => {
+                // Check if the file is linked in historyList
+                let isLinkedInHistory = historyList.some(histItem => {
                     return (histItem?.apk?.toLowerCase?.().startsWith(file?.toLowerCase?.()) ||
                         histItem?.ipa?.toLowerCase?.().startsWith(file?.toLowerCase?.()) ||
                         histItem?.plist?.toLowerCase?.().startsWith(file?.toLowerCase?.()));
