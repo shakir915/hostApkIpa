@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profit & Loss Statement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .currency-toggle {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .currency-toggle label {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.3);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background-color: rgba(76, 175, 80, 0.8);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .year-item {
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .year-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .year-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .year-header:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        }
+
+        .year-title {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .year-summary {
+            display: flex;
+            gap: 30px;
+            font-size: 0.9em;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .summary-label {
+            opacity: 0.8;
+            font-size: 0.85em;
+        }
+
+        .summary-value {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .expand-icon {
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+        }
+
+        .year-item.active .expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .dates-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            background: #f8f9fa;
+        }
+
+        .year-item.active .dates-container {
+            max-height: 10000px;
+        }
+
+        .dates-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .dates-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .dates-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .dates-table tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s ease;
+        }
+
+        .dates-table tbody tr:hover {
+            background: #e8eaf6;
+        }
+
+        .dates-table td {
+            padding: 15px;
+            font-size: 0.95em;
+        }
+
+        .date-col {
+            font-weight: 600;
+            color: #667eea;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .date-col.has-trades {
+            text-decoration: underline;
+        }
+
+        .date-col.has-trades:hover {
+            color: #5568d3;
+        }
+
+        .amount-col {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .trades-row {
+            background: #f0f3ff;
+        }
+
+        .trades-row td {
+            padding: 0 !important;
+        }
+
+        .trades-details {
+            display: none;
+            background: #f0f3ff;
+            padding: 15px;
+            border-top: 1px solid #d0d0d0;
+            width: 100%;
+        }
+
+        .trades-details.active {
+            display: block;
+        }
+
+        .trades-header {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .trade-symbol {
+            font-weight: bold;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .trade-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .trade-detail {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .trade-label {
+            font-size: 0.7em;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .trade-value {
+            font-weight: 600;
+            font-size: 0.85em;
+        }
+
+        .trade-type-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .trade-type-intraday {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .trade-type-swing {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .trade-type-expired {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .gross-profit {
+            font-weight: bold;
+        }
+
+        .positive {
+            color: #4CAF50 !important;
+            font-weight: bold;
+        }
+
+        .negative {
+            color: #f44336 !important;
+        }
+
+        .upload-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .upload-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-input-label:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .file-size {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .currency-toggle {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+                font-size: 0.85em;
+            }
+
+            .upload-section {
+                padding: 15px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .upload-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .file-input-label {
+                width: 100%;
+                text-align: center;
+            }
+
+            .file-info {
+                justify-content: space-between;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            .content {
+                padding: 10px;
+            }
+
+            .year-header {
+                padding: 15px;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .year-title {
+                font-size: 1.1em;
+                width: 100%;
+            }
+
+            .year-summary {
+                flex-direction: row;
+                gap: 15px;
+                font-size: 0.75em;
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .summary-item {
+                align-items: center;
+            }
+
+            .summary-label {
+                font-size: 0.8em;
+            }
+
+            .summary-value {
+                font-size: 1em;
+            }
+
+            .expand-icon {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                font-size: 1.2em;
+            }
+
+            .year-header {
+                position: relative;
+            }
+
+            .dates-table {
+                font-size: 0.7em;
+            }
+
+            .dates-table th {
+                padding: 10px 5px;
+                font-size: 0.85em;
+            }
+
+            .dates-table td {
+                padding: 10px 5px;
+            }
+
+            .date-col {
+                font-size: 0.9em;
+            }
+
+            .trades-details {
+                padding: 10px;
+            }
+
+            .trade-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .trade-info {
+                width: 100%;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .trade-detail {
+                align-items: flex-start;
+            }
+
+            .trade-symbol {
+                font-size: 0.95em;
+            }
+
+            .trade-label {
+                font-size: 0.65em;
+            }
+
+            .trade-value {
+                font-size: 0.8em;
+            }
+
+            .trade-type-badge {
+                font-size: 0.65em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Profit & Loss Statement</h1>
+            <p>Fiscal Year Analysis</p>
+            <div class="currency-toggle">
+                <label for="currencyFormat">Short Format</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="currencyFormat" onchange="toggleCurrencyFormat()">
+                    <span class="toggle-slider"></span>
+                </div>
+                <label for="currencyFormat">Full Amount</label>
+            </div>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-container">
+                <div class="file-input-wrapper">
+                    <input type="file" id="zipFileInput" accept=".zip" />
+                    <label for="zipFileInput" class="file-input-label">Choose & Upload ZIP File</label>
+                </div>
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <span class="file-name" id="fileName"></span>
+                    <span class="file-size" id="fileSize"></span>
+                </div>
+            </div>
+            <div id="statusMessage"></div>
+        </div>
+
+        <div class="content" id="yearsContainer">
+            <!-- Years will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // ===== GLOBAL STATE =====
+        let useFullCurrencyFormat = false; // false = short (K/L/Cr), true = full rupee format
+        let cachedData = null; // Cache extracted data to avoid re-extraction on format toggle
+
+        // ===== ZIP FILE UPLOAD AND STORAGE =====
+        let selectedFile = null;
+
+        // Check if there's a stored zip file on page load
+        const checkStoredFile = () => {
+            const storedFile = localStorage.getItem('profitLossZipFile');
+            const storedFileName = localStorage.getItem('profitLossZipFileName');
+            const storedFileSize = localStorage.getItem('profitLossZipFileSize');
+
+            if (storedFile && storedFileName) {
+                showStatus(`Stored file: ${storedFileName} (${formatFileSize(parseInt(storedFileSize))})`, 'success');
+            }
+        };
+
+        // Handle file selection and automatic storage
+        document.getElementById('zipFileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+
+            if (file) {
+                if (!file.name.endsWith('.zip')) {
+                    showStatus('Please select a valid ZIP file', 'error');
+                    return;
+                }
+
+                selectedFile = file;
+
+                // Show file info
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                document.getElementById('fileInfo').style.display = 'flex';
+
+                // Automatically store the file
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    try {
+                        // Store the file as base64 in localStorage
+                        const base64Data = e.target.result;
+
+                        // Store file data and metadata
+                        localStorage.setItem('profitLossZipFile', base64Data);
+                        localStorage.setItem('profitLossZipFileName', selectedFile.name);
+                        localStorage.setItem('profitLossZipFileSize', selectedFile.size);
+                        localStorage.setItem('profitLossZipUploadDate', new Date().toISOString());
+
+                        showStatus(`Successfully stored ${selectedFile.name} locally! Extracting data...`, 'success');
+
+                        // Clear cache and re-render with new data
+                        cachedData = null;
+                        renderYears(true);
+
+                    } catch (error) {
+                        showStatus('Error storing file: ' + error.message, 'error');
+                    }
+                };
+
+                reader.onerror = () => {
+                    showStatus('Error reading file', 'error');
+                };
+
+                reader.readAsDataURL(selectedFile);
+            }
+        });
+
+        // Utility function to format file size
+        const formatFileSize = (bytes) => {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        };
+
+        // Utility function to show status messages
+        const showStatus = (message, type) => {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        };
+
+        // ===== EXTRACT DATA FROM ZIP =====
+        const extractDataFromZip = async () => {
+            const storedFile = localStorage.getItem('profitLossZipFile');
+
+            if (!storedFile) {
+                console.log('No stored ZIP file found, using dummy data');
+                return null;
+            }
+
+            try {
+                // Convert base64 to binary
+                const base64Data = storedFile.split(',')[1];
+                const binaryString = atob(base64Data);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                // Load ZIP file
+                const zip = await JSZip.loadAsync(bytes);
+
+                // Find all bills JSON files in fybills folder
+                const billFiles = [];
+
+                // List all files in the ZIP for debugging
+                console.log('Files in ZIP:');
+                Object.keys(zip.files).forEach(filename => {
+                    console.log('  - ' + filename);
+                });
+
+                // Search for bills, expense, and tradebook files
+                const expenseFiles = [];
+                const tradebookFiles = [];
+                Object.keys(zip.files).forEach(filename => {
+                    // Ignore __MACOSX folder
+                    if (!filename.includes('__MACOSX')) {
+                        // Bills files
+                        if (filename.startsWith('fybills/') &&
+                            filename.includes('bills_') &&
+                            filename.endsWith('.json')) {
+                            billFiles.push({ path: filename, file: zip.files[filename] });
+                            console.log('Found bills file:', filename);
+                        }
+                        // Expense files
+                        if (filename.startsWith('fyexpense/') &&
+                            filename.includes('expense_') &&
+                            filename.endsWith('.json')) {
+                            expenseFiles.push({ path: filename, file: zip.files[filename] });
+                            console.log('Found expense file:', filename);
+                        }
+                        // Tradebook files
+                        if (filename.startsWith('fytradebooks/') &&
+                            filename.includes('tradebooks_') &&
+                            filename.endsWith('.json')) {
+                            tradebookFiles.push({ path: filename, file: zip.files[filename] });
+                            console.log('Found tradebook file:', filename);
+                        }
+                    }
+                });
+
+                if (billFiles.length === 0) {
+                    console.log('No bills files found in fybills folder');
+                    console.log('Please ensure ZIP contains files like: fybills/bills_2025_07.json');
+                    return null;
+                }
+
+                // Extract expense data first
+                const expenseMap = {}; // Map of date string to total expense
+                const expenseDateCount = {}; // Track how many expense entries per date
+                console.log('Processing expense files...');
+
+                for (const expenseFile of expenseFiles) {
+                    try {
+                        const content = await expenseFile.file.async('text');
+                        const jsonData = JSON.parse(content);
+
+                        console.log(`Processing ${expenseFile.path}:`, jsonData.data?.DATA?.length || 0, 'expense entries');
+
+                        if (jsonData.s === 'ok' && jsonData.data && jsonData.data.DATA) {
+                            if (jsonData.data.DATA.length === 0) {
+                                console.log(`  ${expenseFile.path} has no data entries - skipping`);
+                                continue;
+                            }
+
+                            // Process each expense entry
+                            jsonData.data.DATA.forEach((entry, index) => {
+                                const tradeDate = entry.trade_date;
+
+                                if (tradeDate) {
+                                    // Calculate total expense for this date
+                                    const totalExpense =
+                                        parseFloat(entry.sebi_toc || 0) +
+                                        parseFloat(entry.exchange_txn_charge || 0) +
+                                        parseFloat(entry.brokerage || 0) +
+                                        parseFloat(entry.cm_charge || 0) +
+                                        parseFloat(entry.stt || 0) +
+                                        parseFloat(entry.gst || 0) +
+                                        parseFloat(entry.stamp_duty || 0) +
+                                        parseFloat(entry.cgst || 0) +
+                                        parseFloat(entry.sgst || 0) +
+                                        parseFloat(entry.igst || 0) +
+                                        parseFloat(entry.ipft || 0);
+
+                                    if (index === 0) {
+                                        console.log('Sample expense entry from', expenseFile.path, ':', { tradeDate, totalExpense, fullEntry: entry });
+                                    }
+
+                                    // Track expense entry count per date
+                                    if (!expenseDateCount[tradeDate]) {
+                                        expenseDateCount[tradeDate] = 0;
+                                    }
+                                    expenseDateCount[tradeDate]++;
+
+                                    // Store expense by date
+                                    if (!expenseMap[tradeDate]) {
+                                        expenseMap[tradeDate] = 0;
+                                    }
+                                    expenseMap[tradeDate] += totalExpense;
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        window.lastError = `Error processing ${expenseFile.path}: ${error.message}`;
+                        console.error(`Error processing ${expenseFile.path}:`, error);
+                    }
+                }
+
+                // Log dates with multiple expense entries
+                console.log('\n📊 Dates with multiple expense entries:');
+                const multipleExpenseDates = [];
+                Object.entries(expenseDateCount).forEach(([date, count]) => {
+                    if (count > 1) {
+                        console.log(`  ${date}: ${count} expense entries (Total: ${expenseMap[date].toFixed(2)})`);
+                        multipleExpenseDates.push(date);
+                    }
+                });
+                if (multipleExpenseDates.length === 0) {
+                    console.log('  None');
+                }
+
+                console.log('Expense map created:', Object.keys(expenseMap).length, 'dates with expenses');
+
+                // Extract tradebook data
+                const tradebookMap = {}; // Map of date string to trades by symbol
+                const segmentCounts = {}; // Track segment counts for debugging
+                console.log('Processing tradebook files...');
+
+                // Helper function to extract expiry date from NSE_FNO symbol
+                const getExpiryFromSymbol = (symbol) => {
+                    // Symbol format: "IO PE NIFTY 31Jul2025 24800"
+                    const match = symbol.match(/(\d{1,2})([A-Za-z]{3})(\d{4})/);
+                    if (match) {
+                        const day = match[1].padStart(2, '0');
+                        const monthStr = match[2];
+                        const year = match[3];
+
+                        // Convert month name to number
+                        const months = {
+                            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                        };
+
+                        const month = months[monthStr];
+                        if (month) {
+                            return `${day}/${month}/${year}`;
+                        }
+                    }
+                    return null;
+                };
+
+                for (const tradebookFile of tradebookFiles) {
+                    try {
+                        const content = await tradebookFile.file.async('text');
+                        const jsonData = JSON.parse(content);
+
+                        console.log(`Processing ${tradebookFile.path}:`, jsonData.data?.DATA?.length || 0, 'trade entries');
+
+                        if (jsonData.s === 'ok' && jsonData.data && jsonData.data.DATA) {
+                            if (jsonData.data.DATA.length === 0) {
+                                console.log(`  ${tradebookFile.path} has no data entries - skipping`);
+                                continue;
+                            }
+
+                            // Process each trade entry
+                            let skippedCount = 0;
+                            jsonData.data.DATA.forEach((entry, index) => {
+                                const tradeDate = entry.date || entry.trade_date;
+                                const symbol = entry.symbol;
+                                const type = entry.type; // BUY or SELL
+                                const qty = parseFloat(entry.qty || 0);
+                                const tradeVal = parseFloat(entry.trade_val || 0);
+                                const segment = entry.segment || 'UNKNOWN';
+
+                                // Count segments
+                                segmentCounts[segment] = (segmentCounts[segment] || 0) + 1;
+
+                                if (index === 0) {
+                                    console.log('Sample tradebook entry from', tradebookFile.path, ':', { tradeDate, symbol, type, qty, tradeVal, segment, fullEntry: entry });
+                                }
+
+                                // Check validation
+                                if (!tradeDate || !symbol || !type || !qty || !tradeVal) {
+                                    if (index < 5) { // Log first 5 skipped entries
+                                        console.warn(`Skipping trade entry ${index}: missing required fields`, { tradeDate, symbol, type, qty, tradeVal });
+                                    }
+                                    skippedCount++;
+                                    return;
+                                }
+
+                                // Initialize date map if not exists
+                                if (!tradebookMap[tradeDate]) {
+                                    tradebookMap[tradeDate] = {};
+                                }
+
+                                // Initialize symbol map if not exists
+                                if (!tradebookMap[tradeDate][symbol]) {
+                                    tradebookMap[tradeDate][symbol] = {
+                                        buy: { qty: 0, val: 0 },
+                                        sell: { qty: 0, val: 0 },
+                                        segment: segment,
+                                        isExpiry: false
+                                    };
+                                }
+
+                                // Check if NSE_FNO and if expiry date matches trade date
+                                if (segment === 'NSE_FNO') {
+                                    const expiryDate = getExpiryFromSymbol(symbol);
+                                    if (expiryDate && expiryDate === tradeDate) {
+                                        tradebookMap[tradeDate][symbol].isExpiry = true;
+                                    }
+                                }
+
+                                // Aggregate trades by type
+                                if (type.toUpperCase() === 'BUY') {
+                                    tradebookMap[tradeDate][symbol].buy.qty += qty;
+                                    tradebookMap[tradeDate][symbol].buy.val += tradeVal;
+                                } else if (type.toUpperCase() === 'SELL') {
+                                    tradebookMap[tradeDate][symbol].sell.qty += qty;
+                                    tradebookMap[tradeDate][symbol].sell.val += tradeVal;
+                                }
+                            });
+
+                            if (skippedCount > 0) {
+                                console.log(`  Skipped ${skippedCount} trade entries due to missing fields`);
+                            }
+                        }
+                    } catch (error) {
+                        window.lastError = `Error processing ${tradebookFile.path}: ${error.message}`;
+                        console.error(`Error processing ${tradebookFile.path}:`, error);
+                    }
+                }
+
+                console.log('📊 Segment counts:', segmentCounts);
+
+                console.log('Tradebook map created:', Object.keys(tradebookMap).length, 'dates with trades');
+                console.log('Trade dates:', Object.keys(tradebookMap).sort().join(', '));
+
+                // Extract data from all bill files
+                const allData = {};
+                const billDateCount = {}; // Track how many bills per date
+                const billNoExpenseDates = []; // Track dates with bills but no expense
+                window.lastError = null; // Reset error tracker
+
+                for (const billFile of billFiles) {
+                    try {
+                        const content = await billFile.file.async('text');
+                        const jsonData = JSON.parse(content);
+
+                        console.log(`Processing ${billFile.path}:`, jsonData.data?.DATA?.length || 0, 'entries');
+
+                        if (jsonData.s === 'ok' && jsonData.data && jsonData.data.DATA) {
+                            // Check if DATA array is empty
+                            if (jsonData.data.DATA.length === 0) {
+                                console.log(`  ${billFile.path} has no data entries - skipping`);
+                                continue; // Skip to next file
+                            }
+
+                            // Process each entry in DATA array
+                            jsonData.data.DATA.forEach((entry, index) => {
+                                // Entry is an object, not an array
+                                const tradeDate = entry.date || entry.trade_date;
+                                const turnover = parseFloat(entry.bill_amt || entry.turnover || 0);
+
+                                if (index === 0) {
+                                    console.log('Sample entry from', billFile.path, ':', { tradeDate, turnover, fullEntry: entry });
+                                }
+
+                                if (tradeDate && turnover !== 0) {
+                                    // Parse date - handle DD/MM/YYYY and DD-MM-YYYY formats
+                                    let date;
+                                    try {
+                                        let dateParts;
+                                        if (tradeDate.includes('/')) {
+                                            // DD/MM/YYYY format
+                                            dateParts = tradeDate.split('/');
+                                        } else if (tradeDate.includes('-')) {
+                                            dateParts = tradeDate.split('-');
+                                        } else {
+                                            throw new Error('Unknown date format');
+                                        }
+
+                                        if (dateParts[0].length === 4) {
+                                            // YYYY-MM-DD or YYYY/MM/DD format
+                                            date = new Date(tradeDate.replace(/\//g, '-'));
+                                        } else {
+                                            // DD-MM-YYYY or DD/MM/YYYY format
+                                            const day = dateParts[0];
+                                            const month = dateParts[1];
+                                            const year = dateParts[2];
+                                            date = new Date(`${year}-${month}-${day}`);
+                                        }
+
+                                        // Validate date
+                                        if (isNaN(date.getTime())) {
+                                            throw new Error('Invalid date');
+                                        }
+
+                                        // Reject future dates
+                                        const today = new Date();
+                                        today.setHours(23, 59, 59, 999); // End of today
+                                        if (date > today) {
+                                            console.warn('Skipping future date:', tradeDate);
+                                            return;
+                                        }
+                                    } catch (error) {
+                                        window.lastError = `Date parsing error in ${billFile.path}: ${tradeDate}`;
+                                        console.warn('Invalid date format:', tradeDate, error);
+                                        return;
+                                    }
+
+                                    const year = date.getFullYear();
+                                    const month = date.getMonth() + 1; // 0-indexed
+
+                                    // Fiscal year starts in April
+                                    let fiscalYear;
+                                    if (month >= 4) {
+                                        fiscalYear = `${year}-${year + 1}`;
+                                    } else {
+                                        fiscalYear = `${year - 1}-${year}`;
+                                    }
+
+                                    // Initialize fiscal year if not exists
+                                    if (!allData[fiscalYear]) {
+                                        allData[fiscalYear] = [];
+                                    }
+
+                                    // Track bill count per date
+                                    if (!billDateCount[tradeDate]) {
+                                        billDateCount[tradeDate] = 0;
+                                    }
+                                    billDateCount[tradeDate]++;
+
+                                    // Get expense for this date
+                                    let expense = 0;
+                                    if (expenseMap[tradeDate] && expenseMap[tradeDate] !== -1) {
+                                        // First bill on this date gets the expense
+                                        expense = expenseMap[tradeDate];
+                                        expenseMap[tradeDate] = -1; // Mark as used
+                                    } else if (!expenseMap[tradeDate]) {
+                                        // No expense exists for this date at all
+                                        if (billDateCount[tradeDate] === 1) {
+                                            // Only log once per unique date
+                                            console.log(`📊 Date has bill but NO expense: ${tradeDate} (Bill: ${turnover})`);
+                                            if (!billNoExpenseDates.includes(tradeDate)) {
+                                                billNoExpenseDates.push(tradeDate);
+                                            }
+                                        }
+                                        expense = 0;
+                                    }
+                                    // If expenseMap[tradeDate] === -1, it means another bill already used the expense,
+                                    // so this bill gets expense = 0 (which is correct - we only assign expense once per date)
+
+                                    // Add entry - store the parsed date object for proper sorting
+                                    allData[fiscalYear].push({
+                                        date: date, // Store the parsed Date object
+                                        originalDate: tradeDate, // Keep original string for reference
+                                        billAmount: turnover,
+                                        expense: expense,
+                                        grossProfit: turnover - expense,
+                                        trades: tradebookMap[tradeDate] || null // Attach trade data if exists
+                                    });
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        window.lastError = `Error processing ${billFile.path}: ${error.message}`;
+                        console.error(`Error processing ${billFile.path}:`, error);
+                    }
+                }
+
+                // Log dates with multiple bills
+                console.log('\n📊 Dates with multiple bills:');
+                const multipleBillDates = [];
+                Object.entries(billDateCount).forEach(([date, count]) => {
+                    if (count > 1) {
+                        console.log(`  ${date}: ${count} bills`);
+                        multipleBillDates.push(date);
+                    }
+                });
+                if (multipleBillDates.length === 0) {
+                    console.log('  None');
+                }
+
+                // Process expenses that don't have corresponding bills
+                console.log('\n📊 Processing expenses without bills...');
+                let expenseOnlyCount = 0;
+                const processedDates = {}; // Track all dates we've processed
+
+                // Mark all dates that have bills
+                Object.keys(billDateCount).forEach(date => {
+                    processedDates[date] = true;
+                });
+
+                for (const [dateStr, expenseAmount] of Object.entries(expenseMap)) {
+                    if (expenseAmount > 0) { // Not marked as used (-1) and has expense
+                        expenseOnlyCount++;
+                        console.log(`  ⚠️ Date has expense but NO bill: ${dateStr} (Expense: ${expenseAmount.toFixed(2)})`);
+                        try {
+                            // Parse the date
+                            let date;
+                            let dateParts;
+                            if (dateStr.includes('/')) {
+                                dateParts = dateStr.split('/');
+                            } else if (dateStr.includes('-')) {
+                                dateParts = dateStr.split('-');
+                            } else {
+                                console.warn('Unknown date format for expense:', dateStr);
+                                continue;
+                            }
+
+                            if (dateParts[0].length === 4) {
+                                date = new Date(dateStr.replace(/\//g, '-'));
+                            } else {
+                                const day = dateParts[0];
+                                const month = dateParts[1];
+                                const year = dateParts[2];
+                                date = new Date(`${year}-${month}-${day}`);
+                            }
+
+                            if (isNaN(date.getTime())) {
+                                console.warn('Invalid date for expense:', dateStr);
+                                continue;
+                            }
+
+                            // Reject future dates
+                            const today = new Date();
+                            today.setHours(23, 59, 59, 999);
+                            if (date > today) {
+                                console.warn('Skipping future expense date:', dateStr);
+                                continue;
+                            }
+
+                            const year = date.getFullYear();
+                            const month = date.getMonth() + 1;
+
+                            // Calculate fiscal year
+                            let fiscalYear;
+                            if (month >= 4) {
+                                fiscalYear = `${year}-${year + 1}`;
+                            } else {
+                                fiscalYear = `${year - 1}-${year}`;
+                            }
+
+                            // Initialize fiscal year if not exists
+                            if (!allData[fiscalYear]) {
+                                allData[fiscalYear] = [];
+                            }
+
+                            // Add entry with 0 bill amount but with expense
+                            allData[fiscalYear].push({
+                                date: date,
+                                originalDate: dateStr,
+                                billAmount: 0,
+                                expense: expenseAmount,
+                                grossProfit: -expenseAmount, // Negative since no revenue
+                                trades: tradebookMap[dateStr] || null // Attach trade data if exists
+                            });
+
+                            // Mark this date as processed
+                            processedDates[dateStr] = true;
+
+                        } catch (error) {
+                            console.warn('Error processing expense date:', dateStr, error);
+                        }
+                    }
+                }
+
+                // Process trades without bills or expenses
+                console.log('\n📊 Processing trade-only dates (no bill or expense)...');
+                let tradeOnlyCount = 0;
+                for (const [dateStr, trades] of Object.entries(tradebookMap)) {
+                    if (!processedDates[dateStr]) {
+                        tradeOnlyCount++;
+                        console.log(`  📈 Date has trades but NO bill/expense: ${dateStr}`);
+                        try {
+                            // Parse the date
+                            let date;
+                            let dateParts;
+                            if (dateStr.includes('/')) {
+                                dateParts = dateStr.split('/');
+                            } else if (dateStr.includes('-')) {
+                                dateParts = dateStr.split('-');
+                            } else {
+                                console.warn('Unknown date format for trade:', dateStr);
+                                continue;
+                            }
+
+                            if (dateParts[0].length === 4) {
+                                date = new Date(dateStr.replace(/\//g, '-'));
+                            } else {
+                                const day = dateParts[0];
+                                const month = dateParts[1];
+                                const year = dateParts[2];
+                                date = new Date(`${year}-${month}-${day}`);
+                            }
+
+                            if (isNaN(date.getTime())) {
+                                console.warn('Invalid date for trade:', dateStr);
+                                continue;
+                            }
+
+                            // Reject future dates
+                            const today = new Date();
+                            today.setHours(23, 59, 59, 999);
+                            if (date > today) {
+                                console.warn('Skipping future trade date:', dateStr);
+                                continue;
+                            }
+
+                            const year = date.getFullYear();
+                            const month = date.getMonth() + 1;
+
+                            // Calculate fiscal year
+                            let fiscalYear;
+                            if (month >= 4) {
+                                fiscalYear = `${year}-${year + 1}`;
+                            } else {
+                                fiscalYear = `${year - 1}-${year}`;
+                            }
+
+                            // Initialize fiscal year if not exists
+                            if (!allData[fiscalYear]) {
+                                allData[fiscalYear] = [];
+                            }
+
+                            // Add entry with 0 bill and expense but with trades
+                            allData[fiscalYear].push({
+                                date: date,
+                                originalDate: dateStr,
+                                billAmount: 0,
+                                expense: 0,
+                                grossProfit: 0,
+                                trades: trades
+                            });
+
+                        } catch (error) {
+                            console.warn('Error processing trade date:', dateStr, error);
+                        }
+                    }
+                }
+
+                // Summary logging
+                console.log('\n📊 ===== DATA PROCESSING SUMMARY =====');
+                console.log(`Total dates with bills: ${Object.keys(billDateCount).length}`);
+                console.log(`Total dates with expenses: ${Object.keys(expenseDateCount).length}`);
+
+                console.log(`\nDates with multiple bills: ${multipleBillDates.length}`);
+                if (multipleBillDates.length > 0) {
+                    console.log(`  Dates: ${multipleBillDates.join(', ')}`);
+                }
+
+                console.log(`\nDates with multiple expense entries: ${multipleExpenseDates.length}`);
+                if (multipleExpenseDates.length > 0) {
+                    console.log(`  Dates: ${multipleExpenseDates.join(', ')}`);
+                }
+
+                console.log(`\nDates with expense but NO bill: ${expenseOnlyCount}`);
+                // Already logged individually above
+
+                console.log(`\nDates with bill but NO expense: ${billNoExpenseDates.length}`);
+                if (billNoExpenseDates.length > 0) {
+                    console.log(`  Dates: ${billNoExpenseDates.join(', ')}`);
+                }
+
+                console.log(`\nDates with trades but NO bill/expense: ${tradeOnlyCount}`);
+
+                console.log('=====================================\n');
+
+                // Show error snackbar if there were any errors
+                if (window.lastError) {
+                    showStatus(window.lastError, 'error');
+                }
+
+                // Convert to array format and sort
+                const formattedData = Object.keys(allData)
+                    .sort((a, b) => {
+                        const yearA = parseInt(a.split('-')[0]);
+                        const yearB = parseInt(b.split('-')[0]);
+                        return yearB - yearA; // Sort descending
+                    })
+                    .map(fiscalYear => {
+                        // Merge entries with the same date
+                        const dateMap = {};
+                        allData[fiscalYear].forEach(entry => {
+                            const dateKey = entry.originalDate;
+                            if (!dateMap[dateKey]) {
+                                dateMap[dateKey] = {
+                                    date: entry.date,
+                                    originalDate: entry.originalDate,
+                                    billAmount: 0,
+                                    expense: 0,
+                                    trades: entry.trades // Keep first trades data (all should be same for same date)
+                                };
+                            }
+                            dateMap[dateKey].billAmount += entry.billAmount;
+                            dateMap[dateKey].expense += entry.expense;
+                        });
+
+                        // Convert back to array and calculate gross profit and TPL
+                        const mergedDates = Object.values(dateMap).map(d => {
+                            // Calculate TPL (Trade P&L) from trades
+                            let tpl = 0;
+                            if (d.trades) {
+                                for (const [symbol, data] of Object.entries(d.trades)) {
+                                    tpl += data.sell.val - data.buy.val;
+                                }
+                            }
+
+                            return {
+                                ...d,
+                                grossProfit: d.billAmount + d.expense,
+                                tpl: tpl
+                            };
+                        });
+
+                        // Sort dates in descending order (newest first)
+                        const dates = mergedDates.sort((a, b) =>
+                            b.date - a.date // Already Date objects
+                        );
+
+                        const totalBillAmount = dates.reduce((sum, d) => sum + d.billAmount, 0);
+                        const totalExpense = dates.reduce((sum, d) => sum + d.expense, 0);
+                        const totalTPL = dates.reduce((sum, d) => sum + d.tpl, 0);
+                        const totalGrossProfit = totalBillAmount + totalExpense;
+
+                        return {
+                            fiscalYear,
+                            dates,
+                            totals: {
+                                billAmount: totalBillAmount,
+                                expense: totalExpense,
+                                tpl: totalTPL,
+                                grossProfit: totalGrossProfit
+                            }
+                        };
+                    });
+
+                console.log('Extracted fiscal years:', formattedData.map(d => d.fiscalYear));
+                console.log('Total entries:', formattedData.reduce((sum, d) => sum + d.dates.length, 0));
+
+                return formattedData;
+
+            } catch (error) {
+                console.error('Error extracting data from ZIP:', error);
+                showStatus('Error reading ZIP file: ' + error.message, 'error');
+                return null;
+            }
+        };
+
+        // ===== PROFIT/LOSS DATA GENERATION =====
+        // Generate dummy data for 5 fiscal years
+        const generateDummyData = () => {
+            const data = [];
+            const currentYear = 2024;
+
+            for (let i = 0; i < 5; i++) {
+                const startYear = currentYear - i;
+                const endYear = startYear + 1;
+                const fiscalYear = `${startYear}-${endYear}`;
+
+                const dates = [];
+                // Generate 10-15 random dates for each year
+                const numDates = Math.floor(Math.random() * 6) + 10; // 10 to 15 dates
+
+                for (let j = 0; j < numDates; j++) {
+                    const month = Math.floor(Math.random() * 12) + 1;
+                    const day = Math.floor(Math.random() * 28) + 1;
+                    const date = `${startYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                    const billAmount = Math.floor(Math.random() * 50000) + 10000;
+                    const expense = Math.floor(Math.random() * 40000) + 5000;
+                    const grossProfit = billAmount + expense;
+
+                    dates.push({
+                        date,
+                        billAmount,
+                        expense,
+                        grossProfit
+                    });
+                }
+
+                // Sort dates chronologically
+                dates.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                // Calculate totals
+                const totalBillAmount = dates.reduce((sum, d) => sum + d.billAmount, 0);
+                const totalExpense = dates.reduce((sum, d) => sum + d.expense, 0);
+                const totalGrossProfit = totalBillAmount + totalExpense;
+
+                data.push({
+                    fiscalYear,
+                    dates,
+                    totals: {
+                        billAmount: totalBillAmount,
+                        expense: totalExpense,
+                        grossProfit: totalGrossProfit
+                    }
+                });
+            }
+
+            return data;
+        };
+
+        const formatCurrency = (amount) => {
+            const absAmount = Math.abs(amount);
+            const sign = amount < 0 ? '-' : '';
+
+            // Full format with Indian number system
+            if (useFullCurrencyFormat) {
+                return sign + '₹' + absAmount.toLocaleString('en-IN', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                });
+            }
+
+            // Short format (K/L/Cr)
+            if (absAmount >= 10000000) { // 1 Crore or more
+                return sign + (absAmount / 10000000).toFixed(2) + ' Cr';
+            } else if (absAmount >= 100000) { // 1 Lakh or more
+                return sign + (absAmount / 100000).toFixed(2) + ' L';
+            } else if (absAmount >= 1000) { // 1 Thousand or more
+                return sign + (absAmount / 1000).toFixed(1) + 'k';
+            } else {
+                return sign + absAmount.toFixed(0);
+            }
+        };
+
+        const formatDate = (dateObj) => {
+            // dateObj is already a Date object
+            if (dateObj instanceof Date) {
+                return dateObj.toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric'
+                });
+            }
+            // Fallback if somehow a string is passed
+            return 'Invalid Date';
+        };
+
+        const createTradesHTML = (trades) => {
+            if (!trades) return '';
+
+            const tradeItems = [];
+            for (const [symbol, data] of Object.entries(trades)) {
+                const hasBuy = data.buy.val > 0;
+                const hasSell = data.sell.val > 0;
+
+                // Determine if it's Intraday, Swing, or Expired
+                let tradeType = 'Swing';
+                let badgeClass = 'trade-type-swing';
+
+                // For NSE_FNO on expiry date with incomplete trades (only BUY or only SELL), treat as Expired
+                if (data.segment === 'NSE_FNO' && data.isExpiry) {
+                    if ((hasBuy && !hasSell) || (!hasBuy && hasSell)) {
+                        tradeType = 'Expired';
+                        badgeClass = 'trade-type-expired';
+                    } else if (hasBuy && hasSell && data.buy.qty === data.sell.qty) {
+                        tradeType = 'Intraday';
+                        badgeClass = 'trade-type-intraday';
+                    }
+                } else {
+                    // Regular logic for non-expiry or non-NSE_FNO trades
+                    const isIntraday = hasBuy && hasSell && data.buy.qty === data.sell.qty;
+                    tradeType = isIntraday ? 'Intraday' : 'Swing';
+                    badgeClass = isIntraday ? 'trade-type-intraday' : 'trade-type-swing';
+                }
+
+                if (hasBuy) {
+                    tradeItems.push(`
+                        <div class="trade-item">
+                            <div class="trade-symbol">${symbol}</div>
+                            <div class="trade-info">
+                                <div class="trade-detail">
+                                    <span class="trade-label">Type</span>
+                                    <span class="trade-value" style="color: #4CAF50;">BUY</span>
+                                </div>
+                                <div class="trade-detail">
+                                    <span class="trade-label">Value</span>
+                                    <span class="trade-value">${formatCurrency(data.buy.val)}</span>
+                                </div>
+                                <span class="trade-type-badge ${badgeClass}">${tradeType}</span>
+                            </div>
+                        </div>
+                    `);
+                }
+
+                if (hasSell) {
+                    tradeItems.push(`
+                        <div class="trade-item">
+                            <div class="trade-symbol">${symbol}</div>
+                            <div class="trade-info">
+                                <div class="trade-detail">
+                                    <span class="trade-label">Type</span>
+                                    <span class="trade-value" style="color: #f44336;">SELL</span>
+                                </div>
+                                <div class="trade-detail">
+                                    <span class="trade-label">Value</span>
+                                    <span class="trade-value">${formatCurrency(data.sell.val)}</span>
+                                </div>
+                                <span class="trade-type-badge ${badgeClass}">${tradeType}</span>
+                            </div>
+                        </div>
+                    `);
+                }
+            }
+
+            return `
+                <div class="trades-details">
+                    <div class="trades-header">📈 Trades on this date:</div>
+                    ${tradeItems.join('')}
+                </div>
+            `;
+        };
+
+        const createYearHTML = (yearData) => {
+            const datesHTML = yearData.dates.map((dateData, idx) => {
+                const hasTrades = dateData.trades && Object.keys(dateData.trades).length > 0;
+                const tradesHTML = createTradesHTML(dateData.trades);
+
+                // Create unique ID using fiscal year and index
+                const uniqueId = `${yearData.fiscalYear.replace('-', '_')}_${idx}`;
+
+                return `
+                    <tr>
+                        <td class="date-col ${hasTrades ? 'has-trades' : ''}" data-row-id="${uniqueId}" onclick="toggleTrades('${uniqueId}')">
+                            ${formatDate(dateData.date)}${hasTrades ? ' 📊' : ''}
+                        </td>
+                        <td class="amount-col bill-amount ${dateData.billAmount < 0 ? 'negative' : 'positive'}">
+                            ${formatCurrency(dateData.billAmount)}
+                        </td>
+                        <td class="amount-col expense negative">${formatCurrency(dateData.expense)}</td>
+                        <td class="amount-col tpl ${dateData.tpl < 0 ? 'negative' : 'positive'}">
+                            ${formatCurrency(dateData.tpl)}
+                        </td>
+                        <td class="amount-col gross-profit ${dateData.grossProfit < 0 ? 'negative' : 'positive'}">
+                            ${formatCurrency(dateData.grossProfit)}
+                        </td>
+                    </tr>
+                    ${hasTrades ? `<tr class="trades-row" id="trades-row-${uniqueId}"><td colspan="5">${tradesHTML}</td></tr>` : ''}
+                `;
+            }).join('');
+
+            return `
+                <div class="year-item">
+                    <div class="year-header">
+                        <div class="year-title">FY ${yearData.fiscalYear}</div>
+                        <div class="year-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Total Bills</span>
+                                <span class="summary-value ${yearData.totals.billAmount < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(yearData.totals.billAmount)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Expenses</span>
+                                <span class="summary-value negative">${formatCurrency(yearData.totals.expense)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">TPL</span>
+                                <span class="summary-value ${yearData.totals.tpl < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(yearData.totals.tpl)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Gross Profit</span>
+                                <span class="summary-value ${yearData.totals.grossProfit < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(yearData.totals.grossProfit)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="expand-icon">&#9660;</div>
+                    </div>
+                    <div class="dates-container">
+                        <table class="dates-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th style="text-align: right;">Bill Amount</th>
+                                    <th style="text-align: right;">Expense</th>
+                                    <th style="text-align: right;">TPL</th>
+                                    <th style="text-align: right;">Gross Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${datesHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        };
+
+        const createGlobalSummaryHTML = (allYearsData) => {
+            // Calculate global totals
+            const globalTotals = allYearsData.reduce((acc, yearData) => {
+                acc.billAmount += yearData.totals.billAmount;
+                acc.expense += yearData.totals.expense;
+                acc.tpl += yearData.totals.tpl;
+                acc.grossProfit += yearData.totals.grossProfit;
+                return acc;
+            }, { billAmount: 0, expense: 0, tpl: 0, grossProfit: 0 });
+
+            return `
+                <div class="year-item" style="border: 3px solid #667eea; margin-bottom: 25px;">
+                    <div class="year-header" style="background: linear-gradient(135deg, #4a5fd3 0%, #5e3780 100%);">
+                        <div class="year-title" style="font-size: 1.8em;">📊 ALL YEARS SUMMARY</div>
+                        <div class="year-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Total Bills</span>
+                                <span class="summary-value ${globalTotals.billAmount < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(globalTotals.billAmount)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Total Expenses</span>
+                                <span class="summary-value negative">${formatCurrency(globalTotals.expense)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">TPL</span>
+                                <span class="summary-value ${globalTotals.tpl < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(globalTotals.tpl)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Gross Profit</span>
+                                <span class="summary-value ${globalTotals.grossProfit < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(globalTotals.grossProfit)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderYears = async (forceRefresh = false) => {
+            const container = document.getElementById('yearsContainer');
+
+            // Use cached data if available and not forcing refresh
+            let data;
+            if (cachedData && !forceRefresh) {
+                data = cachedData;
+            } else {
+                // Try to load real data
+                data = await extractDataFromZip();
+                // Cache the data
+                cachedData = data;
+            }
+
+            // If no real data, show message
+            if (!data || data.length === 0) {
+                console.log('No data available');
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #666;">
+                        <h2 style="color: #667eea; margin-bottom: 15px;">No Data Available</h2>
+                        <p style="font-size: 1.1em;">Please upload a ZIP file containing your bills data.</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; color: #999;">
+                            ZIP file should contain: <code>fybills/bills_YYYY_MM.json</code>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            console.log('Using real data from ZIP file');
+
+            // Create global summary + individual years
+            const globalSummaryHTML = createGlobalSummaryHTML(data);
+            const yearsHTML = data.map(yearData => createYearHTML(yearData)).join('');
+
+            container.innerHTML = globalSummaryHTML + yearsHTML;
+
+            // Add click event listeners
+            document.querySelectorAll('.year-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const yearItem = header.parentElement;
+                    yearItem.classList.toggle('active');
+                });
+            });
+        };
+
+        // Toggle trades details visibility
+        const toggleTrades = (rowId) => {
+            const tradesRow = document.getElementById(`trades-row-${rowId}`);
+            if (tradesRow) {
+                const tradesDetails = tradesRow.querySelector('.trades-details');
+                if (tradesDetails) {
+                    tradesDetails.classList.toggle('active');
+                }
+            }
+        };
+
+        // Toggle currency format
+        const toggleCurrencyFormat = () => {
+            const checkbox = document.getElementById('currencyFormat');
+            useFullCurrencyFormat = checkbox.checked;
+
+            // Re-render the page with cached data
+            renderYears();
+        };
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkStoredFile();
+            renderYears();
+        });
+    </script>
+</body>
+</html>
