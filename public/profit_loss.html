@@ -218,16 +218,6 @@
         .date-col {
             font-weight: 600;
             color: #667eea;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .date-col.has-trades {
-            text-decoration: underline;
-        }
-
-        .date-col.has-trades:hover {
-            color: #5568d3;
         }
 
         .amount-col {
@@ -403,6 +393,102 @@
         .file-size {
             font-size: 0.85em;
             color: #666;
+        }
+
+        .url-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .url-input-container input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        .url-input-container input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .url-input-container button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            white-space: nowrap;
+        }
+
+        .url-input-container button:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .url-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+        }
+
+        .url-text {
+            font-weight: 500;
+            color: #667eea;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .url-edit-btn {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .url-edit-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .url-clear-btn {
+            padding: 6px 12px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .url-clear-btn:hover {
+            background: #c82333;
+            transform: translateY(-1px);
         }
 
         .status-message {
@@ -600,6 +686,15 @@
                     <span class="file-size" id="fileSize"></span>
                 </div>
             </div>
+            <div class="url-input-container">
+                <input type="text" id="urlInput" placeholder="Or enter data URL (e.g., https://example.com/data.zip)" />
+                <button id="urlSubmitBtn">Load from URL</button>
+            </div>
+            <div id="urlInfo" class="url-info" style="display: none;">
+                <span class="url-text" id="urlText"></span>
+                <button id="urlEditBtn" class="url-edit-btn">Edit</button>
+                <button id="urlClearBtn" class="url-clear-btn">Clear</button>
+            </div>
             <div id="statusMessage"></div>
         </div>
 
@@ -613,6 +708,9 @@
         // ===== GLOBAL STATE =====
         let useFullCurrencyFormat = false; // false = short (K/L/Cr), true = full rupee format
         let cachedData = null; // Cache extracted data to avoid re-extraction on format toggle
+        let urlTradebookData = null; // Store tradebook data from URL
+        let urlRawData = null; // Store raw URL data for expense calculation
+        let urlExpenseMap = {}; // Store calculated expenses from URL data
 
         // ===== ZIP FILE UPLOAD AND STORAGE =====
         let selectedFile = null;
@@ -686,6 +784,389 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         };
+
+        // ===== URL INPUT AND STORAGE =====
+
+        // Check if there's a stored URL on page load
+        const checkStoredURL = () => {
+            const storedURL = localStorage.getItem('profitLossDataURL');
+
+            if (storedURL) {
+                document.getElementById('urlInput').value = storedURL;
+                document.getElementById('urlText').textContent = storedURL;
+                document.getElementById('urlInfo').style.display = 'flex';
+                document.getElementById('urlInput').style.display = 'none';
+                document.getElementById('urlSubmitBtn').style.display = 'none';
+
+                // Automatically fetch data from stored URL
+                fetchDataFromURL(storedURL);
+            }
+        };
+
+        // Fetch data from URL
+        const fetchDataFromURL = async (url) => {
+            try {
+                showStatus(`Fetching data from URL: ${url}`, 'success');
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                console.log('Data fetched from URL:', data);
+
+                // Store raw URL data for expense calculation
+                urlRawData = data;
+
+                // Parse URL tradebook data into the same format as ZIP tradebook
+                urlTradebookData = parseURLTradebook(data);
+
+                // Calculate expenses for each date from URL data
+                urlExpenseMap = {};
+                for (const [dateKey, dateData] of Object.entries(data)) {
+                    const convertedDate = convertURLDateFormat(dateKey);
+                    const expense = calculateURLExpense(dateKey, dateData);
+                    urlExpenseMap[convertedDate] = expense;
+                }
+
+                console.log('Parsed URL tradebook:', urlTradebookData);
+                console.log('URL tradebook dates:', Object.keys(urlTradebookData).length);
+                console.log('URL expense map:', urlExpenseMap);
+
+                showStatus(`Successfully fetched and parsed URL data (${Object.keys(urlTradebookData).length} dates)`, 'success');
+
+                // Clear cache and re-render with new data
+                cachedData = null;
+                renderYears(true);
+
+            } catch (error) {
+                showStatus(`Error fetching data from URL: ${error.message}`, 'error');
+                console.error('URL fetch error:', error);
+            }
+        };
+
+        // Parse URL tradebook data into standard format
+        const parseURLTradebook = (data) => {
+            const tradebookMap = {};
+
+            // Handle different data formats
+            if (!data) return tradebookMap;
+
+            // Handle the specific format: { "2025_10_13": { "tradeBook": [...] }, "2025_10_14": {...} }
+            if (typeof data === 'object' && !Array.isArray(data)) {
+                for (const [dateKey, dateData] of Object.entries(data)) {
+                    // Convert date key from "2025_10_13" to "13/10/2025"
+                    const convertedDate = convertURLDateFormat(dateKey);
+
+                    if (dateData && dateData.tradeBook && Array.isArray(dateData.tradeBook)) {
+                        console.log(`Processing URL trades for ${dateKey} (${convertedDate}):`, dateData.tradeBook.length, 'entries');
+
+                        dateData.tradeBook.forEach(entry => {
+                            processURLTradeEntry(entry, tradebookMap, convertedDate);
+                        });
+                    }
+                }
+            }
+            // Fallback: If data is an array
+            else if (Array.isArray(data)) {
+                data.forEach(entry => {
+                    processURLTradeEntry(entry, tradebookMap);
+                });
+            }
+
+            return tradebookMap;
+        };
+
+        // Convert date from "2025_10_13" format to "13/10/2025"
+        const convertURLDateFormat = (dateStr) => {
+            const parts = dateStr.split('_');
+            if (parts.length === 3) {
+                const year = parts[0];
+                const month = parts[1];
+                const day = parts[2];
+                return `${day}/${month}/${year}`;
+            }
+            return dateStr;
+        };
+
+        // Calculate expense from URL trade data for a specific date
+        const calculateURLExpense = (dateKey, dateData) => {
+            if (!dateData || !dateData.tradeBook || !Array.isArray(dateData.tradeBook)) {
+                return 0;
+            }
+
+            const trades = dateData.tradeBook;
+
+            // Group trades by exchangeOrderNo to calculate brokerage per order
+            const orderGroups = {};
+            trades.forEach(trade => {
+                const orderNo = trade.exchangeOrderNo;
+                if (!orderGroups[orderNo]) {
+                    orderGroups[orderNo] = [];
+                }
+                orderGroups[orderNo].push(trade);
+            });
+
+            let totalExpense = 0;
+
+            // Brokerage: ₹20 per order (per exchangeOrderNo)
+            const brokeragePerOrder = 20;
+            const totalBrokerage = Object.keys(orderGroups).length * brokeragePerOrder;
+            totalExpense += totalBrokerage;
+
+            // Calculate other charges per trade
+            let totalSTT = 0;
+            let totalExchangeTxnCharge = 0;
+            let totalSEBIFee = 0;
+            let totalStampDuty = 0;
+            let totalNSEIPFT = 0;
+
+            trades.forEach(trade => {
+                const tradeValue = parseFloat(trade.tradeValue || 0);
+                const isSell = trade.side === -1;
+                const isBuy = trade.side === 1;
+                const exchange = trade.exchange;
+                const symbol = trade.symbol || '';
+
+                // STT: 0.1% on SELL value only
+                if (isSell) {
+                    totalSTT += tradeValue * 0.001; // 0.1%
+                }
+
+                // Exchange Transaction Charges
+                if (exchange === 10) {
+                    // NSE: 0.03503% on premium
+                    totalExchangeTxnCharge += tradeValue * 0.0003503;
+                } else if (exchange === 12) {
+                    // BSE - determine index type from symbol
+                    if (symbol.includes('SENSEX') && !symbol.includes('50')) {
+                        // Sensex: 0.0325%
+                        totalExchangeTxnCharge += tradeValue * 0.000325;
+                    } else if (symbol.includes('BANKEX')) {
+                        // Bankex: 0.0325%
+                        totalExchangeTxnCharge += tradeValue * 0.000325;
+                    } else if (symbol.includes('SENSEX') && symbol.includes('50')) {
+                        // Sensex 50: 0.005%
+                        totalExchangeTxnCharge += tradeValue * 0.00005;
+                    } else {
+                        // Stock: 0.005%
+                        totalExchangeTxnCharge += tradeValue * 0.00005;
+                    }
+                }
+
+                // SEBI Turnover Fee: ₹10 per Crore
+                totalSEBIFee += (tradeValue / 10000000) * 10;
+
+                // Stamp Duty: 0.003% on BUY value only
+                if (isBuy) {
+                    totalStampDuty += tradeValue * 0.00003; // 0.003%
+                }
+
+                // NSE IPFT: ₹50 per Crore (on Premium) - only for NSE
+                if (exchange === 10) {
+                    totalNSEIPFT += (tradeValue / 10000000) * 50;
+                }
+            });
+
+            totalExpense += totalSTT;
+            totalExpense += totalExchangeTxnCharge;
+            totalExpense += totalSEBIFee;
+            totalExpense += totalStampDuty;
+            totalExpense += totalNSEIPFT;
+
+            // GST: 18% on (Brokerage + Exchange Transaction charges + SEBI Turnover Fee + NSE IPFT)
+            // Note: Clearing charges are typically 0 for retail, so excluded
+            const gstBase = totalBrokerage + totalExchangeTxnCharge + totalSEBIFee + totalNSEIPFT;
+            const totalGST = gstBase * 0.18; // 18%
+            totalExpense += totalGST;
+
+            console.log(`\n💰 URL Expense Calculation for ${dateKey}:`);
+            console.log(`  Orders: ${Object.keys(orderGroups).length}`);
+            console.log(`  Brokerage (₹20/order): ₹${totalBrokerage.toFixed(2)}`);
+            console.log(`  STT (0.1% on SELL): ₹${totalSTT.toFixed(2)}`);
+            console.log(`  Exchange Txn Charges: ₹${totalExchangeTxnCharge.toFixed(2)}`);
+            console.log(`  SEBI Fee (₹10/Cr): ₹${totalSEBIFee.toFixed(2)}`);
+            console.log(`  Stamp Duty (0.003% on BUY): ₹${totalStampDuty.toFixed(2)}`);
+            console.log(`  NSE IPFT (₹50/Cr): ₹${totalNSEIPFT.toFixed(2)}`);
+            console.log(`  GST (18% on charges): ₹${totalGST.toFixed(2)}`);
+            console.log(`  TOTAL EXPENSE: ₹${totalExpense.toFixed(2)}`);
+
+            return totalExpense;
+        };
+
+        // Process individual URL trade entry
+        const processURLTradeEntry = (entry, tradebookMap, forcedDate = null) => {
+            // Use forced date if provided, otherwise try to extract from entry
+            const tradeDate = forcedDate || entry.date || entry.trade_date || entry.tradeDate;
+
+            // Extract symbol from the URL format (e.g., "NSE:NIFTY25O1425500CE" -> "NIFTY25O1425500CE")
+            let symbol = entry.symbol || entry.tradingsymbol || entry.Symbol;
+            if (symbol && symbol.includes(':')) {
+                symbol = symbol.split(':')[1]; // Get part after ':'
+            }
+
+            // Determine type from 'side' field: 1 = BUY, -1 = SELL
+            let type;
+            if (entry.side === 1) {
+                type = 'BUY';
+            } else if (entry.side === -1) {
+                type = 'SELL';
+            } else {
+                type = entry.type || entry.transaction_type || entry.Type;
+            }
+
+            const qty = parseFloat(entry.tradedQty || entry.qty || entry.quantity || entry.Qty || 0);
+            const tradeVal = parseFloat(entry.tradeValue || entry.trade_val || entry.value || entry.amount || entry.Value || 0);
+
+            // Map segment from exchange field: 10 = NSE, 12 = BSE
+            let segment;
+            if (entry.segment === 11 || entry.segment === '11') {
+                segment = 'NSE_FNO'; // Options/Futures segment
+            } else if (entry.exchange === 10 || entry.exchange === '10') {
+                segment = 'NSE_FNO';
+            } else if (entry.exchange === 12 || entry.exchange === '12') {
+                segment = 'BSE_FNO';
+            } else {
+                segment = entry.segment || entry.exchange || entry.Exchange || 'UNKNOWN';
+            }
+
+            if (!tradeDate || !symbol || !type || !qty || !tradeVal) {
+                return; // Skip invalid entries
+            }
+
+            // Initialize date map if not exists
+            if (!tradebookMap[tradeDate]) {
+                tradebookMap[tradeDate] = {};
+            }
+
+            // Initialize symbol map if not exists
+            if (!tradebookMap[tradeDate][symbol]) {
+                tradebookMap[tradeDate][symbol] = {
+                    buy: { qty: 0, val: 0 },
+                    sell: { qty: 0, val: 0 },
+                    segment: segment,
+                    isExpiry: false
+                };
+            }
+
+            // Check if NSE_FNO and if expiry date matches trade date
+            if (segment === 'NSE_FNO') {
+                const expiryDate = getExpiryFromSymbol(symbol);
+                if (expiryDate && expiryDate === tradeDate) {
+                    tradebookMap[tradeDate][symbol].isExpiry = true;
+                }
+            }
+
+            // Aggregate trades by type
+            if (type.toUpperCase() === 'BUY') {
+                tradebookMap[tradeDate][symbol].buy.qty += qty;
+                tradebookMap[tradeDate][symbol].buy.val += tradeVal;
+            } else if (type.toUpperCase() === 'SELL') {
+                tradebookMap[tradeDate][symbol].sell.qty += qty;
+                tradebookMap[tradeDate][symbol].sell.val += tradeVal;
+            }
+        };
+
+        // Helper function to extract expiry date from NSE_FNO symbol (moved earlier for URL parsing)
+        const getExpiryFromSymbol = (symbol) => {
+            // Symbol format: "IO PE NIFTY 31Jul2025 24800"
+            const match = symbol.match(/(\d{1,2})([A-Za-z]{3})(\d{4})/);
+            if (match) {
+                const day = match[1].padStart(2, '0');
+                const monthStr = match[2];
+                const year = match[3];
+
+                // Convert month name to number
+                const months = {
+                    'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                    'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                    'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+                };
+
+                const month = months[monthStr];
+                if (month) {
+                    return `${day}/${month}/${year}`;
+                }
+            }
+            return null;
+        };
+
+        // Handle URL submit
+        document.getElementById('urlSubmitBtn').addEventListener('click', () => {
+            const urlInput = document.getElementById('urlInput');
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showStatus('Please enter a URL', 'error');
+                return;
+            }
+
+            // Basic URL validation
+            try {
+                new URL(url);
+            } catch (error) {
+                showStatus('Please enter a valid URL', 'error');
+                return;
+            }
+
+            // Check if URL changed
+            const previousURL = localStorage.getItem('profitLossDataURL');
+            const urlChanged = previousURL !== url;
+
+            // Save URL to localStorage
+            localStorage.setItem('profitLossDataURL', url);
+
+            // Update UI
+            document.getElementById('urlText').textContent = url;
+            document.getElementById('urlInfo').style.display = 'flex';
+            document.getElementById('urlInput').style.display = 'none';
+            document.getElementById('urlSubmitBtn').style.display = 'none';
+
+            // Fetch data from URL
+            if (urlChanged) {
+                console.log('URL changed from:', previousURL, 'to:', url);
+                showStatus('URL changed - fetching new data...', 'success');
+            }
+            fetchDataFromURL(url);
+        });
+
+        // Handle URL input enter key
+        document.getElementById('urlInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('urlSubmitBtn').click();
+            }
+        });
+
+        // Handle URL edit
+        document.getElementById('urlEditBtn').addEventListener('click', () => {
+            const currentURL = localStorage.getItem('profitLossDataURL');
+
+            // Show input with current URL
+            document.getElementById('urlInput').value = currentURL;
+            document.getElementById('urlInfo').style.display = 'none';
+            document.getElementById('urlInput').style.display = 'block';
+            document.getElementById('urlSubmitBtn').style.display = 'block';
+
+            // Focus on input
+            document.getElementById('urlInput').focus();
+        });
+
+        // Handle URL clear
+        document.getElementById('urlClearBtn').addEventListener('click', () => {
+            // Clear from localStorage
+            localStorage.removeItem('profitLossDataURL');
+
+            // Reset UI
+            document.getElementById('urlInput').value = '';
+            document.getElementById('urlInfo').style.display = 'none';
+            document.getElementById('urlInput').style.display = 'block';
+            document.getElementById('urlSubmitBtn').style.display = 'block';
+
+            showStatus('URL cleared', 'success');
+        });
 
         // Utility function to show status messages
         const showStatus = (message, type) => {
@@ -868,30 +1349,6 @@
                 const segmentCounts = {}; // Track segment counts for debugging
                 console.log('Processing tradebook files...');
 
-                // Helper function to extract expiry date from NSE_FNO symbol
-                const getExpiryFromSymbol = (symbol) => {
-                    // Symbol format: "IO PE NIFTY 31Jul2025 24800"
-                    const match = symbol.match(/(\d{1,2})([A-Za-z]{3})(\d{4})/);
-                    if (match) {
-                        const day = match[1].padStart(2, '0');
-                        const monthStr = match[2];
-                        const year = match[3];
-
-                        // Convert month name to number
-                        const months = {
-                            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-                            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-                            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-                        };
-
-                        const month = months[monthStr];
-                        if (month) {
-                            return `${day}/${month}/${year}`;
-                        }
-                    }
-                    return null;
-                };
-
                 for (const tradebookFile of tradebookFiles) {
                     try {
                         const content = await tradebookFile.file.async('text');
@@ -978,6 +1435,30 @@
 
                 console.log('Tradebook map created:', Object.keys(tradebookMap).length, 'dates with trades');
                 console.log('Trade dates:', Object.keys(tradebookMap).sort().join(', '));
+
+                // Merge URL tradebook data if available
+                if (urlTradebookData && Object.keys(urlTradebookData).length > 0) {
+                    console.log('\n📊 Merging URL tradebook data...');
+                    let mergedDates = 0;
+                    let newDates = 0;
+
+                    for (const [dateStr, urlTrades] of Object.entries(urlTradebookData)) {
+                        // If this date has no trades in ZIP data, use URL data
+                        if (!tradebookMap[dateStr] || Object.keys(tradebookMap[dateStr]).length === 0) {
+                            tradebookMap[dateStr] = urlTrades;
+                            newDates++;
+                            console.log(`  ✅ Added URL trades for ${dateStr} (${Object.keys(urlTrades).length} symbols)`);
+                        } else {
+                            console.log(`  ⏭️  Skipped ${dateStr} - already has ZIP trades`);
+                        }
+                    }
+
+                    console.log(`\n📊 URL Merge Summary:`);
+                    console.log(`  Total URL dates: ${Object.keys(urlTradebookData).length}`);
+                    console.log(`  New dates added from URL: ${newDates}`);
+                    console.log(`  Dates skipped (already in ZIP): ${Object.keys(urlTradebookData).length - newDates}`);
+                    console.log(`  Total dates after merge: ${Object.keys(tradebookMap).length}`);
+                }
 
                 // Extract data from all bill files
                 const allData = {};
@@ -1267,13 +1748,21 @@
                                 allData[fiscalYear] = [];
                             }
 
-                            // Add entry with 0 bill and expense but with trades
+                            // Check if URL expense exists for this date
+                            let urlExpense = 0;
+                            if (urlExpenseMap && urlExpenseMap[dateStr]) {
+                                urlExpense = urlExpenseMap[dateStr];
+                                console.log(`  💰 Using URL expense for ${dateStr}: ₹${urlExpense.toFixed(2)}`);
+                            }
+
+                            // Add entry with 0 bill but with URL expense (if available) and trades
+                            // Gross profit stays 0 since billAmount is 0 (gross profit = billAmount + expense)
                             allData[fiscalYear].push({
                                 date: date,
                                 originalDate: dateStr,
                                 billAmount: 0,
-                                expense: 0,
-                                grossProfit: 0,
+                                expense: urlExpense,
+                                grossProfit: 0, // 0 + urlExpense = 0 (since expense is already negative in formula)
                                 trades: trades
                             });
 
@@ -1310,6 +1799,9 @@
 
                 console.log('=====================================\n');
 
+                // Match trades globally for cross-date P&L calculation
+                const { enhancedTradebook, matchedPositions } = matchTradesGlobally(tradebookMap);
+
                 // Show error snackbar if there were any errors
                 if (window.lastError) {
                     showStatus(window.lastError, 'error');
@@ -1340,20 +1832,34 @@
                             dateMap[dateKey].expense += entry.expense;
                         });
 
-                        // Convert back to array and calculate gross profit and TPL
+                        // Convert back to array and calculate gross profit, TPL, and NTPL
                         const mergedDates = Object.values(dateMap).map(d => {
-                            // Calculate TPL (Trade P&L) from trades
+                            // Calculate TPL (Trade P&L) from enhanced tradebook
+                            // Include Intraday TPL, SELL TPL, and BUYexp TPL
                             let tpl = 0;
-                            if (d.trades) {
+                            if (d.trades && enhancedTradebook[d.originalDate]) {
                                 for (const [symbol, data] of Object.entries(d.trades)) {
-                                    tpl += data.sell.val - data.buy.val;
+                                    const enhanced = enhancedTradebook[d.originalDate][symbol];
+                                    if (enhanced) {
+                                        // Add intraday TPL (same-day matched trades)
+                                        tpl += enhanced.intradayTPL || 0;
+                                        // Add SELL TPL (cross-date matched sells)
+                                        tpl += enhanced.sellTPL || 0;
+                                        // Add BUYexp TPL (expired buys)
+                                        tpl += enhanced.buyExpTPL || 0;
+                                        // Do NOT add anything for regular BUY (unrealized)
+                                    }
                                 }
                             }
+
+                            // Calculate NTPL (Net Trade P&L) = TPL - Expense
+                            const ntpl = tpl - d.expense;
 
                             return {
                                 ...d,
                                 grossProfit: d.billAmount + d.expense,
-                                tpl: tpl
+                                tpl: tpl,
+                                ntpl: ntpl
                             };
                         });
 
@@ -1365,6 +1871,7 @@
                         const totalBillAmount = dates.reduce((sum, d) => sum + d.billAmount, 0);
                         const totalExpense = dates.reduce((sum, d) => sum + d.expense, 0);
                         const totalTPL = dates.reduce((sum, d) => sum + d.tpl, 0);
+                        const totalNTPL = dates.reduce((sum, d) => sum + d.ntpl, 0);
                         const totalGrossProfit = totalBillAmount + totalExpense;
 
                         return {
@@ -1374,6 +1881,7 @@
                                 billAmount: totalBillAmount,
                                 expense: totalExpense,
                                 tpl: totalTPL,
+                                ntpl: totalNTPL,
                                 grossProfit: totalGrossProfit
                             }
                         };
@@ -1382,7 +1890,7 @@
                 console.log('Extracted fiscal years:', formattedData.map(d => d.fiscalYear));
                 console.log('Total entries:', formattedData.reduce((sum, d) => sum + d.dates.length, 0));
 
-                return formattedData;
+                return { data: formattedData, enhancedTradebook, matchedPositions };
 
             } catch (error) {
                 console.error('Error extracting data from ZIP:', error);
@@ -1482,58 +1990,213 @@
             return 'Invalid Date';
         };
 
-        const createTradesHTML = (trades) => {
+        // Global position tracker for cross-date matching
+        const matchTradesGlobally = (tradebookMap) => {
+            // Build a chronological list of all trades
+            const allTrades = [];
+            for (const [dateStr, symbols] of Object.entries(tradebookMap)) {
+                for (const [symbol, data] of Object.entries(symbols)) {
+                    allTrades.push({
+                        date: dateStr,
+                        symbol: symbol,
+                        buyQty: data.buy.qty,
+                        buyVal: data.buy.val,
+                        sellQty: data.sell.qty,
+                        sellVal: data.sell.val,
+                        segment: data.segment,
+                        isExpiry: data.isExpiry
+                    });
+                }
+            }
+
+            // Sort by date (oldest first for FIFO matching)
+            allTrades.sort((a, b) => {
+                const dateA = parseTradeDate(a.date);
+                const dateB = parseTradeDate(b.date);
+                return dateA - dateB;
+            });
+
+            // Position tracker: symbol -> { avgPrice, qty, lots: [{date, qty, price}] }
+            const positions = {};
+
+            // Enhanced tradebook with matching info
+            const enhancedTradebook = {};
+
+            // Matched positions list for the positions tab
+            const matchedPositions = [];
+
+            console.log('\n🔄 ===== GLOBAL TRADE MATCHING =====');
+
+            for (const trade of allTrades) {
+                const { date, symbol, buyQty, buyVal, sellQty, sellVal } = trade;
+
+                if (!enhancedTradebook[date]) {
+                    enhancedTradebook[date] = {};
+                }
+
+                if (!enhancedTradebook[date][symbol]) {
+                    enhancedTradebook[date][symbol] = {
+                        ...trade,
+                        intradayTPL: 0,
+                        sellTPL: 0,
+                        buyExpTPL: 0,
+                        unmatchedBuy: 0,
+                        unmatchedSell: 0
+                    };
+                }
+
+                if (!positions[symbol]) {
+                    positions[symbol] = { qty: 0, lots: [] };
+                }
+
+                const pos = positions[symbol];
+
+                // Check if this is BUYexp (expired buy with no sell)
+                if (trade.isExpiry && buyQty > 0 && sellQty === 0) {
+                    // BUYexp - option expired worthless, TPL is negative of buy value
+                    const buyExpTPL = -buyVal;
+                    enhancedTradebook[date][symbol].buyExpTPL = buyExpTPL;
+                    console.log(`  ${date} ${symbol}: BUYexp, TPL: ${buyExpTPL.toFixed(2)}`);
+                }
+
+                // Handle same-day intraday first
+                const matchedQty = Math.min(buyQty, sellQty);
+
+                if (matchedQty > 0) {
+                    // Intraday portion
+                    const avgBuyPrice = buyVal / buyQty;
+                    const avgSellPrice = sellVal / sellQty;
+                    const intradayTPL = (avgSellPrice - avgBuyPrice) * matchedQty;
+                    enhancedTradebook[date][symbol].intradayTPL = intradayTPL;
+
+                    console.log(`  ${date} ${symbol}: Intraday ${matchedQty} qty, TPL: ${intradayTPL.toFixed(2)}`);
+                }
+
+                // Process remaining BUY (add to position)
+                const remainingBuyQty = buyQty - matchedQty;
+                if (remainingBuyQty > 0) {
+                    const avgBuyPrice = buyVal / buyQty;
+                    pos.lots.push({ date, qty: remainingBuyQty, price: avgBuyPrice });
+                    pos.qty += remainingBuyQty;
+                    enhancedTradebook[date][symbol].unmatchedBuy = remainingBuyQty;
+                    console.log(`  ${date} ${symbol}: BUY ${remainingBuyQty} @ ${avgBuyPrice.toFixed(2)} (Position: ${pos.qty})`);
+                }
+
+                // Process remaining SELL (match with position FIFO)
+                let remainingSellQty = sellQty - matchedQty;
+                if (remainingSellQty > 0) {
+                    const avgSellPrice = sellVal / sellQty;
+                    let sellTPL = 0;
+                    let matchedSellQty = 0;
+
+                    while (remainingSellQty > 0 && pos.lots.length > 0) {
+                        const lot = pos.lots[0];
+                        const qtyToMatch = Math.min(lot.qty, remainingSellQty);
+
+                        const tpl = (avgSellPrice - lot.price) * qtyToMatch;
+                        sellTPL += tpl;
+                        matchedSellQty += qtyToMatch;
+
+                        // Calculate buy and sell amounts for this matched position
+                        const buyAmount = lot.price * qtyToMatch;
+                        const sellAmount = avgSellPrice * qtyToMatch;
+
+                        // Record this matched position
+                        matchedPositions.push({
+                            symbol: symbol,
+                            buyDate: lot.date,
+                            sellDate: date,
+                            qty: qtyToMatch,
+                            buyAmount: buyAmount,
+                            sellAmount: sellAmount,
+                            tpl: tpl
+                        });
+
+                        console.log(`    SELL matched ${qtyToMatch} from BUY on ${lot.date} @ ${lot.price.toFixed(2)}, TPL: ${tpl.toFixed(2)}`);
+
+                        lot.qty -= qtyToMatch;
+                        pos.qty -= qtyToMatch;
+                        remainingSellQty -= qtyToMatch;
+
+                        if (lot.qty === 0) {
+                            pos.lots.shift(); // Remove fully matched lot
+                        }
+                    }
+
+                    enhancedTradebook[date][symbol].sellTPL = sellTPL;
+
+                    if (remainingSellQty > 0) {
+                        // Short selling or sell without buy
+                        enhancedTradebook[date][symbol].unmatchedSell = remainingSellQty;
+                        console.log(`  ⚠️ ${date} ${symbol}: SELL ${remainingSellQty} WITHOUT matching BUY (Short or error)`);
+                    }
+                }
+            }
+
+            // Log final unmatched positions
+            console.log('\n📊 ===== UNMATCHED POSITIONS =====');
+            for (const [symbol, pos] of Object.entries(positions)) {
+                if (pos.qty > 0) {
+                    console.log(`⚠️ ${symbol}: ${pos.qty} qty not sold`);
+                    pos.lots.forEach(lot => {
+                        console.log(`    BUY on ${lot.date}: ${lot.qty} @ ${lot.price.toFixed(2)}`);
+                    });
+                }
+            }
+            console.log('=====================================\n');
+
+            console.log(`\n📊 Total matched positions: ${matchedPositions.length}`);
+
+            return { enhancedTradebook, matchedPositions };
+        };
+
+        // Helper to parse trade date string to Date object
+        const parseTradeDate = (dateStr) => {
+            let dateParts;
+            if (dateStr.includes('/')) {
+                dateParts = dateStr.split('/');
+            } else if (dateStr.includes('-')) {
+                dateParts = dateStr.split('-');
+            } else {
+                return new Date(dateStr);
+            }
+
+            if (dateParts[0].length === 4) {
+                return new Date(dateStr.replace(/\//g, '-'));
+            } else {
+                const day = dateParts[0];
+                const month = dateParts[1];
+                const year = dateParts[2];
+                return new Date(`${year}-${month}-${day}`);
+            }
+        };
+
+        const createTradesHTML = (dateStr, trades, enhancedData) => {
             if (!trades) return '';
 
             const tradeItems = [];
             for (const [symbol, data] of Object.entries(trades)) {
-                const hasBuy = data.buy.val > 0;
-                const hasSell = data.sell.val > 0;
+                const buyQty = data.buy.qty;
+                const sellQty = data.sell.qty;
+                const buyVal = data.buy.val;
+                const sellVal = data.sell.val;
 
-                // Determine trade classification
-                let isIntraday = false;
-                let isExpired = false;
+                const hasBuy = buyVal > 0;
+                const hasSell = sellVal > 0;
 
-                // For NSE_FNO on expiry date with incomplete trades (only BUY or only SELL), treat as Expired
-                if (data.segment === 'NSE_FNO' && data.isExpiry) {
-                    if ((hasBuy && !hasSell) || (!hasBuy && hasSell)) {
-                        isExpired = true;
-                    } else if (hasBuy && hasSell && data.buy.qty === data.sell.qty) {
-                        isIntraday = true;
-                    }
-                } else {
-                    // Regular logic for non-expiry or non-NSE_FNO trades
-                    isIntraday = hasBuy && hasSell && data.buy.qty === data.sell.qty;
-                }
+                // Get enhanced matching data
+                const enhanced = enhancedData && enhancedData[dateStr] && enhancedData[dateStr][symbol];
+                const intradayTPL = enhanced ? enhanced.intradayTPL : 0;
+                const sellTPL = enhanced ? enhanced.sellTPL : 0;
 
-                // INTRADAY: Show only one row with bigger value
-                if (isIntraday) {
-                    const biggerValue = Math.max(data.buy.val, data.sell.val);
-                    const tpl = data.sell.val - data.buy.val;
-                    tradeItems.push(`
-                        <div class="trade-item">
-                            <div class="trade-symbol">${symbol}</div>
-                            <div class="trade-info">
-                                <div class="trade-detail">
-                                    <span class="trade-label">Type</span>
-                                    <span class="trade-value" style="color: #1976d2;">Intraday</span>
-                                </div>
-                                <div class="trade-detail">
-                                    <span class="trade-label">Value</span>
-                                    <span class="trade-value">${formatCurrency(biggerValue)}</span>
-                                </div>
-                                <div class="trade-detail">
-                                    <span class="trade-label">TPL</span>
-                                    <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-                }
-                // EXPIRED: Show BUYexp or SELLexp
-                else if (isExpired) {
-                    const tpl = data.sell.val - data.buy.val;
+                // Determine if this is an expiry trade
+                const isExpiryTrade = data.segment === 'NSE_FNO' && data.isExpiry;
+
+                // Handle EXPIRED trades (NSE_FNO on expiry with only BUY or only SELL)
+                if (isExpiryTrade && ((hasBuy && !hasSell) || (!hasBuy && hasSell))) {
                     if (hasBuy) {
+                        // BUYexp - show TPL as negative of buy value (loss since expired at zero)
+                        const buyExpTPL = -buyVal;
                         tradeItems.push(`
                             <div class="trade-item">
                                 <div class="trade-symbol">${symbol}</div>
@@ -1544,17 +2207,17 @@
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">Value</span>
-                                        <span class="trade-value">${formatCurrency(data.buy.val)}</span>
+                                        <span class="trade-value">${formatCurrency(buyVal)}</span>
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">TPL</span>
-                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                        <span class="trade-value ${buyExpTPL < 0 ? 'negative' : 'positive'}">${formatCurrency(buyExpTPL)}</span>
                                     </div>
                                 </div>
                             </div>
                         `);
-                    }
-                    if (hasSell) {
+                    } else {
+                        // SELLexp - show TPL
                         tradeItems.push(`
                             <div class="trade-item">
                                 <div class="trade-symbol">${symbol}</div>
@@ -1565,21 +2228,56 @@
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">Value</span>
-                                        <span class="trade-value">${formatCurrency(data.sell.val)}</span>
+                                        <span class="trade-value">${formatCurrency(sellVal)}</span>
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">TPL</span>
-                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                        <span class="trade-value ${sellTPL < 0 ? 'negative' : 'positive'}">${formatCurrency(sellTPL)}</span>
                                     </div>
                                 </div>
                             </div>
                         `);
                     }
                 }
-                // SWING: Show BUY or SELL
-                else {
-                    const tpl = data.sell.val - data.buy.val;
-                    if (hasBuy) {
+                // Handle trades with both BUY and SELL
+                else if (hasBuy && hasSell) {
+                    // Calculate matched (intraday) quantity and remaining (swing) quantity
+                    const matchedQty = Math.min(buyQty, sellQty);
+                    const remainingBuyQty = buyQty - matchedQty;
+                    const remainingSellQty = sellQty - matchedQty;
+
+                    // If there's matched quantity, show Intraday with TPL
+                    if (matchedQty > 0) {
+                        // Calculate proportional values for matched quantity
+                        const matchedBuyVal = (buyVal / buyQty) * matchedQty;
+                        const matchedSellVal = (sellVal / sellQty) * matchedQty;
+                        const biggerValue = Math.max(matchedBuyVal, matchedSellVal);
+
+                        tradeItems.push(`
+                            <div class="trade-item">
+                                <div class="trade-symbol">${symbol}</div>
+                                <div class="trade-info">
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Type</span>
+                                        <span class="trade-value" style="color: #1976d2;">Intraday</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Value</span>
+                                        <span class="trade-value">${formatCurrency(biggerValue)}</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">TPL</span>
+                                        <span class="trade-value ${intradayTPL < 0 ? 'negative' : 'positive'}">${formatCurrency(intradayTPL)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
+
+                    // If there's remaining BUY quantity, show as Swing BUY (NO TPL)
+                    if (remainingBuyQty > 0) {
+                        const remainingBuyVal = (buyVal / buyQty) * remainingBuyQty;
+
                         tradeItems.push(`
                             <div class="trade-item">
                                 <div class="trade-symbol">${symbol}</div>
@@ -1590,17 +2288,17 @@
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">Value</span>
-                                        <span class="trade-value">${formatCurrency(data.buy.val)}</span>
-                                    </div>
-                                    <div class="trade-detail">
-                                        <span class="trade-label">TPL</span>
-                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                        <span class="trade-value">${formatCurrency(remainingBuyVal)}</span>
                                     </div>
                                 </div>
                             </div>
                         `);
                     }
-                    if (hasSell) {
+
+                    // If there's remaining SELL quantity, show as Swing SELL with TPL
+                    if (remainingSellQty > 0) {
+                        const remainingSellVal = (sellVal / sellQty) * remainingSellQty;
+
                         tradeItems.push(`
                             <div class="trade-item">
                                 <div class="trade-symbol">${symbol}</div>
@@ -1611,16 +2309,56 @@
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">Value</span>
-                                        <span class="trade-value">${formatCurrency(data.sell.val)}</span>
+                                        <span class="trade-value">${formatCurrency(remainingSellVal)}</span>
                                     </div>
                                     <div class="trade-detail">
                                         <span class="trade-label">TPL</span>
-                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                        <span class="trade-value ${sellTPL < 0 ? 'negative' : 'positive'}">${formatCurrency(sellTPL)}</span>
                                     </div>
                                 </div>
                             </div>
                         `);
                     }
+                }
+                // Handle trades with only BUY (no SELL) - NO TPL
+                else if (hasBuy && !hasSell) {
+                    tradeItems.push(`
+                        <div class="trade-item">
+                            <div class="trade-symbol">${symbol}</div>
+                            <div class="trade-info">
+                                <div class="trade-detail">
+                                    <span class="trade-label">Type</span>
+                                    <span class="trade-value" style="color: #4CAF50;">BUY</span>
+                                </div>
+                                <div class="trade-detail">
+                                    <span class="trade-label">Value</span>
+                                    <span class="trade-value">${formatCurrency(buyVal)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+                // Handle trades with only SELL (no BUY) - show TPL
+                else if (hasSell && !hasBuy) {
+                    tradeItems.push(`
+                        <div class="trade-item">
+                            <div class="trade-symbol">${symbol}</div>
+                            <div class="trade-info">
+                                <div class="trade-detail">
+                                    <span class="trade-label">Type</span>
+                                    <span class="trade-value" style="color: #f44336;">SELL</span>
+                                </div>
+                                <div class="trade-detail">
+                                    <span class="trade-label">Value</span>
+                                    <span class="trade-value">${formatCurrency(sellVal)}</span>
+                                </div>
+                                <div class="trade-detail">
+                                    <span class="trade-label">TPL</span>
+                                    <span class="trade-value ${sellTPL < 0 ? 'negative' : 'positive'}">${formatCurrency(sellTPL)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `);
                 }
             }
 
@@ -1632,18 +2370,18 @@
             `;
         };
 
-        const createYearHTML = (yearData) => {
+        const createYearHTML = (yearData, enhancedTradebook) => {
             const datesHTML = yearData.dates.map((dateData, idx) => {
                 const hasTrades = dateData.trades && Object.keys(dateData.trades).length > 0;
-                const tradesHTML = createTradesHTML(dateData.trades);
+                const tradesHTML = createTradesHTML(dateData.originalDate, dateData.trades, enhancedTradebook);
 
                 // Create unique ID using fiscal year and index
                 const uniqueId = `${yearData.fiscalYear.replace('-', '_')}_${idx}`;
 
                 return `
-                    <tr>
-                        <td class="date-col ${hasTrades ? 'has-trades' : ''}" data-row-id="${uniqueId}" onclick="toggleTrades('${uniqueId}')">
-                            ${formatDate(dateData.date)}${hasTrades ? ' 📊' : ''}
+                    <tr ${hasTrades ? `onclick="toggleTrades('${uniqueId}')" style="cursor: pointer;"` : ''}>
+                        <td class="date-col">
+                            ${formatDate(dateData.date)}
                         </td>
                         <td class="amount-col bill-amount ${dateData.billAmount < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.billAmount)}
@@ -1652,11 +2390,14 @@
                         <td class="amount-col tpl ${dateData.tpl < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.tpl)}
                         </td>
+                        <td class="amount-col ntpl ${dateData.ntpl < 0 ? 'negative' : 'positive'}">
+                            ${formatCurrency(dateData.ntpl)}
+                        </td>
                         <td class="amount-col gross-profit ${dateData.grossProfit < 0 ? 'negative' : 'positive'}">
-                            ${formatCurrency(dateData.grossProfit)}
+                            ${dateData.billAmount === 0 ? 'NA' : formatCurrency(dateData.grossProfit)}
                         </td>
                     </tr>
-                    ${hasTrades ? `<tr class="trades-row" id="trades-row-${uniqueId}"><td colspan="5">${tradesHTML}</td></tr>` : ''}
+                    ${hasTrades ? `<tr class="trades-row" id="trades-row-${uniqueId}"><td colspan="6">${tradesHTML}</td></tr>` : ''}
                 `;
             }).join('');
 
@@ -1682,6 +2423,12 @@
                                 </span>
                             </div>
                             <div class="summary-item">
+                                <span class="summary-label">NTPL</span>
+                                <span class="summary-value ${yearData.totals.ntpl < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(yearData.totals.ntpl)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
                                 <span class="summary-label">Gross Profit</span>
                                 <span class="summary-value ${yearData.totals.grossProfit < 0 ? 'negative' : 'positive'}">
                                     ${formatCurrency(yearData.totals.grossProfit)}
@@ -1698,11 +2445,89 @@
                                     <th style="text-align: right;">Bill Amount</th>
                                     <th style="text-align: right;">Expense</th>
                                     <th style="text-align: right;">TPL</th>
+                                    <th style="text-align: right;">NTPL</th>
                                     <th style="text-align: right;">Gross Profit</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${datesHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        };
+
+        const createPositionsHTML = (matchedPositions) => {
+            if (!matchedPositions || matchedPositions.length === 0) {
+                return `
+                    <div class="year-item" style="margin-top: 25px;">
+                        <div class="year-header" style="background: linear-gradient(135deg, #f57c00 0%, #ff6f00 100%);">
+                            <div class="year-title" style="font-size: 1.5em;">📊 ALL MATCHED POSITIONS</div>
+                        </div>
+                        <div class="dates-container" style="max-height: none;">
+                            <div style="text-align: center; padding: 30px; color: #666;">
+                                <p>No matched positions found.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Sort positions by sell date (newest first)
+            const sortedPositions = [...matchedPositions].sort((a, b) => {
+                const dateA = parseTradeDate(a.sellDate);
+                const dateB = parseTradeDate(b.sellDate);
+                return dateB - dateA;
+            });
+
+            // Calculate total TPL
+            const totalTPL = matchedPositions.reduce((sum, pos) => sum + pos.tpl, 0);
+
+            // Create table rows
+            const positionsRows = sortedPositions.map(pos => {
+                return `
+                    <tr>
+                        <td style="padding: 15px; font-weight: 600; color: #667eea;">${pos.symbol}</td>
+                        <td style="padding: 15px; text-align: right;">${formatDate(parseTradeDate(pos.buyDate))}</td>
+                        <td style="padding: 15px; text-align: right;">${formatDate(parseTradeDate(pos.sellDate))}</td>
+                        <td style="padding: 15px; text-align: right;">${pos.qty}</td>
+                        <td class="amount-col positive">${formatCurrency(pos.buyAmount)}</td>
+                        <td class="amount-col positive">${formatCurrency(pos.sellAmount)}</td>
+                        <td class="amount-col tpl ${pos.tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(pos.tpl)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            return `
+                <div class="year-item" style="margin-top: 25px;">
+                    <div class="year-header" style="background: linear-gradient(135deg, #f57c00 0%, #ff6f00 100%);">
+                        <div class="year-title" style="font-size: 1.5em;">📊 ALL MATCHED POSITIONS (${matchedPositions.length})</div>
+                        <div class="year-summary">
+                            <div class="summary-item">
+                                <span class="summary-label">Total TPL</span>
+                                <span class="summary-value ${totalTPL < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(totalTPL)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="expand-icon">&#9660;</div>
+                    </div>
+                    <div class="dates-container">
+                        <table class="dates-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th style="text-align: right;">Buy Date</th>
+                                    <th style="text-align: right;">Sell Date</th>
+                                    <th style="text-align: right;">Qty</th>
+                                    <th style="text-align: right;">Buy Amount</th>
+                                    <th style="text-align: right;">Sell Amount</th>
+                                    <th style="text-align: right;">TPL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${positionsRows}
                             </tbody>
                         </table>
                     </div>
@@ -1716,14 +2541,15 @@
                 acc.billAmount += yearData.totals.billAmount;
                 acc.expense += yearData.totals.expense;
                 acc.tpl += yearData.totals.tpl;
+                acc.ntpl += yearData.totals.ntpl;
                 acc.grossProfit += yearData.totals.grossProfit;
                 return acc;
-            }, { billAmount: 0, expense: 0, tpl: 0, grossProfit: 0 });
+            }, { billAmount: 0, expense: 0, tpl: 0, ntpl: 0, grossProfit: 0 });
 
             return `
                 <div class="year-item" style="border: 3px solid #667eea; margin-bottom: 25px;">
                     <div class="year-header" style="background: linear-gradient(135deg, #4a5fd3 0%, #5e3780 100%);">
-                        <div class="year-title" style="font-size: 1.8em;">📊 ALL YEARS SUMMARY</div>
+                        <div class="year-title" style="font-size: 1.8em;">📊 SUMMARY</div>
                         <div class="year-summary">
                             <div class="summary-item">
                                 <span class="summary-label">Total Bills</span>
@@ -1742,6 +2568,12 @@
                                 </span>
                             </div>
                             <div class="summary-item">
+                                <span class="summary-label">NTPL</span>
+                                <span class="summary-value ${globalTotals.ntpl < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(globalTotals.ntpl)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
                                 <span class="summary-label">Gross Profit</span>
                                 <span class="summary-value ${globalTotals.grossProfit < 0 ? 'negative' : 'positive'}">
                                     ${formatCurrency(globalTotals.grossProfit)}
@@ -1757,18 +2589,18 @@
             const container = document.getElementById('yearsContainer');
 
             // Use cached data if available and not forcing refresh
-            let data;
+            let result;
             if (cachedData && !forceRefresh) {
-                data = cachedData;
+                result = cachedData;
             } else {
                 // Try to load real data
-                data = await extractDataFromZip();
+                result = await extractDataFromZip();
                 // Cache the data
-                cachedData = data;
+                cachedData = result;
             }
 
             // If no real data, show message
-            if (!data || data.length === 0) {
+            if (!result || !result.data || result.data.length === 0) {
                 console.log('No data available');
                 container.innerHTML = `
                     <div style="text-align: center; padding: 50px; color: #666;">
@@ -1784,11 +2616,14 @@
 
             console.log('Using real data from ZIP file');
 
-            // Create global summary + individual years
-            const globalSummaryHTML = createGlobalSummaryHTML(data);
-            const yearsHTML = data.map(yearData => createYearHTML(yearData)).join('');
+            const { data, enhancedTradebook, matchedPositions } = result;
 
-            container.innerHTML = globalSummaryHTML + yearsHTML;
+            // Create global summary + individual years + positions tab
+            const globalSummaryHTML = createGlobalSummaryHTML(data);
+            const yearsHTML = data.map(yearData => createYearHTML(yearData, enhancedTradebook)).join('');
+            const positionsHTML = createPositionsHTML(matchedPositions);
+
+            container.innerHTML = globalSummaryHTML + yearsHTML + positionsHTML;
 
             // Add click event listeners
             document.querySelectorAll('.year-header').forEach(header => {
@@ -1822,6 +2657,7 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
             checkStoredFile();
+            checkStoredURL();
             renderYears();
         });
     </script>
