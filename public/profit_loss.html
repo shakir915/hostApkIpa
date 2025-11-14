@@ -727,7 +727,7 @@
                 // List all files in the ZIP for debugging
                 console.log('Files in ZIP:');
                 Object.keys(zip.files).forEach(filename => {
-                    console.log('  - ' + filename);
+                    //console.log('  - ' + filename);
                 });
 
                 // Search for bills, expense, and tradebook files
@@ -741,21 +741,21 @@
                             filename.includes('bills_') &&
                             filename.endsWith('.json')) {
                             billFiles.push({ path: filename, file: zip.files[filename] });
-                            console.log('Found bills file:', filename);
+                            //console.log('Found bills file:', filename);
                         }
                         // Expense files
                         if (filename.startsWith('fyexpense/') &&
                             filename.includes('expense_') &&
                             filename.endsWith('.json')) {
                             expenseFiles.push({ path: filename, file: zip.files[filename] });
-                            console.log('Found expense file:', filename);
+                           // console.log('Found expense file:', filename);
                         }
                         // Tradebook files
                         if (filename.startsWith('fytradebooks/') &&
                             filename.includes('tradebooks_') &&
                             filename.endsWith('.json')) {
                             tradebookFiles.push({ path: filename, file: zip.files[filename] });
-                            console.log('Found tradebook file:', filename);
+                            //console.log('Found tradebook file:', filename);
                         }
                     }
                 });
@@ -776,11 +776,11 @@
                         const content = await expenseFile.file.async('text');
                         const jsonData = JSON.parse(content);
 
-                        console.log(`Processing ${expenseFile.path}:`, jsonData.data?.DATA?.length || 0, 'expense entries');
+                       // console.log(`Processing ${expenseFile.path}:`, jsonData.data?.DATA?.length || 0, 'expense entries');
 
                         if (jsonData.s === 'ok' && jsonData.data && jsonData.data.DATA) {
                             if (jsonData.data.DATA.length === 0) {
-                                console.log(`  ${expenseFile.path} has no data entries - skipping`);
+                               // console.log(`  ${expenseFile.path} has no data entries - skipping`);
                                 continue;
                             }
 
@@ -790,21 +790,35 @@
 
                                 if (tradeDate) {
                                     // Calculate total expense for this date
-                                    const totalExpense =
-                                        parseFloat(entry.sebi_toc || 0) +
-                                        parseFloat(entry.exchange_txn_charge || 0) +
-                                        parseFloat(entry.brokerage || 0) +
-                                        parseFloat(entry.cm_charge || 0) +
-                                        parseFloat(entry.stt || 0) +
-                                        parseFloat(entry.gst || 0) +
-                                        parseFloat(entry.stamp_duty || 0) +
-                                        parseFloat(entry.cgst || 0) +
-                                        parseFloat(entry.sgst || 0) +
-                                        parseFloat(entry.igst || 0) +
-                                        parseFloat(entry.ipft || 0);
+                                    // NOTE: cgst, sgst, igst are components of gst, not separate charges
+                                    const sebi_toc = parseFloat(entry.sebi_toc || 0);
+                                    const exchange_txn_charge = parseFloat(entry.exchange_txn_charge || 0);
+                                    const brokerage = parseFloat(entry.brokerage || 0);
+                                    const cm_charge = parseFloat(entry.cm_charge || 0);
+                                    const stt = parseFloat(entry.stt || 0);
+                                    const gst = parseFloat(entry.gst || 0);
+                                    const stamp_duty = parseFloat(entry.stamp_duty || 0);
+                                    const ipft = parseFloat(entry.ipft || 0);
+
+                                    const totalExpense = sebi_toc + exchange_txn_charge + brokerage + cm_charge + stt + gst + stamp_duty + ipft;
+
+                                    // Debug logging for specific date
+                                    if (tradeDate === '29/10/2025') {
+                                        console.log('\n🔍 DEBUG - Expense breakdown for 29/10/2025:');
+                                        console.log('  sebi_toc:', sebi_toc);
+                                        console.log('  exchange_txn_charge:', exchange_txn_charge);
+                                        console.log('  brokerage:', brokerage);
+                                        console.log('  cm_charge:', cm_charge);
+                                        console.log('  stt:', stt);
+                                        console.log('  gst:', gst, '(includes cgst+sgst+igst)');
+                                        console.log('  stamp_duty:', stamp_duty);
+                                        console.log('  ipft:', ipft);
+                                        console.log('  TOTAL:', totalExpense);
+                                        console.log('  Full entry:', entry);
+                                    }
 
                                     if (index === 0) {
-                                        console.log('Sample expense entry from', expenseFile.path, ':', { tradeDate, totalExpense, fullEntry: entry });
+                                        //console.log('Sample expense entry from', expenseFile.path, ':', { tradeDate, totalExpense, fullEntry: entry });
                                     }
 
                                     // Track expense entry count per date
@@ -841,6 +855,13 @@
                 }
 
                 console.log('Expense map created:', Object.keys(expenseMap).length, 'dates with expenses');
+
+                // Debug logging for specific date
+                if (expenseMap['29/10/2025']) {
+                    console.log('\n🔍 FINAL DEBUG - 29/10/2025:');
+                    console.log('  Number of expense entries:', expenseDateCount['29/10/2025']);
+                    console.log('  Total aggregated expense:', expenseMap['29/10/2025']);
+                }
 
                 // Extract tradebook data
                 const tradebookMap = {}; // Map of date string to trades by symbol
@@ -1469,62 +1490,137 @@
                 const hasBuy = data.buy.val > 0;
                 const hasSell = data.sell.val > 0;
 
-                // Determine if it's Intraday, Swing, or Expired
-                let tradeType = 'Swing';
-                let badgeClass = 'trade-type-swing';
+                // Determine trade classification
+                let isIntraday = false;
+                let isExpired = false;
 
                 // For NSE_FNO on expiry date with incomplete trades (only BUY or only SELL), treat as Expired
                 if (data.segment === 'NSE_FNO' && data.isExpiry) {
                     if ((hasBuy && !hasSell) || (!hasBuy && hasSell)) {
-                        tradeType = 'Expired';
-                        badgeClass = 'trade-type-expired';
+                        isExpired = true;
                     } else if (hasBuy && hasSell && data.buy.qty === data.sell.qty) {
-                        tradeType = 'Intraday';
-                        badgeClass = 'trade-type-intraday';
+                        isIntraday = true;
                     }
                 } else {
                     // Regular logic for non-expiry or non-NSE_FNO trades
-                    const isIntraday = hasBuy && hasSell && data.buy.qty === data.sell.qty;
-                    tradeType = isIntraday ? 'Intraday' : 'Swing';
-                    badgeClass = isIntraday ? 'trade-type-intraday' : 'trade-type-swing';
+                    isIntraday = hasBuy && hasSell && data.buy.qty === data.sell.qty;
                 }
 
-                if (hasBuy) {
+                // INTRADAY: Show only one row with bigger value
+                if (isIntraday) {
+                    const biggerValue = Math.max(data.buy.val, data.sell.val);
+                    const tpl = data.sell.val - data.buy.val;
                     tradeItems.push(`
                         <div class="trade-item">
                             <div class="trade-symbol">${symbol}</div>
                             <div class="trade-info">
                                 <div class="trade-detail">
                                     <span class="trade-label">Type</span>
-                                    <span class="trade-value" style="color: #4CAF50;">BUY</span>
+                                    <span class="trade-value" style="color: #1976d2;">Intraday</span>
                                 </div>
                                 <div class="trade-detail">
                                     <span class="trade-label">Value</span>
-                                    <span class="trade-value">${formatCurrency(data.buy.val)}</span>
+                                    <span class="trade-value">${formatCurrency(biggerValue)}</span>
                                 </div>
-                                <span class="trade-type-badge ${badgeClass}">${tradeType}</span>
+                                <div class="trade-detail">
+                                    <span class="trade-label">TPL</span>
+                                    <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                </div>
                             </div>
                         </div>
                     `);
                 }
-
-                if (hasSell) {
-                    tradeItems.push(`
-                        <div class="trade-item">
-                            <div class="trade-symbol">${symbol}</div>
-                            <div class="trade-info">
-                                <div class="trade-detail">
-                                    <span class="trade-label">Type</span>
-                                    <span class="trade-value" style="color: #f44336;">SELL</span>
+                // EXPIRED: Show BUYexp or SELLexp
+                else if (isExpired) {
+                    const tpl = data.sell.val - data.buy.val;
+                    if (hasBuy) {
+                        tradeItems.push(`
+                            <div class="trade-item">
+                                <div class="trade-symbol">${symbol}</div>
+                                <div class="trade-info">
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Type</span>
+                                        <span class="trade-value" style="color: #c2185b;">BUYexp</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Value</span>
+                                        <span class="trade-value">${formatCurrency(data.buy.val)}</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">TPL</span>
+                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                    </div>
                                 </div>
-                                <div class="trade-detail">
-                                    <span class="trade-label">Value</span>
-                                    <span class="trade-value">${formatCurrency(data.sell.val)}</span>
-                                </div>
-                                <span class="trade-type-badge ${badgeClass}">${tradeType}</span>
                             </div>
-                        </div>
-                    `);
+                        `);
+                    }
+                    if (hasSell) {
+                        tradeItems.push(`
+                            <div class="trade-item">
+                                <div class="trade-symbol">${symbol}</div>
+                                <div class="trade-info">
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Type</span>
+                                        <span class="trade-value" style="color: #c2185b;">SELLexp</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Value</span>
+                                        <span class="trade-value">${formatCurrency(data.sell.val)}</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">TPL</span>
+                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
+                }
+                // SWING: Show BUY or SELL
+                else {
+                    const tpl = data.sell.val - data.buy.val;
+                    if (hasBuy) {
+                        tradeItems.push(`
+                            <div class="trade-item">
+                                <div class="trade-symbol">${symbol}</div>
+                                <div class="trade-info">
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Type</span>
+                                        <span class="trade-value" style="color: #4CAF50;">BUY</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Value</span>
+                                        <span class="trade-value">${formatCurrency(data.buy.val)}</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">TPL</span>
+                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
+                    if (hasSell) {
+                        tradeItems.push(`
+                            <div class="trade-item">
+                                <div class="trade-symbol">${symbol}</div>
+                                <div class="trade-info">
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Type</span>
+                                        <span class="trade-value" style="color: #f44336;">SELL</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">Value</span>
+                                        <span class="trade-value">${formatCurrency(data.sell.val)}</span>
+                                    </div>
+                                    <div class="trade-detail">
+                                        <span class="trade-label">TPL</span>
+                                        <span class="trade-value ${tpl < 0 ? 'negative' : 'positive'}">${formatCurrency(tpl)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    }
                 }
             }
 
