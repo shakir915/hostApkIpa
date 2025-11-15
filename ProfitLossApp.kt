@@ -852,7 +852,8 @@ fun RowScope.SummaryItem(label: String, value: Double, useFullFormat: Boolean, i
         Text(
             text = label,
             fontSize = 12.sp,
-            color = Color.White.copy(alpha = 0.8f)
+            color = Color.White.copy(alpha = 0.8f),
+            fontWeight = if (label == "NTPL") FontWeight.Bold else FontWeight.Normal
         )
         Text(
             text = formatCurrency(value, useFullFormat),
@@ -916,7 +917,7 @@ fun YearCard(
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("NTPL", fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f))
+                            Text("NTPL", fontSize = 10.sp, color = Color.White.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
                             Text(
                                 formatCurrency(yearData.totals.ntpl, useFullFormat),
                                 fontSize = 12.sp,
