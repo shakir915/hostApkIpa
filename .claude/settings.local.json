@@ -11,7 +11,10 @@
       "Bash(node:*)",
       "Bash(cat:*)",
       "Bash(git revert:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(open:*)",
+      "Bash(curl:*)",
+      "Bash(gsutil cors set:*)"
     ],
     "deny": []
   }

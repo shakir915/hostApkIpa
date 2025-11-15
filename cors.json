@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["https://install4.web.app", "https://install4.firebaseapp.com"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]

@@ -100,6 +100,33 @@
             transform: translateX(26px);
         }
 
+        .clear-storage-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .clear-storage-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .clear-storage-btn:active {
+            transform: scale(0.95);
+        }
+
         .header p {
             font-size: 1.1em;
             opacity: 0.9;
@@ -160,17 +187,43 @@
         }
 
         .summary-value {
-            font-weight: bold;
+            font-weight: 700;
             font-size: 1.2em;
         }
 
         .expand-icon {
-            font-size: 1.5em;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .expand-icon::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-right: 2px solid white;
+            border-bottom: 2px solid white;
+            transform: rotate(45deg) translateY(-2px);
             transition: transform 0.3s ease;
         }
 
         .year-item.active .expand-icon {
-            transform: rotate(180deg);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .year-item.active .expand-icon::before {
+            transform: rotate(-135deg) translateY(-2px);
+        }
+
+        .expand-icon:hover {
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(1.1);
         }
 
         .dates-container {
@@ -678,9 +731,10 @@
                 </div>
                 <label for="currencyFormat">Full Amount</label>
             </div>
+            <button class="clear-storage-btn" onclick="clearStorageAndReload()" title="Clear cache and reload">🗑️</button>
         </div>
 
-        <div class="upload-section">
+        <div class="upload-section" style="display: none;">
             <div class="upload-container">
                 <div class="file-input-wrapper">
                     <input type="file" id="zipFileInput" accept=".zip" />
@@ -795,16 +849,26 @@
         // Check if there's a stored URL on page load
         const checkStoredURL = () => {
             const storedURL = localStorage.getItem('profitLossDataURL');
+            const defaultURL = 'https://bhavpc-default-rtdb.asia-southeast1.firebasedatabase.app/bhav_app_data/user/8129625121/FyersTradeBook.json';
 
-            if (storedURL) {
-                document.getElementById('urlInput').value = storedURL;
-                document.getElementById('urlText').textContent = storedURL;
+            // Use stored URL if available, otherwise use default URL
+            const urlToUse = storedURL || defaultURL;
+
+            if (urlToUse) {
+                document.getElementById('urlInput').value = urlToUse;
+                document.getElementById('urlText').textContent = urlToUse;
                 document.getElementById('urlInfo').style.display = 'flex';
                 document.getElementById('urlInput').style.display = 'none';
                 document.getElementById('urlSubmitBtn').style.display = 'none';
 
-                // Automatically fetch data from stored URL
-                fetchDataFromURL(storedURL);
+                // Automatically fetch data from URL (stored or default)
+                fetchDataFromURL(urlToUse);
+
+                // If using default URL (no stored URL), save it to localStorage
+                if (!storedURL) {
+                    localStorage.setItem('profitLossDataURL', defaultURL);
+                    console.log('Using default Firebase URL:', defaultURL);
+                }
             }
         };
 
@@ -1188,11 +1252,51 @@
 
         // ===== EXTRACT DATA FROM ZIP =====
         const extractDataFromZip = async () => {
-            const storedFile = localStorage.getItem('profitLossZipFile');
+            let storedFile = localStorage.getItem('profitLossZipFile');
+            // Load from same origin (Firebase Hosting) - no CORS issues
+            const defaultZipURL = './fyers_bills_expense_tradebooks.zip';
 
+            // If no stored file, download from default URL
             if (!storedFile) {
-                console.log('No stored ZIP file found, using dummy data');
-                return null;
+                console.log('No stored ZIP file found, downloading from default URL:', defaultZipURL);
+                try {
+                    showStatus('Downloading default ZIP file...', 'success');
+
+                    // Use XMLHttpRequest instead of fetch to avoid CORS issues
+                    const blob = await new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', defaultZipURL, true);
+                        xhr.responseType = 'blob';
+                        xhr.onload = () => {
+                            if (xhr.status === 200) {
+                                resolve(xhr.response);
+                            } else {
+                                reject(new Error(`Failed to download: ${xhr.status}`));
+                            }
+                        };
+                        xhr.onerror = () => reject(new Error('Network error'));
+                        xhr.send();
+                    });
+
+                    // Convert blob to base64 for storage
+                    const reader = new FileReader();
+                    const base64Promise = new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                    });
+                    reader.readAsDataURL(blob);
+                    storedFile = await base64Promise;
+
+                    // Store in localStorage for future use
+                    localStorage.setItem('profitLossZipFile', storedFile);
+                    localStorage.setItem('profitLossZipFileName', 'fyers_bills_expense_tradebooks.zip');
+                    localStorage.setItem('profitLossZipFileSize', blob.size.toString());
+
+                    showStatus('Default ZIP file loaded successfully', 'success');
+                } catch (error) {
+                    console.error('Failed to download default ZIP:', error);
+                    showStatus('Failed to download default ZIP file: ' + error.message, 'error');
+                    return null;
+                }
             }
 
             try {
@@ -1562,9 +1666,11 @@
 
                                     // Get expense for this date
                                     let expense = 0;
+                                    let expenseIsCalculated = false;
                                     if (expenseMap[tradeDate] && expenseMap[tradeDate] !== -1) {
                                         // First bill on this date gets the expense
                                         expense = expenseMap[tradeDate];
+                                        expenseIsCalculated = false; // From ZIP file
                                         expenseMap[tradeDate] = -1; // Mark as used
                                     } else if (!expenseMap[tradeDate]) {
                                         // No expense exists for this date at all
@@ -1576,6 +1682,7 @@
                                             }
                                         }
                                         expense = 0;
+                                        expenseIsCalculated = false;
                                     }
                                     // If expenseMap[tradeDate] === -1, it means another bill already used the expense,
                                     // so this bill gets expense = 0 (which is correct - we only assign expense once per date)
@@ -1586,6 +1693,7 @@
                                         originalDate: tradeDate, // Keep original string for reference
                                         billAmount: turnover,
                                         expense: expense,
+                                        expenseIsCalculated: expenseIsCalculated,
                                         grossProfit: turnover - expense,
                                         trades: tradebookMap[tradeDate] || null // Attach trade data if exists
                                     });
@@ -1682,6 +1790,7 @@
                                 originalDate: dateStr,
                                 billAmount: 0,
                                 expense: expenseAmount,
+                                expenseIsCalculated: false, // From ZIP file
                                 grossProfit: -expenseAmount, // Negative since no revenue
                                 trades: tradebookMap[dateStr] || null // Attach trade data if exists
                             });
@@ -1755,8 +1864,10 @@
 
                             // Check if URL expense exists for this date
                             let urlExpense = 0;
+                            let expenseIsCalculated = false;
                             if (urlExpenseMap && urlExpenseMap[dateStr]) {
                                 urlExpense = urlExpenseMap[dateStr];
+                                expenseIsCalculated = true;
                                 console.log(`  💰 Using URL expense for ${dateStr}: ₹${urlExpense.toFixed(2)}`);
                             }
 
@@ -1767,6 +1878,7 @@
                                 originalDate: dateStr,
                                 billAmount: 0,
                                 expense: urlExpense,
+                                expenseIsCalculated: expenseIsCalculated,
                                 grossProfit: 0, // 0 + urlExpense = 0 (since expense is already negative in formula)
                                 trades: trades
                             });
@@ -1830,11 +1942,16 @@
                                     originalDate: entry.originalDate,
                                     billAmount: 0,
                                     expense: 0,
+                                    expenseIsCalculated: entry.expenseIsCalculated || false,
                                     trades: entry.trades // Keep first trades data (all should be same for same date)
                                 };
                             }
                             dateMap[dateKey].billAmount += entry.billAmount;
                             dateMap[dateKey].expense += entry.expense;
+                            // If any entry has calculated expense, mark it as calculated
+                            if (entry.expenseIsCalculated) {
+                                dateMap[dateKey].expenseIsCalculated = true;
+                            }
                         });
 
                         // Convert back to array and calculate gross profit, TPL, and NTPL
@@ -1895,11 +2012,66 @@
                 console.log('Extracted fiscal years:', formattedData.map(d => d.fiscalYear));
                 console.log('Total entries:', formattedData.reduce((sum, d) => sum + d.dates.length, 0));
 
+                // Fetch and integrate Groww data
+                const growwData = await fetchGrowwData();
+                if (growwData) {
+                    console.log('Integrating Groww data into fiscal years');
+                    formattedData.forEach(yearData => {
+                        // Convert fiscal year format from "2024-2025" to "2024-25" to match Firebase
+                        const fyParts = yearData.fiscalYear.split('-');
+                        const fyKey = `${fyParts[0]}-${fyParts[1].slice(-2)}`; // e.g., "2024-2025" -> "2024-25"
+
+                        console.log(`Checking Groww data for FY ${yearData.fiscalYear} (key: ${fyKey})`);
+
+                        if (growwData[fyKey] !== undefined) {
+                            const growwNTPL = growwData[fyKey];
+                            console.log(`Adding Groww entry for FY ${fyKey}: ${growwNTPL}`);
+
+                            // Create Groww Trades entry
+                            const growwEntry = {
+                                date: 'Groww Trades',
+                                originalDate: 'Groww Trades',
+                                billAmount: 0,
+                                expense: 0,
+                                expenseIsCalculated: false,
+                                grossProfit: 0,
+                                tpl: growwNTPL,
+                                ntpl: growwNTPL,
+                                trades: null
+                            };
+
+                            // Insert as first entry (unshift to add at beginning)
+                            yearData.dates.unshift(growwEntry);
+
+                            // Update year totals
+                            yearData.totals.tpl += growwNTPL;
+                            yearData.totals.ntpl += growwNTPL;
+                        }
+                    });
+                }
+
                 return { data: formattedData, enhancedTradebook, matchedPositions };
 
             } catch (error) {
                 console.error('Error extracting data from ZIP:', error);
                 showStatus('Error reading ZIP file: ' + error.message, 'error');
+                return null;
+            }
+        };
+
+        // ===== FETCH GROWW DATA FROM FIREBASE =====
+        const fetchGrowwData = async () => {
+            try {
+                const response = await fetch('https://bhavpc-default-rtdb.asia-southeast1.firebasedatabase.app/bhav_app_data/user/8129625121/grow_year_NTPL.json');
+                if (!response.ok) {
+                    console.error('Failed to fetch Groww data:', response.status);
+                    return null;
+                }
+                const data = await response.json();
+                console.log('Fetched Groww data:', data);
+                return data;
+            } catch (error) {
+                console.error('Error fetching Groww data:', error);
                 return null;
             }
         };
@@ -1983,6 +2155,10 @@
         };
 
         const formatDate = (dateObj) => {
+            // Handle special string values like "Groww Trades"
+            if (typeof dateObj === 'string') {
+                return dateObj;
+            }
             // dateObj is already a Date object
             if (dateObj instanceof Date) {
                 return dateObj.toLocaleDateString('en-IN', {
@@ -1991,7 +2167,7 @@
                     year: 'numeric'
                 });
             }
-            // Fallback if somehow a string is passed
+            // Fallback
             return 'Invalid Date';
         };
 
@@ -2391,7 +2567,7 @@
                         <td class="amount-col bill-amount ${dateData.billAmount < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.billAmount)}
                         </td>
-                        <td class="amount-col expense expense-red">${formatCurrency(dateData.expense)}</td>
+                        <td class="amount-col expense expense-red">${dateData.expenseIsCalculated ? '≈ ' : ''}${formatCurrency(dateData.expense)}</td>
                         <td class="amount-col tpl ${dateData.tpl < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.tpl)}
                         </td>
@@ -2422,6 +2598,12 @@
                                 <span class="summary-value expense-red">${formatCurrency(yearData.totals.expense)}</span>
                             </div>
                             <div class="summary-item">
+                                <span class="summary-label">Gross Profit</span>
+                                <span class="summary-value ${yearData.totals.grossProfit < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(yearData.totals.grossProfit)}
+                                </span>
+                            </div>
+                            <div class="summary-item">
                                 <span class="summary-label">TPL</span>
                                 <span class="summary-value ${yearData.totals.tpl < 0 ? 'negative' : 'positive'}">
                                     ${formatCurrency(yearData.totals.tpl)}
@@ -2429,18 +2611,12 @@
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label"><strong>NTPL</strong></span>
-                                <span class="summary-value ${yearData.totals.ntpl < 0 ? 'negative' : 'positive'}">
+                                <span class="summary-value ntpl-value ${yearData.totals.ntpl < 0 ? 'negative' : 'positive'}">
                                     ${formatCurrency(yearData.totals.ntpl)}
                                 </span>
                             </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Gross Profit</span>
-                                <span class="summary-value ${yearData.totals.grossProfit < 0 ? 'negative' : 'positive'}">
-                                    ${formatCurrency(yearData.totals.grossProfit)}
-                                </span>
-                            </div>
                         </div>
-                        <div class="expand-icon">&#9660;</div>
+                        <div class="expand-icon"></div>
                     </div>
                     <div class="dates-container">
                         <table class="dates-table">
@@ -2516,7 +2692,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div class="expand-icon">&#9660;</div>
+                        <div class="expand-icon"></div>
                     </div>
                     <div class="dates-container">
                         <table class="dates-table">
@@ -2564,7 +2740,13 @@
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">Total Expenses</span>
-                                <span class="summary-value expense-red">${formatCurrency(globalTotals.expense)}</span>
+                                <span class="summary-value expense-value expense-red">${formatCurrency(globalTotals.expense)}</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Gross Profit</span>
+                                <span class="summary-value ${globalTotals.grossProfit < 0 ? 'negative' : 'positive'}">
+                                    ${formatCurrency(globalTotals.grossProfit)}
+                                </span>
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">TPL</span>
@@ -2574,14 +2756,8 @@
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label"><strong>NTPL</strong></span>
-                                <span class="summary-value ${globalTotals.ntpl < 0 ? 'negative' : 'positive'}">
+                                <span class="summary-value ntpl-value ${globalTotals.ntpl < 0 ? 'negative' : 'positive'}">
                                     ${formatCurrency(globalTotals.ntpl)}
-                                </span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Gross Profit</span>
-                                <span class="summary-value ${globalTotals.grossProfit < 0 ? 'negative' : 'positive'}">
-                                    ${formatCurrency(globalTotals.grossProfit)}
                                 </span>
                             </div>
                         </div>
@@ -2647,6 +2823,14 @@
                 if (tradesDetails) {
                     tradesDetails.classList.toggle('active');
                 }
+            }
+        };
+
+        // Clear localStorage and reload
+        const clearStorageAndReload = () => {
+            if (confirm('Clear all cached data and reload? This will re-download the ZIP file.')) {
+                localStorage.clear();
+                location.reload();
             }
         };
 
