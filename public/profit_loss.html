@@ -326,6 +326,11 @@
 
         .negative {
             color: #f44336 !important;
+            font-weight: bold;
+        }
+
+        .expense-red {
+            color: #f44336 !important;
         }
 
         .upload-section {
@@ -2386,7 +2391,7 @@
                         <td class="amount-col bill-amount ${dateData.billAmount < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.billAmount)}
                         </td>
-                        <td class="amount-col expense negative">${formatCurrency(dateData.expense)}</td>
+                        <td class="amount-col expense expense-red">${formatCurrency(dateData.expense)}</td>
                         <td class="amount-col tpl ${dateData.tpl < 0 ? 'negative' : 'positive'}">
                             ${formatCurrency(dateData.tpl)}
                         </td>
@@ -2414,7 +2419,7 @@
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">Total Expenses</span>
-                                <span class="summary-value negative">${formatCurrency(yearData.totals.expense)}</span>
+                                <span class="summary-value expense-red">${formatCurrency(yearData.totals.expense)}</span>
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">TPL</span>
@@ -2559,7 +2564,7 @@
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">Total Expenses</span>
-                                <span class="summary-value negative">${formatCurrency(globalTotals.expense)}</span>
+                                <span class="summary-value expense-red">${formatCurrency(globalTotals.expense)}</span>
                             </div>
                             <div class="summary-item">
                                 <span class="summary-label">TPL</span>
