@@ -404,11 +404,10 @@
 
                 const tbody = table.querySelector('tbody');
 
-                allIPData.forEach(item => {
-                    const row = document.createElement('tr');
-                    const date = new Date(item.timestamp || 0);
-                    const formattedDate = formatDateTime(date);
+                // Deduplicate adjacent items with same details (except timestamp)
+                let previousItem = null;
 
+                allIPData.forEach(item => {
                     const appName = item.appName || 'N/A';
                     const pageID = item.pageID || 'N/A';
                     const rawAction = item.action || 'N/A';
@@ -427,16 +426,41 @@
                     const country = item.country || 'N/A';
                     const userAgent = item.userAgent || 'N/A';
 
-                    row.innerHTML = `
-                        ${g_app_name_for_url ? '' : `<td data-label="App Name">${appName}</td>`}
-                        <td data-label="Page ID">${pageID}</td>
-                        <td data-label="Action">${action}</td>
-                        <td data-label="City">${city}</td>
-                        <td data-label="Country">${country}</td>
-                        <td data-label="Time">${formattedDate}</td>
-                        <td data-label="User Agent">${userAgent}</td>
-                    `;
-                    tbody.appendChild(row);
+                    // Check if current item is different from previous item (excluding timestamp)
+                    const isDifferent = !previousItem ||
+                        previousItem.appName !== appName ||
+                        previousItem.pageID !== pageID ||
+                        previousItem.action !== action ||
+                        previousItem.city !== city ||
+                        previousItem.country !== country ||
+                        previousItem.userAgent !== userAgent;
+
+                    if (isDifferent) {
+                        const row = document.createElement('tr');
+                        const date = new Date(item.timestamp || 0);
+                        const formattedDate = formatDateTime(date);
+
+                        row.innerHTML = `
+                            ${g_app_name_for_url ? '' : `<td data-label="App Name">${appName}</td>`}
+                            <td data-label="Page ID">${pageID}</td>
+                            <td data-label="Action">${action}</td>
+                            <td data-label="City">${city}</td>
+                            <td data-label="Country">${country}</td>
+                            <td data-label="Time">${formattedDate}</td>
+                            <td data-label="User Agent">${userAgent}</td>
+                        `;
+                        tbody.appendChild(row);
+
+                        // Update previous item for next comparison
+                        previousItem = {
+                            appName,
+                            pageID,
+                            action,
+                            city,
+                            country,
+                            userAgent
+                        };
+                    }
                 });
 
                 ipDetailsDiv.appendChild(table);
