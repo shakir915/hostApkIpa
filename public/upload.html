@@ -330,8 +330,8 @@
   <div class="container">
 
 
-    <div style="position: relative; display: flex; flex-wrap: wrap; margin: 10px;">
-      <a href="epoch_converter.html" target="_blank"
+    <div style="position: center; display: flex; flex-wrap: wrap; margin: 10px;">
+      <!-- <a href="epoch_converter.html" target="_blank"
         style="font-size: 12px; color: rgb(209, 218, 197); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
         Epoch Timestamp Converter
       </a>
@@ -354,15 +354,16 @@
       <a href="https://hexed.it/" target="_blank"
         style="font-size: 12px; color: rgb(255, 198, 198); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
         Hex Editor
-      </a>
+      </a> -->
       <a href="more_info.html?listAllApps" target="_blank"
-        style="font-size: 12px; color: rgb(216, 177, 211); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        List All Apps
+        style="font-size: 12px; color: rgb(216, 177, 211); opacity: .7; text-decoration: none; white-space: wrap; padding: 4px 8px;">
+        All Apps
       </a>
     </div>
 
 
     <h1>Upload APK, IPA</h1>
+    <h5 id="fbstg"> </h5>
     <h5 id="availableSpace"> </h5>
 
 
@@ -1405,10 +1406,12 @@
     async function findBestBucket() {
       // Check Firebase Storage access first
       const hasStorageAccess = await checkFirebaseStorageAccess();
-      if (!hasStorageAccess) {
-        const availableSpaceElement = document.getElementById('availableSpace');
-        availableSpaceElement.innerHTML = `<span style="color: red;">no access to firebase storage : <a href="https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024?authuser=0&_gl=1*1s56cyb*_ga*MjExNDU2NDQ2Ny4xNzIxOTg2MjAx*_ga_CW55HF8NVT*czE3NTg4MTAxMTUkbzQ0MSRnMSR0MTc1ODgxMDQwNCRqMzckbDAkaDA.#:~:text=pricing%20plan%20by-,October%201%2C%202025),-." target="_blank" style="color: red;">Learn more</a></span>`;
-        return null;
+      if (true) {
+        const availableSpaceElement = document.getElementById('fbstg');
+        availableSpaceElement.innerHTML = `<span style="color: red;">firebase storage error : <a href="https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024?authuser=0&_gl=1*1s56cyb*_ga*MjExNDU2NDQ2Ny4xNzIxOTg2MjAx*_ga_CW55HF8NVT*czE3NTg4MTAxMTUkbzQ0MSRnMSR0MTc1ODgxMDQwNCRqMzckbDAkaDA.#:~:text=pricing%20plan%20by-,October%201%2C%202025),-." target="_blank" style="color: red;">Learn more</a></span>`;
+        if (!hasStorageAccess) {
+          return null;
+        }
       }
 
       const snapshot = await firebase.database().ref("/storage_buckets").once("value");
@@ -1432,7 +1435,7 @@
       }
       var availableSpace = totalSpace - usedSpace
       const availableSpacePercentage = ((usedSpace / totalSpace) * 100).toFixed(0);
-      var text = "Available Space : " + (availableSpace / (1024 * 1024 * 1024)).toFixed(2) + " Gb / " + (totalSpace / (1024 * 1024 * 1024)).toFixed(2) + " Gb (" + availableSpacePercentage + "% Used)";
+      var text = "Available Space : " + (availableSpace / (1024 * 1024 * 1024)).toFixed(2) + " Gb  " + "";
       document.getElementById('availableSpace').innerText = text;
       //console.log(text)
       if (bestKey) {

@@ -367,7 +367,6 @@
 
         const response222 = await fetch('https://httpbin.org/headers', {
           referrerPolicy: 'no-referrer', // Removes Referer header completely,
-          'Origin': 'https://fake.com',
         });
         const data = await response222.json();
         console.log(data.headers);
