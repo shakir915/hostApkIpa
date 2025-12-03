@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<html>
+
+</html>
+
+<!DOCTYPE html>
 <html lang="en">
 
 
@@ -57,7 +62,7 @@
     body {
       padding: 0;
       margin: 0;
-      font-size: 12px;
+      font-size: 11px;
       background: #2B2D30;
     }
 
@@ -67,28 +72,32 @@
     }
 
     .container {
-      width: 450px;
-      margin: auto;
-      padding-top: 20px;
-      padding-bottom: 20px;
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
 
     h1 {
       text-align: center;
-      margin: auto;
-      padding-top: 20px;
-      padding-bottom: 20px;
+      margin: 0 auto 8px;
+      padding: 0;
       font-family: Georgia, serif;
       color: #fff;
+      font-size: 20px;
     }
 
     h5 {
       text-align: center;
-      margin: auto;
-      padding-bottom: 20px;
+      margin: 0 auto;
+      padding: 5px 0;
       font-family: serif;
       color: #fff;
+      font-size: 11px;
     }
 
 
@@ -190,22 +199,22 @@
 
 
     .drop-zone {
-
-      height: 300px;
-      width: 300px;
-      margin: auto;
-      padding: 25px;
+      height: 280px;
+      width: 100%;
+      max-width: 350px;
+      margin: 15px auto;
+      padding: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-align: center;
       font-family: "Quicksand", sans-serif;
       font-weight: 500;
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
       color: #cccccc;
-      border: 4px dashed #009578;
-      border-radius: 10px;
+      border: 3px dashed #009578;
+      border-radius: 8px;
     }
 
     .drop-zone--over {
@@ -330,41 +339,16 @@
   <div class="container">
 
 
-    <div style="position: center; display: flex; flex-wrap: wrap; margin: 10px;">
-      <!-- <a href="epoch_converter.html" target="_blank"
-        style="font-size: 12px; color: rgb(209, 218, 197); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        Epoch Timestamp Converter
-      </a>
-      <a href="string_converts.html" target="_blank"
-        style="font-size: 12px; color: rgb(195, 181, 164); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        Text/Base64/URL/Hash Tools
-      </a>
-      <a href="encryption.html" target="_blank"
-        style="font-size: 12px; color: rgb(170, 170, 196); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        String Encryption Tool
-      </a>
-      <a href="sqlite_viewer.html" target="_blank"
-        style="font-size: 12px; color: rgb(241, 249, 193); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        SQLite Viewer
-      </a>
-      <a href="qr-code-generator.html" target="_blank"
-        style="font-size: 12px; color: rgb(216, 205, 254); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        QR code generator
-      </a>
-      <a href="https://hexed.it/" target="_blank"
-        style="font-size: 12px; color: rgb(255, 198, 198); opacity: .7; text-decoration: none; white-space: nowrap; padding: 4px 8px;">
-        Hex Editor
-      </a> -->
-      <a href="more_info.html?listAllApps" target="_blank"
-        style="font-size: 12px; color: rgb(216, 177, 211); opacity: .7; text-decoration: none; white-space: wrap; padding: 4px 8px;">
-        All Apps
-      </a>
-    </div>
-
+    <a href="more_info.html?listAllApps" target="_blank"
+      style="font-size: 11px; color: rgb(216, 177, 211); opacity: .8; text-decoration: none; padding: 4px 10px; border-radius: 4px; transition: opacity 0.2s; margin-bottom: 15px;">
+      All Apps
+    </a>
 
     <h1>Upload APK, IPA</h1>
-    <h5 id="fbstg"> </h5>
-    <h5 id="availableSpace"> </h5>
+    <div style="width: 100%; text-align: center; margin-bottom: 8px;">
+      <h5 id="fbstg" style="min-height: 16px;"></h5>
+      <h5 id="availableSpace" style="min-height: 16px;"></h5>
+    </div>
 
 
 
@@ -379,20 +363,21 @@
 
 
 
-    <div id="result-list">
+    <div id="result-list" style="width: 100%; max-width: 450px;">
     </div>
   </div>
-  <div>
-    <span class="login-text" style="color: #f00;opacity: 1;  font-weight: 600; " id="failText"></span>
+  <div style="width: 100%; display: flex; flex-direction: column; align-items: center; padding: 15px 0;">
+    <span class="login-text"
+      style="color: #f00; opacity: 1; font-weight: 600; text-align: center; display: block; width: 100%; padding: 8px 0; font-size: 11px;"
+      id="failText"></span>
 
 
 
 
 
     <a class="uploadNewApp" id="uploadNewApp" target="_blank"
-      style="color:  rgb(193, 129, 56);opacity: 1;  font-weight: 600; ">Upload
-      another App</a>
-    <br />
+      style="color: rgb(193, 129, 56); opacity: 1; font-weight: 600; margin: 8px 0; font-size: 11px;">Upload another
+      App</a>
 
     <script type="text/javascript">
 
@@ -424,12 +409,8 @@
 
 
 
-    <span class="login-text" style="color: #000; opacity: 1; font-weight: 100; font-size: 8px;"></span>
-
-    <br />
-
-    <span class="login-text" style="color: #000;opacity: .5;  font-weight: 600; " id="siteAndDevName"></span>
-    <br />
+    <span class="login-text" style="color: #000; opacity: .5; font-weight: 600; text-align: center; margin: 10px 0;"
+      id="siteAndDevName"></span>
 
     <!-- <a href="https://github.com/shakir915/hostApkIpa" class="uploadNewApp" id="uploadNewApp" target="_blank"
     style="color: rgb(56, 56, 193);opacity: .5;  font-weight: 300; visibility: visible;">source code @ github</a>
