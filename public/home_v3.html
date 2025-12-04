@@ -406,8 +406,8 @@
       if (window.location.href.includes("localhost") || window.location.href.startsWith("file:///")) {
         return; // Exit the function without fetching
       }
-      const response = await fetch("https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/redirection.json");
-      const new_redirection = await response.json();
+      //const response = await fetch("https://install4-default-rtdb.asia-southeast1.firebasedatabase.app/redirection.json");
+      const new_redirection = "/upload.html";
       // console.log(new_redirection);
       var old_redirection = localStorage.getItem('redirection');
       localStorage.setItem('redirection', new_redirection);
